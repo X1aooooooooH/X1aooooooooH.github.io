@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#edf2f7">
-<meta name="blockflow-build" content="structure-editor-static-assets-2026-10-16-v28">
+<meta name="blockflow-build" content="structure-editor-native-baker-2026-10-16-v281">
 <title>BlockFlow · 结构方块编辑器</title>
-<meta name="blockflow-textures" content="Mojang Bedrock render definitions with custom RGBA texture atlas and pixel-exact UV registry; model data loaded on demand">
+<meta name="blockflow-textures" content="BlockFlow native JavaScript geometry baker; no external model-baking binary or model registry">
 <link rel="icon" href="../assets/icons/favicon.ico" sizes="any">
 
 <link rel="stylesheet" href="../assets/css/structure-editor.css?v=2.8.0">
@@ -15,8 +15,9 @@
 <script defer src="../assets/js/broken-chain-core.js?v=2.8.0"></script>
 <script defer src="../assets/js/structure-core.js?v=2.8.0"></script>
 <script defer src="../assets/js/format-adapter.js?v=2.8.0"></script>
-<script defer src="../assets/js/worker-factory.js?v=2.8.0"></script>
-<script defer src="../assets/js/structure-app.js?v=2.8.0"></script>
+<script defer src="../assets/js/worker-factory.js?v=2.8.1"></script>
+<script defer src="../assets/js/blockflow-baker.js?v=2.8.1"></script>
+<script defer src="../assets/js/structure-app.js?v=2.8.1"></script>
 </head>
 <body>
 <div id="app">
@@ -41,7 +42,7 @@
         <div class="loading-card">
           <img src="../assets/icons/favicon.ico" alt="" class="loading-icon">
           <strong id="loadingTitle">正在初始化 3D 场景…</strong>
-          <p id="loadingDetail">正在准备本地模型与保存引擎</p>
+          <p id="loadingDetail">正在准备 BlockFlow 原生模型烘焙与保存引擎</p>
           <div class="loading-progress-track"><span id="loadingProgressBar"></span></div>
           <span id="loadingPercent">0%</span>
         </div>

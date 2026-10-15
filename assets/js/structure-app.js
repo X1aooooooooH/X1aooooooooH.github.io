@@ -1,7 +1,7 @@
 
 
 let project=null,selected=null,threeLib=null,scene=null,camera=null,renderer=null,controls=null,raycaster=null,pickTargets=[],blockGeometry=null,solidMaterial=null,textureCache={},textureClones=new Set(),commandMaterialCache=new Map(),textureLoader=null,outline=null,canvas=null,saveTimer=0,toastTimer=0,pendingInsert=null,dragOrigin=null,cameraMoveKeys=new Set(),lastCameraMoveAt=0,specialGeometries=new Set(),specialMaterialCache=new Map(),specialHitboxGeometry=null,specialHitboxMaterial=null,blockPositionSet=new Set(),blockLookupByLayer=new Map(),blockCountByLayer=new Map(),blockArrayIndex=new Map(),blockListByLayer=new Map(),blockLayerArrayIndex=new Map(),commandBlockCount=0;
-let blockMeshWorker=null,blockMeshReady=false,blockMeshSeq=0,blockMeshPending=new Map(),bakedGroup=null,bakedAtlas=null,bakedAtlasPromise=null,legacyAtlasMap=null,legacyAtlasMapPromise=null;
+let bakedGroup=null,bakedAtlas=null,bakedAtlasPromise=null,legacyAtlasMap=null,legacyAtlasMapPromise=null,bakeBuildSequence=0;
 const renderLod=1;
 let snapshotWorker=null,snapshotWorkerReady=false,snapshotSeq=0,snapshotPending=new Map(),snapshotLoadPending=new Map(),snapshotWorkerProject=null,snapshotBasePromise=null;let snapshotDirtyLayers=new Set();
 let blockLayerBounds=new Map(),highlightOverlay=null,highlightFillOverlay=null,highlightedBlockKeys=new Set(),sourceLightGroup=null,hemisphereLight=null,sunLight=null,fillLight=null,lightSourceCache=new Map();
@@ -67,16 +67,11 @@ async function dbClear(){const db=await openDatabase();return new Promise((resol
 function metaKey(b){return`${b.layer}|${b.x},${b.y},${b.z}`;}
 function applyMeta(saved){for(const key of Object.keys(metadata))delete metadata[key];highlightedBlockKeys.clear();if(saved&&typeof saved==='object')for(const [k,v] of Object.entries(saved)){metadata[k]={highlight:!!v.highlight,note:String(v.note||'')};if(v?.highlight)highlightedBlockKeys.add(k);}}
 function saveSnapshotDebounced(){if(!project)return;clearTimeout(saveTimer);document.getElementById('stats').textContent='正在保存…';saveTimer=setTimeout(()=>saveSnapshot(),1100);}
-let snapshotInitPromise=null,blockMeshInitPromise=null;
+let snapshotInitPromise=null;
 function ensureSnapshotWorker(){
   if(snapshotWorkerReady&&snapshotWorker)return Promise.resolve();
   if(!snapshotInitPromise){snapshotInitPromise=initSnapshotWorker().catch(error=>{snapshotInitPromise=null;try{snapshotWorker?.terminate();}catch{}snapshotWorker=null;throw error;});}
   return snapshotInitPromise;
-}
-function ensureBlockMeshWorker(){
-  if(blockMeshReady&&blockMeshWorker)return Promise.resolve();
-  if(!blockMeshInitPromise){blockMeshInitPromise=initBlockMeshWorker().catch(error=>{blockMeshInitPromise=null;try{blockMeshWorker?.terminate();}catch{}blockMeshWorker=null;blockMeshReady=false;throw error;});}
-  return blockMeshInitPromise;
 }
 function initSnapshotWorker(){
   return new Promise((resolve,reject)=>{
@@ -198,7 +193,7 @@ function disposeCommandMaterialCache(){
 }
 function clearSceneObjects(){
   if(!scene)return;
-  if(bakedGroup){scene.remove(bakedGroup);bakedGroup.traverse(node=>{if(node.geometry)node.geometry.dispose();if(node.material){for(const m of (Array.isArray(node.material)?node.material:[node.material]))m?.dispose?.();}});bakedGroup=null;}
+  if(bakedGroup){scene.remove(bakedGroup);disposeLayerGroup(bakedGroup);bakedGroup=null;}
   for(const group of editPreviewGroups.values()){scene.remove(group);group.traverse(node=>{node.geometry?.dispose?.();});}editPreviewGroups.clear();
   for(const target of pickTargets)scene.remove(target.mesh);
   pickTargets=[];
@@ -935,14 +930,19 @@ function renderAdvancedShape(group,b,kind){
   return false;
 }
 
-function makeSpecialBlockObject(b){
+function makeSpecialBlockObject(b,attachToScene=true){
   const {THREE}=threeLib,kind=shapeKindForBlock(b);if(!kind)return null;
   const group=new THREE.Group();group.userData.blockRef=b;group.position.set(b.x+.5,b.y+.5+(b.layer?1.08:0),b.z+.5);
-  if(!specialHitboxGeometry)specialHitboxGeometry=new THREE.BoxGeometry(1,1,1);
-  if(!specialHitboxMaterial)specialHitboxMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,colorWrite:false,depthWrite:false,side:THREE.DoubleSide});
-  const hitbox=new THREE.Mesh(specialHitboxGeometry,specialHitboxMaterial);hitbox.userData.blockRef=b;group.add(hitbox);
+  // The invisible picking hitbox belongs only to the interactive scene.
+  // The native baker compiles visible source meshes and must never receive or
+  // dispose the shared picking geometry.
+  if(attachToScene){
+    if(!specialHitboxGeometry)specialHitboxGeometry=new THREE.BoxGeometry(1,1,1);
+    if(!specialHitboxMaterial)specialHitboxMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,colorWrite:false,depthWrite:false,side:THREE.DoubleSide});
+    const hitbox=new THREE.Mesh(specialHitboxGeometry,specialHitboxMaterial);hitbox.userData.blockRef=b;group.add(hitbox);
+  }
   const mats=buildBlockMaterials(b),short=blockRenderName(b),state=(...keys)=>blockStateValue(b,...keys);
-  if(renderAdvancedShape(group,b,kind)){scene.add(group);pickTargets.push({mesh:group,block:b});return group;}
+  if(renderAdvancedShape(group,b,kind)){if(attachToScene){scene.add(group);pickTargets.push({mesh:group,block:b});}return group;}
   const up=[0,1,0],normal=(value)=>directionNormal(value,up),rotY=(v)=>({0:0,1:-Math.PI/2,2:Math.PI,3:Math.PI/2})[Number(v)]||0;
 
   if(kind==='torch'){
@@ -1135,7 +1135,7 @@ function makeSpecialBlockObject(b){
     addShapeBox(mount,b,[.055,.045,.12],[0,-.055,.135],[0,0,0],Array(6).fill(iron));
     addShapeBox(mount,b,[.15,.045,.055],[0,0,.205],[0,0,0],Array(6).fill(darkIron));
   }
-  scene.add(group);pickTargets.push({mesh:group,block:b});return group;
+  if(attachToScene){scene.add(group);pickTargets.push({mesh:group,block:b});}return group;
 }
 function createInstanceGroup(blocks,material){
   if(!blocks.length)return;
@@ -1181,102 +1181,8 @@ function buildSceneLegacy(fit=false){
   updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();requestSceneRender();
 }
 
-function initBlockMeshWorker(){
-  return new Promise((resolve,reject)=>{
-    try{
-      blockMeshWorker=BlockFlowWorkers.create('blockmesh');
-      const timer=setTimeout(()=>reject(new Error('模型 Worker 初始化超时')),20000);
-      blockMeshWorker.onmessage=e=>{
-        const d=e.data||{};
-        if(d.type==='ready'){
-          clearTimeout(timer);blockMeshReady=true;resolve(d);
-          return;
-        }
-        if(d.type==='progress'){
-          if(d.stage==='parse'){setStatus('正在解析结构并生成模型…');setModelLoadingProgress(68,'正在解析模型数据…');}
-          else if(d.stage==='geometry'){setStatus('正在构建合并几何…');setModelLoadingProgress(84,'正在生成合并几何…');}
-          return;
-        }
-        const pending=blockMeshPending.get(d.seq);
-        if(d.type==='geometry'){
-          if(pending){blockMeshPending.delete(d.seq);pending.resolve(d);}
-          return;
-        }
-        if(d.type==='error'||d.type==='worker-error'){
-          const message=d.message||`模型生成失败 (${d.code??'unknown'})`;
-          if(pending){blockMeshPending.delete(d.seq);pending.reject(new Error(message));}
-          else console.warn('BlockFlow mesh worker:',message);
-        }
-      };
-      blockMeshWorker.onerror=e=>{
-        clearTimeout(timer);reject(new Error(e.message||'模型 Worker 加载失败'));
-      };
-    }catch(error){reject(error);}
-  });
-}
-function waitBlockMesh(seq){
-  return new Promise((resolve,reject)=>{
-    const timer=setTimeout(()=>{blockMeshPending.delete(seq);reject(new Error('模型构建等待超时'));},120000);
-    blockMeshPending.set(seq,{resolve:value=>{clearTimeout(timer);resolve(value);},reject:error=>{clearTimeout(timer);reject(error);}});
-  });
-}
-async function buildLayerBytes(layerIndex){return serializeProjectAsync('render-layer',layerIndex);}
+function disposeLayerGroup(group){if(!group)return;group.traverse(node=>{if(node.geometry)node.geometry.dispose();if(node.material){for(const m of (Array.isArray(node.material)?node.material:[node.material])){if(!m||m===bakedAtlas)continue;m.userData?.blockFlowOwnedMap?.dispose?.();m.dispose?.();}}});}
 
-function makeBakedGeometry(data){
-  const {THREE}=threeLib;
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.BufferAttribute(data.pos,3));
-  if(data.uv?.length)geo.setAttribute('uv',new THREE.BufferAttribute(data.uv,2));
-  if(data.rgb?.length)geo.setAttribute('color',new THREE.BufferAttribute(data.rgb,3));
-  if(data.nrm?.length)geo.setAttribute('normal',new THREE.BufferAttribute(data.nrm,3));
-  if(data.idx?.length)geo.setIndex(new THREE.BufferAttribute(data.idx,1));
-  geo.computeBoundingSphere();
-  return geo;
-}
-function loadBakedAtlas(){return ensureBlockAtlasLoaded();}
-function disposeLayerGroup(group){if(!group)return;group.traverse(node=>{if(node.geometry)node.geometry.dispose();if(node.material){for(const m of (Array.isArray(node.material)?node.material:[node.material]))if(m&&m!==bakedAtlas)m.dispose?.();}});}
-function clearBakedGroup(){if(!bakedGroup)return;scene?.remove(bakedGroup);disposeLayerGroup(bakedGroup);bakedGroup=null;pickTargets=pickTargets.filter(t=>!t.isBaked);}
-function addTexturedMissingFallbacks(group,data,layer){
-  const {THREE}=threeLib;
-  const missingKeys=data.missingKeys||[];
-  const missingPaletteIndices=new Set(missingKeys.filter(item=>Number.isInteger(Number(item.id))).map(item=>Number(item.id)));
-  const missingNames=new Set(missingKeys.map(item=>String(item.name||'').split('[')[0]));
-  if((!missingPaletteIndices.size&&!missingNames.size)||!project?.blocks?.length)return;
-  const bySignature=new Map();
-  for(const block of project.blocks){
-    const isMissing=missingPaletteIndices.size?missingPaletteIndices.has(Number(block.paletteIndex)):missingNames.has(String(block.name||''));
-    if(block.layer!==layer||!isMissing)continue;
-    const signature=blockRenderSignature(block);let bucket=bySignature.get(signature);
-    if(!bucket){bucket={sample:block,blocks:[]};bySignature.set(signature,bucket);}
-    bucket.blocks.push(block);
-  }
-  for(const bucket of bySignature.values()){
-    const geometry=new THREE.BoxGeometry(1,1,1);
-    // Clone the cached face materials so disposing a rebuilt layer cannot
-    // invalidate materials reused by another fallback group.
-    const materials=buildBlockMaterials(bucket.sample).map(material=>material.clone());
-    const mesh=new THREE.InstancedMesh(geometry,materials,bucket.blocks.length);
-    mesh.name=`TexturedFallback_${bucket.sample.name}`;mesh.frustumCulled=false;
-    const dummy=new THREE.Object3D(),color=new THREE.Color();
-    for(let i=0;i<bucket.blocks.length;i++){
-      const block=bucket.blocks[i];dummy.position.set(block.x+.5,block.y+.5,block.z+.5);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);
-      color.set(metadata[metaKey(block)]?.highlight?0xffd36c:0xffffff);mesh.setColorAt(i,color);
-    }
-    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
-    mesh.renderOrder=3;mesh.computeBoundingSphere();group.add(mesh);
-  }
-}
-function createBakedLayerGroup(data,layer){
-  const {THREE}=threeLib;const group=new THREE.Group();group.name=`BakedLayer_${layer}`;group.scale.setScalar(renderLod);group.position.y=layer?1.08:0;
-  const opaqueMat=new THREE.MeshLambertMaterial({map:bakedAtlas,vertexColors:true,side:THREE.DoubleSide,transparent:false,alphaTest:.5,depthWrite:true});
-  const transparentMat=new THREE.MeshLambertMaterial({map:bakedAtlas,vertexColors:true,side:THREE.DoubleSide,transparent:true,depthWrite:false});
-  if(data.opaque?.vc>0&&data.opaque?.ic>0){const mesh=new THREE.Mesh(makeBakedGeometry(data.opaque),opaqueMat);mesh.name='OpaqueMergedMesh';mesh.castShadow=false;mesh.receiveShadow=false;group.add(mesh);}else opaqueMat.dispose();
-  if(data.trans?.vc>0&&data.trans?.ic>0){const mesh=new THREE.Mesh(makeBakedGeometry(data.trans),transparentMat);mesh.name='TransparentMergedMesh';mesh.renderOrder=2;group.add(mesh);}else transparentMat.dispose();
-  // Never paint unknown models with a magenta/black checker. Use the actual
-  // Bedrock face-texture definitions as an editable textured cube fallback.
-  addTexturedMissingFallbacks(group,data,layer);
-  return group;
-}
 function updateLayerBoundsAdd(b){let box=blockLayerBounds.get(b.layer);if(!box){box={minX:b.x,minY:b.y,minZ:b.z,maxX:b.x,maxY:b.y,maxZ:b.z};blockLayerBounds.set(b.layer,box);}else{box.minX=Math.min(box.minX,b.x);box.minY=Math.min(box.minY,b.y);box.minZ=Math.min(box.minZ,b.z);box.maxX=Math.max(box.maxX,b.x);box.maxY=Math.max(box.maxY,b.y);box.maxZ=Math.max(box.maxZ,b.z);}}
 function registerBlockLookup(b){const key=metaKey(b);blockPositionSet.add(key);blockLookupByLayer.set(key,b);blockCountByLayer.set(b.layer,(blockCountByLayer.get(b.layer)||0)+1);let layerBlocks=blockListByLayer.get(b.layer);if(!layerBlocks){layerBlocks=[];blockListByLayer.set(b.layer,layerBlocks);}blockLayerArrayIndex.set(b,layerBlocks.length);layerBlocks.push(b);if(b.command)commandBlockCount++;if(project)blockArrayIndex.set(b,project.blocks.length-1);refreshBlockLightEntry(b);updateLayerBoundsAdd(b);}
 function unregisterBlockLookup(b){const key=metaKey(b);blockPositionSet.delete(key);blockLookupByLayer.delete(key);const count=(blockCountByLayer.get(b.layer)||1)-1;if(count>0)blockCountByLayer.set(b.layer,count);else blockCountByLayer.delete(b.layer);if(b.command)commandBlockCount=Math.max(0,commandBlockCount-1);lightSourceCache.delete(key);const layerBlocks=blockListByLayer.get(b.layer),layerIndex=blockLayerArrayIndex.get(b);if(layerBlocks&&layerIndex!==undefined&&layerIndex>=0&&layerIndex<layerBlocks.length){const tail=layerBlocks.pop();if(layerIndex<layerBlocks.length){layerBlocks[layerIndex]=tail;blockLayerArrayIndex.set(tail,layerIndex);}}if(!layerBlocks?.length)blockListByLayer.delete(b.layer);blockLayerArrayIndex.delete(b);const index=blockArrayIndex.get(b),lastIndex=project.blocks.length-1;if(index!==undefined&&index>=0&&index<=lastIndex){const last=project.blocks[lastIndex];project.blocks.pop();if(index<lastIndex){project.blocks[index]=last;blockArrayIndex.set(last,index);}}blockArrayIndex.delete(b);const box=blockLayerBounds.get(b.layer);if(box&&(b.x===box.minX||b.x===box.maxX||b.y===box.minY||b.y===box.maxY||b.z===box.minZ||b.z===box.maxZ)){blockLayerBounds.delete(b.layer);for(const other of (blockListByLayer.get(b.layer)||[]))updateLayerBoundsAdd(other);}}
@@ -1287,23 +1193,52 @@ function updateBlockLookups(){
 }
 async function buildBakedScene(fit=false,layersToBuild=null){
   if(!project)return false;
-  try{await ensureBlockMeshWorker();}catch(error){console.error('模型 Worker 启动失败：',error);return false;}
-  if(!blockMeshWorker||!blockMeshReady)return false;
-  const sequence=++blockMeshSeq;await loadBakedAtlas();
+  if(!window.BlockFlowBaker?.bakeLayer)throw new Error('BlockFlow 原生模型烘焙模块未加载');
+  await ensureBlockAtlasLoaded();
+  const sequence=++bakeBuildSequence;
   const targets=layersToBuild?Array.from(new Set(layersToBuild)).filter(i=>i>=0&&i<project.layers.length):project.layers.map((_,i)=>i);
-  const replacements=[];let layerProgressIndex=0;
-  for(const layer of targets){
-    const hasBlocks=(blockCountByLayer.get(layer)||0)>0;if(!hasBlocks){replacements.push({layer,group:null});continue;}
-    setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`正在构建第 ${layerProgressIndex+1}/${targets.length} 层模型…`);const bytes=await buildLayerBytes(layer);if(sequence!==blockMeshSeq)return false;
-    const seq=sequence*8+layer;const wait=waitBlockMesh(seq);const transfer=bytes.byteOffset===0&&bytes.byteLength===bytes.buffer.byteLength?bytes:bytes.slice();
-    blockMeshWorker.postMessage({type:'load',seq,bytes:transfer,lod:renderLod,tex:true,chk:false,layer},[transfer.buffer]);
-    const data=await wait;if(sequence!==blockMeshSeq)return false;replacements.push({layer,group:createBakedLayerGroup(data,layer)});layerProgressIndex++;setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`已完成 ${layerProgressIndex}/${targets.length} 层模型…`);
+  const replacements=[];
+  let layerProgressIndex=0;
+  try{
+    for(const layer of targets){
+    const blocks=blockListByLayer.get(layer)||[];
+    if(!blocks.length){replacements.push({layer,group:null});layerProgressIndex++;continue;}
+    setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`正在使用 BlockFlow 原生算法烘焙第 ${layerProgressIndex+1}/${targets.length} 层…`);
+    const group=await window.BlockFlowBaker.bakeLayer({
+      THREE:threeLib.THREE,
+      blocks,
+      atlas:bakedAtlas,
+      layer,
+      getMaterials:buildBlockMaterials,
+      isSpecialBlock:block=>!!shapeKindForBlock(block),
+      createSpecialBlockGroup:block=>makeSpecialBlockObject(block,false),
+      releaseSourceGeometry:geometry=>specialGeometries.delete(geometry),
+      chunkSize:160,
+      isCancelled:()=>sequence!==bakeBuildSequence,
+      onProgress:(done,total)=>{
+        const ratio=total?done/total:1;
+        setModelLoadingProgress(55+35*((layerProgressIndex+ratio)/Math.max(1,targets.length)),`BlockFlow 原生烘焙：第 ${layerProgressIndex+1}/${targets.length} 层，${done.toLocaleString()}/${total.toLocaleString()} 个方块…`);
+      }
+    });
+      if(sequence!==bakeBuildSequence){disposeLayerGroup(group);for(const item of replacements)if(item.group)disposeLayerGroup(item.group);return false;}
+      replacements.push({layer,group});
+      layerProgressIndex++;
+      setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`已完成 ${layerProgressIndex}/${targets.length} 层原生模型烘焙…`);
+    }
+  }catch(error){
+    for(const item of replacements)if(item.group)disposeLayerGroup(item.group);
+    throw error;
   }
-  if(sequence!==blockMeshSeq)return false;
+  if(sequence!==bakeBuildSequence){for(const item of replacements)if(item.group)disposeLayerGroup(item.group);return false;}
   if(!bakedGroup){bakedGroup=new threeLib.THREE.Group();bakedGroup.name='BlockFlowBakedStructure';scene.add(bakedGroup);}
-  for(const replacement of replacements){const old=bakedGroup.children.find(child=>child.name===`BakedLayer_${replacement.layer}`);if(old){bakedGroup.remove(old);disposeLayerGroup(old);}removeEditPreview(replacement.layer);if(replacement.group)bakedGroup.add(replacement.group);}
-  pickTargets=pickTargets.filter(t=>!t.isBaked);for(const child of bakedGroup.children){const layer=Number(child.name.split('_').pop());pickTargets.push({mesh:child,blocks:null,layer,isBaked:true});}
-  if(!bakedGroup.children.length)throw new Error('模型引擎没有返回可渲染的方块几何');
+  for(const replacement of replacements){
+    const old=bakedGroup.children.find(child=>child.name===`BakedLayer_${replacement.layer}`);
+    if(old){bakedGroup.remove(old);disposeLayerGroup(old);}
+    removeEditPreview(replacement.layer);
+    if(replacement.group)bakedGroup.add(replacement.group);
+  }
+  pickTargets=pickTargets.filter(target=>!target.isBaked);
+  for(const child of bakedGroup.children){const layer=Number(child.name.split('_').pop());pickTargets.push({mesh:child,blocks:null,layer,isBaked:true});}
   if(fit||!project.cameraSaved){
     let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
     for(const b of project.blocks){const displayY=b.y+(b.layer?1.08:0);minX=Math.min(minX,b.x);minY=Math.min(minY,displayY);minZ=Math.min(minZ,b.z);maxX=Math.max(maxX,b.x+1);maxY=Math.max(maxY,displayY+1);maxZ=Math.max(maxZ,b.z+1);}
@@ -1311,8 +1246,9 @@ async function buildBakedScene(fit=false,layersToBuild=null){
     const sx=Math.max(1,maxX-minX),sy=Math.max(1,maxY-minY),sz=Math.max(1,maxZ-minZ),cx=(minX+maxX)/2,cy=(minY+maxY)/2,cz=(minZ+maxZ)/2;
     const span=Math.max(sx,sy,sz,4),distance=Math.max(9,span*2.15);controls.target.set(cx,cy,cz);camera.position.set(cx+distance*.78,cy+distance*.58,cz+distance*.78);camera.near=.1;camera.far=Math.max(2000,distance*20);camera.updateProjectionMatrix();controls.update();project.cameraSaved=true;
   }
-  updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();setModelLoadingProgress(96,'正在完成场景整理…');requestSceneRender();return true;
+  updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();setModelLoadingProgress(96,'正在完成 BlockFlow 原生模型整理…');requestSceneRender();return true;
 }
+
 function removeEditPreview(layer){
   const group=editPreviewGroups.get(layer);if(!group)return;
   scene?.remove(group);group.traverse(node=>{node.geometry?.dispose?.();});editPreviewGroups.delete(layer);
@@ -1342,7 +1278,7 @@ function renderFastEditPreview(layer){
   }
   scene.add(preview);editPreviewGroups.set(layer,preview);requestSceneRender();
 }
-async function runRebuildQueue(){if(rebuildRunning)return;rebuildRunning=true;let fatal=null;try{while(rebuildQueuedFull||rebuildQueuedLayers.size){const full=rebuildQueuedFull;const layers=full?null:Array.from(rebuildQueuedLayers);rebuildQueuedFull=false;rebuildQueuedLayers.clear();try{const ok=await buildBakedScene(false,layers);if(!ok&&full)throw new Error('模型 Worker 未就绪');}catch(error){console.error('Incremental baked rebuild failed:',error);toast('本层模型更新失败：'+error.message,'err');if(full){try{clearSceneObjects();buildSceneLegacy(false);}catch(fallbackError){fatal=fallbackError;}}else{rebuildQueuedFull=true;}}}}finally{rebuildRunning=false;if(rebuildQueuedFull||rebuildQueuedLayers.size)runRebuildQueue();else{if(modelLoadingActive)setModelLoadingProgress(100,'模型更新完成');settleSceneRebuild(fatal);}}}
+async function runRebuildQueue(){if(rebuildRunning)return;rebuildRunning=true;let fatal=null;try{while(rebuildQueuedFull||rebuildQueuedLayers.size){const full=rebuildQueuedFull;const layers=full?null:Array.from(rebuildQueuedLayers);rebuildQueuedFull=false;rebuildQueuedLayers.clear();try{const ok=await buildBakedScene(false,layers);if(!ok&&full)throw new Error('BlockFlow 原生烘焙未完成');}catch(error){console.error('Incremental baked rebuild failed:',error);toast('本层模型更新失败：'+error.message,'err');if(full){try{clearSceneObjects();buildSceneLegacy(false);}catch(fallbackError){fatal=fallbackError;}}else{rebuildQueuedFull=true;}}}}finally{rebuildRunning=false;if(rebuildQueuedFull||rebuildQueuedLayers.size)runRebuildQueue();else{if(modelLoadingActive)setModelLoadingProgress(100,'模型更新完成');settleSceneRebuild(fatal);}}}
 function scheduleSceneRebuild(layer=null,fit=false){if(!scene||!project)return;if(fit)project.cameraSaved=false;if(layer===null)rebuildQueuedFull=true;else{renderFastEditPreview(layer);rebuildQueuedLayers.add(layer);}clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,layer===null?0:180);}
 function buildScene(fit=false,layers=null){if(!scene||!project)return;updateBlockLookups();if(fit||!project.cameraSaved)project.cameraSaved=false;setStatus(`正在更新 ${project.blocks.length.toLocaleString()} 个方块…`);if(modelLoadingActive)setModelLoadingProgress(50,`正在准备 ${project.blocks.length.toLocaleString()} 个方块模型…`);if(Array.isArray(layers)){for(const layer of layers)rebuildQueuedLayers.add(layer);}else rebuildQueuedFull=true;clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,Array.isArray(layers)?110:0);}
 function updateSelectionOutline(){
