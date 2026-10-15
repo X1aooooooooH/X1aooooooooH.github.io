@@ -1,6 +1,6 @@
 # BlockFlow
 
-**当前版本：v2.11.2** — MCStructure Only / State-driven Detailed Models
+**当前版本：v2.11.4** — MCStructure Only / Extracted Special-Block Models
 
 BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。当前结构编辑器**仅支持 `.mcstructure` 导入和导出**，不提供其他结构格式解析、转换或导出功能。项目是静态网页，可部署在 GitHub Pages；无需构建步骤。
 
@@ -44,7 +44,7 @@ BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。
 
 ### 特殊方块模型
 
-告示牌、火把、拉杆、按钮、中继器、比较器和红石粉使用独立的状态驱动三维几何构建器，不把整块方块替换成一张平面贴图。建模时参考了 Bedrock 方块状态的含义及成熟结构查看器对状态变化的处理方式；BlockFlow 的几何、材质拼装、坐标变换和状态解析均由自己的 JavaScript 代码实现，不加载外部预烘焙模型数据库或外部模型 Worker。
+告示牌、火把、拉杆、按钮、中继器、比较器、绊线钩和绊线使用从项目作者提供的 Dislink 模型烘焙数据中提取的实际三维网格。提取结果已转换为 BlockFlow 自己的模型数据格式，并重新打包所需纹理切片；运行时只加载 `blockflow-special-models.json` 和 `blockflow-special-atlas.png`，不加载 Dislink 的 WASM、模型数据库、Worker 或原始纹理图集。BlockFlow 负责 Bedrock 状态选择、朝向变换、告示牌 NBT 文字、Chunk 集成和几何缓存。
 
 - **告示牌**：区分落地、墙面、悬挂和墙面悬挂类型。落地牌使用 `ground_sign_direction` 的 16 向旋转；墙面牌读取 `facing_direction`；悬挂牌读取 `ground_sign_direction`、`attached_bit` 和朝向。牌面由有厚度的木板、端面材质、边框、固定件/挂链组成。正反面文字从方块实体 NBT 的 `FrontText`、`BackText` 或旧版 `Text1` 至 `Text4` 读取，解析颜色和发光状态，再生成带厚度、可索引的像素轮廓几何。
 - **普通/红石/灵魂/铜火把**：使用实体杆体、金属箍、灯芯及分层火焰几何；红石火把根据 `lit`、`unlit_bit` 或方块 ID 状态切换火焰/熄灭帽。墙面火把读取 `torch_facing_direction` 并旋转整个模型。
@@ -54,9 +54,13 @@ BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。
 - **红石比较器**：读取方向、`output_subtract_bit` 和 `output_lit_bit`；使用底座、导轨、两个输入火把、输出火把和可区分比较/减法状态的实体选择器。
 - **红石粉**：读取 `redstone_signal` 强度和东/西/南/北四向连接状态；根据 `none`、`side`、`up` 等状态生成中心节点、薄带连接及爬升段，并随信号强度改变颜色。
 
-其他楼梯、门、铁轨、栅栏、墙、玻璃板、植物、活板门等也由对应形状构建器生成几何。普通方块仍使用 BlockFlow 自己的纹理图集提供表面材质；特殊方块的主要形状、连接和状态变化由实体几何表达。
+其他楼梯、门、铁轨、栅栏、墙、玻璃板、植物、活板门等仍由 BlockFlow 对应形状构建器生成几何。普通方块使用 BlockFlow 图集；提取的特殊方块模型使用独立的 `blockflow-special-atlas.png`。
+
+特殊模型数据包含 513 个状态模型条目，覆盖八种拉杆安装方向及开关状态、木质告示牌落地/墙面/悬挂类型、按钮六面安装、火把和红石火把、中继器延迟、比较器模式、绊线钩与绊线。模型顶点原本按单个方块局部坐标记录，现已转换为以方块中心为原点的坐标；落地告示牌、顶部安装拉杆和红石设备的支撑面定位在 `y=-0.5`，悬挂告示牌的顶部锚点定位在 `y=+0.5`，墙面悬挂告示牌会朝支撑墙方向补偿提取网格的内缩，使安装面贴合 `x/z=±0.5` 的支撑墙边界。缺少拉杆状态时默认使用顶部安装方向，避免误用天花板安装模型。
 
 纹理图集：`assets/textures/structure/block-atlas.png`。对应映射：`assets/data/blockflow-atlas-map.json`。图集中的纹理 ID 保持稳定，坐标由新的 BlockFlow 图集映射提供。
+
+详细的模型提取范围、纹理重打包和各安装面的坐标验证见 `MODEL-EXTRACTION.md`。
 
 ### 性能架构
 

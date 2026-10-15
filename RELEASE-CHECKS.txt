@@ -1,23 +1,21 @@
-BlockFlow v2.11.2 — MCStructure-only, state-driven redstone and sign models
+BlockFlow v2.11.4 — MCStructure-only / extracted Dislink special-block meshes
 
-Scope:
-- Structure Editor imports and exports Minecraft Bedrock .mcstructure only.
-- Alternate-format adapters, converters, import/export selectors and converter workers are removed.
-- Sign, lever, button, torch, repeater, comparator and redstone dust use BlockFlow-authored state-driven 3D geometry.
-- Sign front/back text is read from block-entity NBT and generated as indexed, extruded voxel-like geometry.
-- Geometry baking runs in a Worker, with indexed geometry, 16^3 chunks, LOD and partial chunk rebuilding.
+Model assets:
+- 513 state-specific model entries extracted from the project's author-provided Dislink bake output and converted to BlockFlow.SpecialVoxelModels.
+- Required model texture regions are repacked into a new 256x256 BlockFlow special atlas; UVs are remapped.
+- Runtime does not load Dislink WASM, Emscripten runtime, bake.bin, bake_meta.json or Dislink workers.
+- BlockFlow owns state selection, mounting rotation, sign NBT text overlays, model caching and Chunk integration.
+
+Placement checks:
+- Standing sign and top-mounted lever support plane is local y=-0.5.
+- Hanging sign support plane is local y=+0.5 (ceiling block below face).
+- Missing lever_direction defaults to up_north_south (top-mounted), not ceiling-mounted.
+- Wall-hanging sign mesh is shifted 0.375 toward the supporting wall to close its recessed mount gap.
+- Wall sign and wall torch mounting planes rotate onto the corresponding cell boundary x/z=+/-0.5.
+- Buttons support six mounting faces; repeaters and comparators rest on y=-0.5.
 
 Validation:
-- Native baker: 22 geometry checks.
-- Geometry Worker: 9 checks.
-- Atlas map: 4 checks.
-- MCStructure-only/state model tests cover import/export limitations and Bedrock state variants.
-- Three.js runtime geometry tests instantiate physical button, lever, sign-board, repeater and comparator geometry.
-- All project JavaScript syntax checks and ZIP integrity checks are run at release time.
-
-Known limits:
-- This release has automated geometry/runtime tests, but a full visual regression pass against many in-game screenshots is not available in this environment.
-- Sign glyphs are voxelized from the browser canvas font; exact typeface appearance can vary by platform.
-- Coarse voxel LOD is approximate and may alter small holes or sparse silhouettes.
-- Special-model source geometry is prepared on the main thread before Worker compilation.
-- Actual frame rate varies by structure, material count, GPU and browser; no universal FPS claim is made.
+- Run `node --test tests/*.test.cjs`.
+- Check all JavaScript files with `node --check`.
+- Re-extract release ZIP and rerun tests.
+- Automated coordinate and runtime geometry tests do not replace browser visual regression on real MCStructure samples.

@@ -83,6 +83,12 @@ test('pressed button cap retracts compared with the unpressed cap', () => {
   assert.ok(unpressed>pressed+.02,`${unpressed} should extend beyond ${pressed}`);
 });
 
+test('missing lever direction defaults to a floor-mounted lever resting on the support block',()=>{
+  const placement=helpers.modelResolveLeverPlacement({name:'minecraft:lever',states:{}});
+  assert.deepEqual(placement.mountNormal,[0,1,0]);
+  assert.deepEqual(placement.hingeAxis,[0,0,1]);
+});
+
 test('all lever placements create finite mechanical geometry', () => {
   const states=['down_east_west','east','west','south','north','up_north_south','up_east_west','down_north_south'];
   for(const direction of states){
