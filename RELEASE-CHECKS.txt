@@ -1,25 +1,23 @@
-BlockFlow v2.11.1 — MCStructure-only, detailed redstone geometry, Worker/Chunk/LOD
+BlockFlow v2.11.2 — MCStructure-only, state-driven redstone and sign models
 
 Scope:
 - Structure Editor imports and exports Minecraft Bedrock .mcstructure only.
 - Alternate-format adapters, converters, import/export selectors and converter workers are removed.
-- Sign boards/text, regular/redstone/soul/copper torches, levers, buttons, repeaters, comparators and redstone dust use dedicated 3D geometry builders.
-- Sign front/back text is read from block-entity NBT and generated as indexed, extruded voxel-like geometry (not a flat text texture).
+- Sign, lever, button, torch, repeater, comparator and redstone dust use BlockFlow-authored state-driven 3D geometry.
+- Sign front/back text is read from block-entity NBT and generated as indexed, extruded voxel-like geometry.
 - Geometry baking runs in a Worker, with indexed geometry, 16^3 chunks, LOD and partial chunk rebuilding.
 
-Automated validation:
-- Native baker: 22 checks passed.
-- Geometry Worker: 9 checks passed.
-- Atlas map: 4 checks passed.
-- MCStructure-only and detailed-model suite: 5 test groups passed (45 assertions).
-- Five MCStructure/model test groups (45 assertions): passed.
-- Three existing suites: baker 22/22, geometry Worker 9/9, atlas-map 4/4.
-- JavaScript syntax checks: passed.
-- ZIP integrity: checked after packaging.
+Validation:
+- Native baker: 22 geometry checks.
+- Geometry Worker: 9 checks.
+- Atlas map: 4 checks.
+- MCStructure-only/state model tests cover import/export limitations and Bedrock state variants.
+- Three.js runtime geometry tests instantiate physical button, lever, sign-board, repeater and comparator geometry.
+- All project JavaScript syntax checks and ZIP integrity checks are run at release time.
 
 Known limits:
-- Detailed-model regression checks verify source paths and geometry construction; broad browser screenshots and all Minecraft block-state variants still need visual regression.
-- Sign text glyphs are rasterized into voxel-like geometry; font appearance can vary by platform.
+- This release has automated geometry/runtime tests, but a full visual regression pass against many in-game screenshots is not available in this environment.
+- Sign glyphs are voxelized from the browser canvas font; exact typeface appearance can vary by platform.
 - Coarse voxel LOD is approximate and may alter small holes or sparse silhouettes.
 - Special-model source geometry is prepared on the main thread before Worker compilation.
-- Actual frame rate varies with structure, material count, GPU and browser; no device FPS claim is made.
+- Actual frame rate varies by structure, material count, GPU and browser; no universal FPS claim is made.

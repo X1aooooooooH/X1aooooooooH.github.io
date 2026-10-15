@@ -5,7 +5,7 @@ window.BlockFlowWorkers=(()=>{
  const create=id=>{
   const file=files[id];
   if(!file)throw new Error('未知后台任务：'+id);
-  const worker=new Worker(new URL('workers/'+file+'?v=2.11.1-mcstructure-only-detailed-block-models',assetRoot).href,{name:'BlockFlow-'+id});
+  const worker=new Worker(new URL('workers/'+file+'?v=2.11.2-stateful-redstone-sign-models',assetRoot).href,{name:'BlockFlow-'+id});
   workers.add(worker);
   const terminate=worker.terminate.bind(worker);
   worker.terminate=()=>{terminate();workers.delete(worker);};

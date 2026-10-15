@@ -215,7 +215,7 @@ function clearSceneObjects(){
 async function ensureLegacyAtlasMap(){
   if(blockflowAtlasMap)return blockflowAtlasMap;
   if(!blockflowAtlasMapPromise){
-    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.8.2-blockflow-atlas',{cache:'force-cache'}).then(response=>{
+    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.11.2-stateful-redstone-sign-models',{cache:'force-cache'}).then(response=>{
       if(!response.ok)throw new Error('方块图集索引加载失败：'+response.status);
       return response.json();
     }).then(data=>{blockflowAtlasMap=data;return data;}).catch(error=>{blockflowAtlasMapPromise=null;throw error;});
@@ -227,7 +227,7 @@ function ensureBlockAtlasLoaded(){
   if(!textureLoader||!threeLib)return Promise.reject(new Error('纹理加载器尚未初始化'));
   const {THREE}=threeLib;
   bakedAtlasPromise=new Promise((resolve,reject)=>{
-    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.8.2-blockflow-atlas',loaded=>{
+    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.11.2-stateful-redstone-sign-models',loaded=>{
       requestSceneRender();resolve(loaded);
     },undefined,error=>{bakedAtlas=null;bakedAtlasPromise=null;reject(error||new Error('方块图集加载失败'));});
     bakedAtlas=texture;
@@ -539,6 +539,18 @@ function modelAddBox(group,b,size,pos,alias=null,opts={}){
   const mats=alias?modelMatArray(alias,b,opts):buildBlockMaterials(b);
   return addShapeBox(group,b,size,pos,[0,0,0],mats);
 }
+function modelAddFaceTexturedBox(group,b,size,pos,faceAlias,edgeColor=0x4c3829,opts={}){
+  const {THREE}=threeLib;
+  const face=modelMat(faceAlias,b,{transparent:false,...opts});
+  const edge=modelColorMat(edgeColor),top=modelColorMat(Math.min(0xffffff,edgeColor+0x17110b));
+  // BoxGeometry material order: +X, -X, +Y, -Y, +Z, -Z.
+  return addTrackedMesh(group,new THREE.BoxGeometry(size[0],size[1],size[2]),[edge,edge,top,edge,face,face],pos);
+}
+function modelAddMetalRivet(group,x,y,z,scale=1){
+  const {THREE}=threeLib,metal=modelColorMat(0xb5bcc3),slot=modelColorMat(0x39434b);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.012*scale,.012*scale,.006*scale,10),metal,[x,y,z]);
+  addTrackedMesh(group,new THREE.BoxGeometry(.014*scale,.0025*scale,.0025*scale),slot,[x,y+.004*scale,z]);
+}
 function modelAddCylinder(group,b,rTop,rBottom,height,pos,alias,radial=10,rotation=[0,0,0],opts={}){
   const {THREE}=threeLib;const mat=alias?modelMat(alias,b,opts):modelMat('stone',b,opts);
   return addTrackedMesh(group,new THREE.CylinderGeometry(rTop,rBottom,height,radial),mat,pos,rotation);
@@ -652,60 +664,122 @@ function addSignFaceText(host,block,centerY,boardW,boardH,boardDepth,face='front
   if(face==='back')textGroup.rotation.y=Math.PI;
   host.add(textGroup);addTrackedMesh(textGroup,geometry,material,[0,0,0]);return textGroup;
 }
-function addDetailedLeverModel(group,block){
-  const {THREE}=threeLib,state=(...keys)=>modelState(block,...keys);
-  const value=String(state('lever_direction','facing_direction','minecraft:cardinal_direction')??'down_east_west').toLowerCase();
-  let mountNormal=[0,1,0],rest=[1,0,0];
-  const directions={down_east_west:[[0,-1,0],[1,0,0]],up_north_south:[[0,1,0],[0,0,1]],up_east_west:[[0,1,0],[1,0,0]],down_north_south:[[0,-1,0],[0,0,1]],north:[[0,0,-1],[0,0,1]],south:[[0,0,1],[0,0,1]],east:[[1,0,0],[0,0,1]],west:[[-1,0,0],[0,0,1]]};
-  if(directions[value]){[mountNormal,rest]=directions[value];}
-  else{const code=modelNumber(state('lever_direction'),-1);const legacy={0:[[0,-1,0],[1,0,0]],1:[[1,0,0],[0,0,1]],2:[[-1,0,0],[0,0,1]],3:[[0,0,1],[0,0,1]],4:[[0,0,-1],[0,0,1]],5:[[0,1,0],[0,0,1]],6:[[0,1,0],[1,0,0]],7:[[0,-1,0],[0,0,1]]};if(legacy[code])[mountNormal,rest]=legacy[code];}
-  const mount=new THREE.Group();mount.userData.blockRef=block;mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...mountNormal));group.add(mount);
-  const plate=modelColorMat(0x666e76),plateTop=modelColorMat(0x92999f),darkMetal=modelColorMat(0x303941),brightMetal=modelColorMat(0xc2c9ce),wood=modelColorMat(0x69472e),woodLight=modelColorMat(0x9a7048);
-  addTrackedMesh(mount,new THREE.BoxGeometry(.34,.065,.34),plate,[0,.445,0]);
-  addTrackedMesh(mount,new THREE.BoxGeometry(.285,.018,.285),plateTop,[0,.485,0]);
-  // Four countersunk mounting screws with visible slots.
-  for(const x of [-.105,.105])for(const z of [-.105,.105]){
-    addTrackedMesh(mount,new THREE.CylinderGeometry(.019,.019,.009,8),brightMetal,[x,.499,z]);
-    addTrackedMesh(mount,new THREE.BoxGeometry(.019,.003,.003),darkMetal,[x,.505,z]);
+function modelResolveLeverPlacement(block){
+  const value=String(modelState(block,'lever_direction','facing_direction','minecraft:cardinal_direction')??'down_east_west').toLowerCase();
+  const directions={
+    down_east_west:[[0,-1,0],[1,0,0]],east:[[1,0,0],[0,0,1]],west:[[-1,0,0],[0,0,1]],
+    south:[[0,0,1],[1,0,0]],north:[[0,0,-1],[1,0,0]],
+    up_north_south:[[0,1,0],[0,0,1]],up_east_west:[[0,1,0],[1,0,0]],
+    down_north_south:[[0,-1,0],[0,0,1]]
+  };
+  const legacy=[directions.down_east_west,directions.east,directions.west,directions.south,directions.north,directions.up_north_south,directions.up_east_west,directions.down_north_south];
+  const spec=directions[value]||legacy[Math.max(0,Math.min(7,modelNumber(modelState(block,'lever_direction'),0)))]||directions.down_east_west;
+  return {value,mountNormal:spec[0].slice(),hingeAxis:spec[1].slice(),powered:modelBool(modelState(block,'open_bit','powered_bit','lever_powered_bit'))};
+}
+function modelResolveRedstoneDeviceState(block){
+  const name=String(block?.name||'').split(':').pop().toLowerCase();
+  const state=(...keys)=>modelState(block,...keys);
+  return {
+    kind:name.includes('comparator')?'comparator':'repeater',
+    powered:name.startsWith('powered_')||modelBool(state('powered_bit','output_lit_bit','lit')),
+    subtract:modelBool(state('output_subtract_bit','subtract_mode')),
+    delay:Math.max(0,Math.min(3,modelNumber(state('repeater_delay','delay'),0))),
+    direction:state('direction','weirdo_direction','facing_direction','minecraft:cardinal_direction','cardinal_direction')
+  };
+}
+function modelResolveButtonPlacement(block){
+  const name=blockRenderName(block);
+  const face=modelState(block,'facing_direction','minecraft:facing_direction','minecraft:cardinal_direction')??2;
+  const wooden=/(oak|spruce|birch|jungle|acacia|dark_oak|mangrove|cherry|bamboo|crimson|warped|pale_oak)_button$/.test(name);
+  return {
+    normal:modelFacingNormal(face,'north'),
+    pressed:modelBool(modelState(block,'button_pressed_bit','pressed_bit')),
+    wooden,
+    facing:face
+  };
+}
+function modelResolveSignPlacement(block){
+  const name=blockRenderName(block),state=(...keys)=>modelState(block,...keys);
+  const wall=name.endsWith('_wall_sign')||name==='wall_sign'||name.includes('_wall_hanging_sign');
+  const hanging=!wall&&(name.endsWith('_hanging_sign')||name.includes('hanging_sign'));
+  const ground=state('ground_sign_direction');
+  const facing=state('minecraft:cardinal_direction','cardinal_direction','facing_direction');
+  const yaw=ground!==undefined?modelFacingYawFrom16(ground):
+    (typeof facing==='string'&&['north','south','east','west'].includes(facing.toLowerCase())?modelCardinalYaw(facing):modelFacingYawFrom16(facing??0));
+  return {
+    wall,hanging,wallHanging:wall&&name.includes('_wall_hanging_sign'),
+    normal:wall?modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north'):null,
+    yaw,attached:modelBool(state('attached_bit'))
+  };
+}
+function modelBuildButton(group,block,placement=modelResolveButtonPlacement(block)){
+  const {THREE}=threeLib,normal=placement.normal,pressed=placement.pressed,woodButton=placement.wooden;
+  const mount=new THREE.Group();mount.userData.blockRef=block;
+  // The mount is anchored on the actual block face; local depth is measured
+  // outward from that face for all six Bedrock facing_direction values.
+  mount.position.set(normal[0]*.485,normal[1]*.485,normal[2]*.485);
+  mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...normal));group.add(mount);
+  const frame=modelColorMat(woodButton?0x4f3929:0x474d52),rim=modelColorMat(woodButton?0x795638:0x727a80);
+  const cap=modelColorMat(woodButton?0xa17a50:0xaeb6bd),capSide=modelColorMat(woodButton?0x66462f:0x6b747c);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.285,.195,.044),[frame,frame,rim,frame,frame,frame],[0,0,.018]);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.248,.158,.010),[capSide,capSide,rim,capSide,capSide,capSide],[0,0,.043]);
+  const capDepth=pressed?.026:.052,capCenter=pressed?.061:.074;
+  addTrackedMesh(mount,new THREE.BoxGeometry(.188,.108,capDepth),[capSide,capSide,cap,capSide,cap,cap],[0,0,capCenter]);
+  for(const x of [-.111,.111])for(const y of [-.071,.071]){
+    addTrackedMesh(mount,new THREE.CylinderGeometry(.008,.008,.006,8),rim,[x,y,.048],[Math.PI/2,0,0]);
+    addTrackedMesh(mount,new THREE.BoxGeometry(.010,.0018,.0018),frame,[x,y,.052]);
   }
-  // A raised socket and pivot pin make the hinge visibly mechanical.
-  addTrackedMesh(mount,new THREE.CylinderGeometry(.073,.073,.028,12),darkMetal,[0,.51,0]);
-  addTrackedMesh(mount,new THREE.CylinderGeometry(.056,.056,.035,12),brightMetal,[0,.535,0]);
-  const powered=modelBool(state('open_bit','powered_bit','lever_powered_bit'));
-  const angle=powered?.58:-.50,axis=rest[0]!==0?new THREE.Vector3(0,0,1):new THREE.Vector3(1,0,0);
-  const pivot=new THREE.Group();pivot.position.set(0,.55,0);pivot.rotation.set(axis.x*angle,axis.y*angle,axis.z*angle);mount.add(pivot);
-  const end=new THREE.Vector3(rest[0]*.255,.13,rest[2]*.255);
-  const start=new THREE.Vector3(0,0,0),delta=end.clone().sub(start);
-  const shaft=addTrackedMesh(pivot,new THREE.CylinderGeometry(.025,.034,delta.length(),9,2),wood,start.clone().add(end).multiplyScalar(.5).toArray());
-  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize());
-  const collar=addTrackedMesh(pivot,new THREE.CylinderGeometry(.036,.036,.018,10),darkMetal,end.clone().multiplyScalar(.78).toArray());
-  collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize());
-  const knob=addTrackedMesh(pivot,new THREE.DodecahedronGeometry(.062,1),woodLight,end.toArray());knob.scale.set(.92,1.12,.92);
-  addTrackedMesh(pivot,new THREE.SphereGeometry(.018,8,6),brightMetal,end.clone().addScaledVector(delta.clone().normalize(),-.025).toArray());
+  return mount;
+}
+function addDetailedLeverModel(group,block){
+  const {THREE}=threeLib,{mountNormal,hingeAxis,powered}=modelResolveLeverPlacement(block);
+  const mount=new THREE.Group();mount.userData.blockRef=block;
+  mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...mountNormal));
+  // Bring the mounting plate close to the block surface for floor, ceiling,
+  // and wall installations without changing the lever's local hinge geometry.
+  mount.position.set(mountNormal[0]*.03,mountNormal[1]*.03,mountNormal[2]*.03);group.add(mount);
+  const stone=modelMat('stone',block),darkMetal=modelColorMat(0x303941),steel=modelColorMat(0xaeb8c0),steelLight=modelColorMat(0xd4dadd),wood=modelColorMat(0x68472f),woodLight=modelColorMat(0x9a704c),woodDark=modelColorMat(0x3e291f);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.34,.055,.34),[darkMetal,darkMetal,stone,darkMetal,steel,steel],[0,.438,0]);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.292,.014,.292),[steel,steel,steelLight,darkMetal,steelLight,steelLight],[0,.473,0]);
+  for(const x of [-.112,.112])for(const z of [-.112,.112])modelAddMetalRivet(mount,x,.484,z,.78);
+  addTrackedMesh(mount,new THREE.CylinderGeometry(.072,.078,.028,16),darkMetal,[0,.495,0]);
+  addTrackedMesh(mount,new THREE.CylinderGeometry(.058,.058,.034,16),steel,[0,.523,0]);
+  const pivot=new THREE.Group();pivot.position.set(0,.538,0);
+  const axis=hingeAxis[0]!==0?new THREE.Vector3(1,0,0):new THREE.Vector3(0,0,1),angle=powered?.62:-.48;
+  pivot.rotation.set(axis.x*angle,axis.y*angle,axis.z*angle);mount.add(pivot);
+  const armVector=new THREE.Vector3(hingeAxis[0]*.235,.245,hingeAxis[2]*.235),armLength=armVector.length(),direction=armVector.clone().normalize();
+  const arm=addTrackedMesh(pivot,new THREE.CylinderGeometry(.022,.029,armLength,10,2),wood,[0,0,0]);
+  arm.position.copy(armVector).multiplyScalar(.5);arm.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+  const ferrule=addTrackedMesh(pivot,new THREE.CylinderGeometry(.034,.034,.025,12),steel,armVector.clone().multiplyScalar(.73).toArray());ferrule.quaternion.copy(arm.quaternion);
+  const grip=addTrackedMesh(pivot,new THREE.SphereGeometry(.057,12,9),woodLight,armVector.toArray());grip.scale.set(.92,1.18,.92);
+  const cap=addTrackedMesh(pivot,new THREE.SphereGeometry(.027,10,7),woodDark,armVector.clone().addScaledVector(direction,.045).toArray());cap.scale.set(.9,.72,.9);
+  addTrackedMesh(mount,new THREE.CylinderGeometry(.018,.018,.008,10),powered?modelColorMat(0xc84b32):steel,[0,.545,0]);
   return mount;
 }
 function addGeometricTorchHead(group,block,{redstone=false,lit=true,soul=false,copper=false}={}){
   const {THREE}=threeLib;
-  const shaftColor=redstone?0x48312d:copper?0x8c5633:0x68452c;
-  const shaftMat=modelColorMat(shaftColor),bandMat=modelColorMat(copper?0xb77a43:0x393b3d),darkMat=modelColorMat(0x352b2a);
-  addTrackedMesh(group,new THREE.CylinderGeometry(.025,.041,.31,7,2),shaftMat,[0,-.025,0]);
-  addTrackedMesh(group,new THREE.CylinderGeometry(.038,.038,.014,8),bandMat,[0,.118,0]);
-  addTrackedMesh(group,new THREE.CylinderGeometry(.031,.031,.012,8),darkMat,[0,.143,0]);
+  const shaftColor=redstone?0x49312e:copper?0x99613d:0x735034;
+  const shaftMat=modelColorMat(shaftColor),collarMat=modelColorMat(copper?0xc1844d:0x494d51),darkMat=modelColorMat(0x30282a);
+  // Build the silhouette with actual solids. The atlas is not used as a flat
+  // substitute for the torch or its flame.
+  addTrackedMesh(group,new THREE.CylinderGeometry(.026,.043,.315,9,2),shaftMat,[0,-.018,0]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.041,.041,.018,10),collarMat,[0,.125,0]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.032,.037,.012,10),darkMat,[0,.141,0]);
   if(redstone&&!lit){
-    addTrackedMesh(group,new THREE.CylinderGeometry(.027,.043,.062,6,1),modelColorMat(0x552c30),[0,.178,0]);
-    addTrackedMesh(group,new THREE.SphereGeometry(.022,6,4),modelColorMat(0x321f24),[0,.213,0]);
+    addTrackedMesh(group,new THREE.CylinderGeometry(.029,.043,.065,8,1),modelColorMat(0x4b292c),[0,.178,0]);
+    addTrackedMesh(group,new THREE.SphereGeometry(.026,8,6),modelColorMat(0x321f24),[0,.214,0]);
     return;
   }
-  const outer=redstone?0xff4939:soul?0x42d7e8:copper?0xff9b43:0xff7a2d;
-  const inner=redstone?0xffa14d:soul?0xa3fbff:copper?0xffd17b:0xffdf58;
-  const glowMat=modelColorMat(outer,{transparent:true,opacity:.94,depthWrite:false,toneMapped:false});
-  const innerMat=modelColorMat(inner,{transparent:true,opacity:.98,depthWrite:false,toneMapped:false});
-  const flame=addTrackedMesh(group,new THREE.ConeGeometry(.052,.17,6,2),glowMat,[0,.235,0]);flame.rotation.y=Math.PI/6;
-  const core=addTrackedMesh(group,new THREE.ConeGeometry(.029,.105,5,2),innerMat,[0,.235,0]);core.rotation.y=-Math.PI/8;
-  for(const [x,z,rx,rz] of [[-.025,.005,-.24,.14],[.023,-.008,.18,-.18]]){
-    const tongue=addTrackedMesh(group,new THREE.ConeGeometry(.022,.082,5,1),glowMat,[x,.232,z]);tongue.rotation.set(rx,0,rz);
+  const outer=redstone?0xf04435:soul?0x3bd2e5:copper?0xe58a43:0xff8a35;
+  const inner=redstone?0xffa35a:soul?0xa5faff:copper?0xffd18a:0xffe36a;
+  const shell=modelColorMat(outer,{transparent:true,opacity:.94,depthWrite:false,toneMapped:false});
+  const core=modelColorMat(inner,{transparent:true,opacity:.98,depthWrite:false,toneMapped:false});
+  const flame=addTrackedMesh(group,new THREE.ConeGeometry(.052,.17,7,2),shell,[0,.239,0]);flame.rotation.y=Math.PI/7;
+  const center=addTrackedMesh(group,new THREE.ConeGeometry(.029,.105,6,2),core,[0,.24,0]);center.rotation.y=-Math.PI/9;
+  for(const [x,z,rx,rz] of [[-.025,.004,-.22,.13],[.024,-.008,.17,-.19]]){
+    const tongue=addTrackedMesh(group,new THREE.ConeGeometry(.021,.078,5,1),shell,[x,.236,z]);tongue.rotation.set(rx,0,rz);
   }
-  addTrackedMesh(group,new THREE.SphereGeometry(.014,6,4),innerMat,[0,.275,0]);
+  addTrackedMesh(group,new THREE.SphereGeometry(.014,8,6),core,[0,.281,0]);
 }
 function modelFacingYawFrom16(value){return -((modelNumber(value,0)%16+16)%16)*Math.PI/8;}
 function modelAttachGroup(group,normal){group.quaternion.setFromUnitVectors(new threeLib.THREE.Vector3(0,0,1),new threeLib.THREE.Vector3(...normal));return group;}
@@ -790,15 +864,41 @@ function modelRedstoneDeviceYaw(b){
   if(legacy!==undefined)return ({0:0,1:-Math.PI/2,2:Math.PI,3:Math.PI/2})[modelNumber(legacy,0)]||0;
   return 0;
 }
-function modelAddMiniRedstoneTorch(group,b,x,z,on,scale=1){
-  const {THREE}=threeLib;
-  const shaftCenter=-.36*scale;
-  addTrackedMesh(group,new THREE.CylinderGeometry(.012*scale,.018*scale,.09*scale,6,1),modelColorMat(0x49302d),[x,shaftCenter,z]);
-  addTrackedMesh(group,new THREE.CylinderGeometry(.019*scale,.019*scale,.009*scale,7),modelColorMat(0x474b50),[x,-.315*scale,z]);
+function modelAddMiniRedstoneTorch(group,b,x,z,on,scale=1,variant='redstone'){
+  const {THREE}=threeLib,base=modelColorMat(0x4c4a48),shaft=modelColorMat(0x56362f),collar=modelColorMat(0x777b7d);
+  const footH=.025*scale,shaftH=.10*scale,collarH=.010*scale;
+  const footY=-.375,shaftY=footY+footH/2+shaftH/2,collarY=shaftY+shaftH/2+collarH/2;
+  addTrackedMesh(group,new THREE.CylinderGeometry(.027*scale,.032*scale,footH,8),base,[x,footY,z]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.013*scale,.018*scale,shaftH,7,2),shaft,[x,shaftY,z]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.021*scale,.021*scale,collarH,8),collar,[x,collarY,z]);
+  const flameH=.074*scale,flameY=collarY+collarH/2+flameH/2;
   if(on){
-    addTrackedMesh(group,new THREE.ConeGeometry(.026*scale,.075*scale,5,1),modelColorMat(0xff5142,{toneMapped:false}),[x,-.275*scale,z]);
-    addTrackedMesh(group,new THREE.ConeGeometry(.014*scale,.046*scale,5,1),modelColorMat(0xffb15a,{toneMapped:false}),[x,-.274*scale,z]);
-  }else addTrackedMesh(group,new THREE.CylinderGeometry(.016*scale,.024*scale,.035*scale,5),modelColorMat(0x572e33),[x,-.29*scale,z]);
+    const hue=variant==='comparator'?0xff5a45:0xff4c3b;
+    addTrackedMesh(group,new THREE.ConeGeometry(.026*scale,flameH,6,2),modelColorMat(hue,{toneMapped:false}),[x,flameY,z]);
+    addTrackedMesh(group,new THREE.ConeGeometry(.014*scale,.046*scale,6,2),modelColorMat(0xffb46d,{toneMapped:false}),[x,flameY+.002*scale,z]);
+  }else{
+    const capH=.052*scale,capY=collarY+collarH/2+capH/2;
+    addTrackedMesh(group,new THREE.CylinderGeometry(.017*scale,.024*scale,capH,6),modelColorMat(0x512d31),[x,capY,z]);
+  }
+}
+function modelAddRedstoneDeviceBase(group,b,kind){
+  const alias=kind==='repeater'?'repeater_floor':'comparator_stone_slab';
+  const side=modelMat('stone_slab_side',b),top=modelMat(alias,b,{transparent:false}),bottom=modelMat('stone',b);
+  const rim=modelColorMat(0x4d4b49);
+  addTrackedMesh(group,new threeLib.THREE.BoxGeometry(.94,.12,.94),[side,side,top,bottom,side,side],[0,-.44,0]);
+  addTrackedMesh(group,new threeLib.THREE.BoxGeometry(.87,.018,.87),[rim,rim,top,rim,rim,rim],[0,-.372,0]);
+  for(const x of [-.425,.425])for(const z of [-.425,.425])addTrackedMesh(group,new threeLib.THREE.CylinderGeometry(.014,.014,.008,8),modelColorMat(0x777b7c),[x,-.36,z]);
+}
+function modelAddRedstoneRail(group,b,z,color=0x8a3530){
+  const rail=modelColorMat(color),edge=modelColorMat(0x472d2c),{THREE}=threeLib;
+  addTrackedMesh(group,new THREE.BoxGeometry(.12,.026,.47),[edge,edge,rail,edge,edge,edge],[0,-.355,z]);
+  for(const x of [-.105,.105])addTrackedMesh(group,new THREE.BoxGeometry(.024,.035,.48),[edge,edge,rail,edge,edge,edge],[x,-.345,z]);
+}
+function modelAddRedstoneTorchCarrier(group,b,x,z,on,variant='repeater'){
+  const {THREE}=threeLib,carrier=modelColorMat(0x77736d),slot=modelColorMat(0x393a3b);
+  addTrackedMesh(group,new THREE.BoxGeometry(.14,.025,.14),carrier,[x,-.40,z]);
+  addTrackedMesh(group,new THREE.BoxGeometry(.08,.006,.08),slot,[x,-.383,z]);
+  modelAddMiniRedstoneTorch(group,b,x,z,on,.78,variant);
 }
 function renderAdvancedShape(group,b,kind){
   const {THREE}=threeLib,n=blockRenderName(b),state=(...keys)=>modelState(b,...keys),mats=buildBlockMaterials(b);
@@ -807,7 +907,7 @@ function renderAdvancedShape(group,b,kind){
   const opaque=opts=>({transparent:false,...opts});
   const cardinal=state('minecraft:cardinal_direction','cardinal_direction','facing','facing_direction')??'south';
   if(kind==='sign'){
-    const wall=n.endsWith('_wall_sign')||n.includes('_wall_hanging_sign')||n==='wall_sign',hanging=!wall&&(n.endsWith('_hanging_sign')||n.includes('hanging_sign'));
+    const placement=modelResolveSignPlacement(b),wall=placement.wall,hanging=placement.hanging;
     const alias=woodAlias,boardW=hanging?.92:.94,boardH=hanging?.43:.56,boardDepth=hanging?.075:.065;
     const addBoardTrim=(host,centerY)=>{
       const trim=modelColorMat(0x765034),edge=modelColorMat(0x4e3527);
@@ -819,14 +919,20 @@ function renderAdvancedShape(group,b,kind){
       return {trim,edge};
     };
     const finishBoard=(host,centerY,frontOffset=0)=>{
-      modelAddBox(host,b,[boardW,boardH,boardDepth],[0,centerY,0],alias,{transparent:false});
+      // Solid wooden panel with textured broad faces and darker end grain.
+      modelAddFaceTexturedBox(host,b,[boardW,boardH,boardDepth],[0,centerY,0],alias,0x513a2a);
       addBoardTrim(host,centerY);
+      // Fine plank seams are separate shallow geometry, not a sign sprite.
+      for(const x of [-.245,-.082,.082,.245]){
+        if(Math.abs(x)>=boardW*.43)continue;
+        const seam=modelColorMat(0x4a3023,{transparent:true,opacity:.30,depthWrite:false});
+        addShapeBox(host,b,[.003,boardH*.68,.002],[x,centerY,boardDepth/2+.001],[0,0,0],Array(6).fill(seam));
+      }
       addSignFaceText(host,b,centerY,boardW-.07,boardH-.09,boardDepth,'front');
       if(readSignFaceData(b,'back').text)addSignFaceText(host,b,centerY,boardW-.07,boardH-.09,boardDepth,'back');
     };
     if(wall){
-      const normal=modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north');
-      const wallHanging=n.includes('_wall_hanging_sign');
+      const normal=placement.normal,wallHanging=placement.wallHanging;
       const panel=new THREE.Group();modelAttachGroup(panel,normal);panel.position.set(normal[0]*.462,normal[1]*.462,normal[2]*.462);group.add(panel);
       finishBoard(panel,.02);
       const bracket=modelColorMat(0x554b3d);
@@ -836,8 +942,8 @@ function renderAdvancedShape(group,b,kind){
       }
       if(wallHanging)modelAddStick(panel,b,[-.30,.31,-.11],[.30,.31,-.11],.022,null);
     }else if(hanging){
-      group.rotation.y=modelCardinalYawState(state('minecraft:cardinal_direction','cardinal_direction','facing_direction')??cardinal);
-      const attached=modelBool(state('attached_bit')),metal=modelColorMat(0x55595d);
+      group.rotation.y=placement.yaw;
+      const attached=placement.attached,metal=modelColorMat(0x55595d);
       if(attached){
         for(const x of [-.28,.28]){
           modelAddStick(group,b,[x,.50,0],[x,.27,0],.018,null);
@@ -853,7 +959,7 @@ function renderAdvancedShape(group,b,kind){
       modelAddBox(group,b,[boardW,.075,.085],[0,.205,0],alias,{transparent:false});
       finishBoard(group,-.09);
     }else{
-      group.rotation.y=modelFacingYawFrom16(state('ground_sign_direction')??0);
+      group.rotation.y=placement.yaw;
       modelAddCylinder(group,b,.031,.046,.49,[0,-.255,0],alias,8);
       modelAddBox(group,b,[.115,.045,.105],[0,-.39,0],alias,{transparent:false});
       finishBoard(group,.16);
@@ -1041,9 +1147,7 @@ function renderAdvancedShape(group,b,kind){
     return true;
   }
   if(kind==='button'){
-    const face=modelNumber(state('facing_direction','minecraft:facing_direction'),2);const dir=modelFacingNormal(face,'north');const pressed=modelBool(state('button_pressed_bit','pressed_bit'));
-    const dims=dir[1]!==0?[.18,.075,.27]:[.27,.18,.075];const dist=pressed?.447:.465;
-    const p=dir.map(v=>v*dist);const plate=modelAddBox(group,b,dims,p,null);plate.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...dir));
+    modelBuildButton(group,b,modelResolveButtonPlacement(b));
     return true;
   }
   if(kind==='lever'){addDetailedLeverModel(group,b);return true;}
@@ -1068,29 +1172,38 @@ function renderAdvancedShape(group,b,kind){
   }
   if(kind==='redstone_wire'){
     const signal=Math.max(0,Math.min(15,modelNumber(state('redstone_signal','signal_strength'),0)));
-    const glow=signal/15,red=Math.round(92+163*glow),green=Math.round(10+12*glow),blue=Math.round(12+10*glow);
-    const wire=modelColorMat((red<<16)|(green<<8)|blue,{toneMapped:false});
-    const edge=modelColorMat(Math.max(0x230000,((red<<16)|(green<<8)|blue)>>2));
-    const levelY=-.475;
+    const strength=signal/15,red=Math.round(96+159*strength),green=Math.round(12+18*strength),blue=Math.round(14+10*strength);
+    const dust=modelColorMat((red<<16)|(green<<8)|blue,{toneMapped:false,side:THREE.DoubleSide});
+    const shadow=modelColorMat(0x32191b,{toneMapped:false,side:THREE.DoubleSide}),y=-.476,thick=.014;
     const modes={north:modelRedstoneDirectionMode(b,'north'),south:modelRedstoneDirectionMode(b,'south'),east:modelRedstoneDirectionMode(b,'east'),west:modelRedstoneDirectionMode(b,'west')};
-    const connected=Object.values(modes).some(v=>v!=='none');
-    addShapeBox(group,b,[connected?.16:.12,.026,connected?.16:.12],[0,levelY,0],[0,0,0],Array(6).fill(wire));
-    for(const [dir,mode] of Object.entries(modes)){
-      if(mode==='none')continue;
-      const ew=dir==='east'||dir==='west',positive=dir==='east'||dir==='south';
-      const size=ew?[.42,.022,.065]:[.065,.022,.42];
-      const pos=ew?[positive?.28:-.28,levelY,0]:[0,levelY,positive?.28:-.28];
-      const arm=addShapeBox(group,b,size,pos,[0,0,0],Array(6).fill(wire));
-      if(mode==='up'||mode==='tall'){
-        if(dir==='east')arm.rotation.z=.30;else if(dir==='west')arm.rotation.z=-.30;
-        else if(dir==='north')arm.rotation.x=-.30;else arm.rotation.x=.30;
-        arm.position.y+=.055;
+    const active=Object.entries(modes).filter(([,mode])=>mode!=='none').map(([dir,mode])=>({dir,mode}));
+    const addRibbon=(points,width,material)=>{
+      const positions=[],indices=[];
+      for(let i=0;i<points.length;i++){
+        const p=points[i],prev=points[Math.max(0,i-1)],next=points[Math.min(points.length-1,i+1)];
+        const dx=next[0]-prev[0],dz=next[2]-prev[2],len=Math.hypot(dx,dz)||1,ox=-dz/len*width*.5,oz=dx/len*width*.5;
+        positions.push(p[0]+ox,p[1],p[2]+oz,p[0]-ox,p[1],p[2]-oz);
       }
-      // Tiny rounded node at each connection gives dust a raised, continuous profile.
-      addTrackedMesh(group,new THREE.SphereGeometry(.035,6,4),wire,[pos[0],pos[1]+(mode==='up'||mode==='tall'?.045:0),pos[2]]);
+      for(let i=0;i<points.length-1;i++){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      addTrackedMesh(group,geometry,material,[0,0,0]);
+    };
+    if(!active.length){
+      addShapeBox(group,b,[.13,thick,.13],[0,y,0],[0,0,0],Array(6).fill(dust));
+      addTrackedMesh(group,new THREE.SphereGeometry(.07,8,4),dust,[0,y+.012,0]);
+    }else{
+      addShapeBox(group,b,[.15,thick,.15],[0,y,0],[0,0,0],Array(6).fill(dust));
+      for(const {dir,mode} of active){
+        const isUp=mode==='up'||mode==='tall';let points;
+        if(dir==='north')points=isUp?[[0,y+.01,0],[0,y+.055,-.20],[0,y+.105,-.49]]:[[0,y+.01,0],[0,y+.01,-.25],[0,y+.01,-.49]];
+        else if(dir==='south')points=isUp?[[0,y+.01,0],[0,y+.055,.20],[0,y+.105,.49]]:[[0,y+.01,0],[0,y+.01,.25],[0,y+.01,.49]];
+        else if(dir==='east')points=isUp?[[0,y+.01,0],[.20,y+.055,0],[.49,y+.105,0]]:[[0,y+.01,0],[.25,y+.01,0],[.49,y+.01,0]];
+        else points=isUp?[[0,y+.01,0],[-.20,y+.055,0],[-.49,y+.105,0]]:[[0,y+.01,0],[-.25,y+.01,0],[-.49,y+.01,0]];
+        addRibbon(points,.105,dust);
+        if(isUp)addTrackedMesh(group,new THREE.SphereGeometry(.052,7,5),dust,points[points.length-1]);
+      }
     }
-    // A dark recessed bed is visible only as a narrow edge beneath the dust.
-    addShapeBox(group,b,[.17,.012,.17],[0,levelY-.018,0],[0,0,0],Array(6).fill(edge));
+    addShapeBox(group,b,[.19,.008,.19],[0,y-.012,0],[0,0,0],Array(6).fill(shadow));
     return true;
   }
   return false;
@@ -1185,29 +1298,36 @@ function makeSpecialBlockObject(b,attachToScene=true){
     }
   }else if(kind==='redstone_device'){
     group.rotation.y=modelRedstoneDeviceYaw(b);
-    const isComparator=short.includes('comparator');
-    const powered=short.startsWith('powered_')||modelBool(state('powered_bit','output_lit_bit','lit'));
-    const subtract=modelBool(state('output_subtract_bit','subtract_mode'));
-    const baseMat=modelColorMat(isComparator?0x85817a:0x89867f),topMat=modelColorMat(0xb7b3a9),rimMat=modelColorMat(0x565b5e);
-    addShapeBox(group,b,[.94,.095,.94],[0,-.4525,0],[0,0,0],Array(6).fill(baseMat));
-    addShapeBox(group,b,[.84,.018,.84],[0,-.395,0],[0,0,0],Array(6).fill(topMat));
-    for(const x of [-.43,.43])addShapeBox(group,b,[.025,.022,.78],[x,-.395,0],[0,0,0],Array(6).fill(rimMat));
-    for(const z of [-.43,.43])addShapeBox(group,b,[.78,.022,.025],[0,-.395,z],[0,0,0],Array(6).fill(rimMat));
-    // Raised track, terminals and redstone posts are independent solid meshes.
-    const trackMat=modelColorMat(subtract?0x6c4a8e:0x8b3830);
-    addShapeBox(group,b,[.055,.025,.34],[0,-.365,0],[0,0,0],Array(6).fill(trackMat));
+    const deviceState=modelResolveRedstoneDeviceState(b);
+    const isComparator=deviceState.kind==='comparator',powered=deviceState.powered,subtract=deviceState.subtract,delay=deviceState.delay;
+    modelAddRedstoneDeviceBase(group,b,isComparator?'comparator':'repeater');
+    const railColor=isComparator?(subtract?0x76538c:0x8a3b34):0x8c3932;
+    modelAddRedstoneRail(group,b,-.005,railColor);
+    const stoneEdge=modelColorMat(0x77736c),brass=modelColorMat(0x9b8260),dark=modelColorMat(0x4a4641);
     if(isComparator){
-      modelAddMiniRedstoneTorch(group,b,-.22,.20,true,.82);
-      modelAddMiniRedstoneTorch(group,b,.22,.20,true,.82);
-      modelAddMiniRedstoneTorch(group,b,0,-.22,powered,.82);
-      const modeMat=modelColorMat(subtract?0x9b70be:0xa6a4a0);
-      addShapeBox(group,b,[.20,.035,.07],[0,-.335,0],[0,0,0],Array(6).fill(modeMat));
+      // Two rear input torches, one stateful output torch and a physical
+      // subtract/compare selector. This is a distinct BlockFlow construction.
+      modelAddRedstoneTorchCarrier(group,b,-.235,-.205,true,'comparator');
+      modelAddRedstoneTorchCarrier(group,b,.235,-.205,true,'comparator');
+      modelAddRedstoneTorchCarrier(group,b,0,.235,powered,'comparator');
+      addTrackedMesh(group,new THREE.BoxGeometry(.22,.026,.12),[dark,dark,brass,dark,brass,brass],[0,-.325,.015]);
+      const selectorX=subtract?.18:-.18;
+      addTrackedMesh(group,new THREE.CylinderGeometry(.022,.022,.025,10),brass,[selectorX,-.30,-.015]);
+      const selector=addTrackedMesh(group,new THREE.BoxGeometry(.035,.065,.045),subtract?modelColorMat(0x9b76b5):stoneEdge,[selectorX,-.265,-.015]);
+      selector.rotation.z=subtract?-.12:.12;
+      addTrackedMesh(group,new THREE.BoxGeometry(.055,.009,.055),modelColorMat(powered?0xe94c38:0x60312d,{toneMapped:false}),[0,-.315,.35]);
     }else{
-      const delay=Math.max(0,Math.min(3,modelNumber(state('repeater_delay','delay'),0)));
-      modelAddMiniRedstoneTorch(group,b,0,-.24,!powered,.82);
-      modelAddMiniRedstoneTorch(group,b,0,.24,powered,.82);
-      const sliderMat=modelColorMat(0xb1a59a);
-      for(let i=0;i<=delay;i++)addShapeBox(group,b,[.035,.035,.035],[0,-.335,-.09+i*.06],[0,0,0],Array(6).fill(sliderMat));
+      // Delay changes the moving carrier's position along the ceramic track.
+      const firstZ=-.255,secondZ=.10+delay*.075;
+      addTrackedMesh(group,new THREE.BoxGeometry(.12,.026,.56),[dark,dark,stoneEdge,dark,dark,dark],[0,-.315,-.015]);
+      for(const x of [-.095,.095])addTrackedMesh(group,new THREE.BoxGeometry(.024,.034,.56),[dark,dark,brass,dark,dark,dark],[x,-.305,-.015]);
+      modelAddRedstoneTorchCarrier(group,b,0,firstZ,!powered,'repeater');
+      modelAddRedstoneTorchCarrier(group,b,0,secondZ,powered,'repeater');
+      addTrackedMesh(group,new THREE.BoxGeometry(.105,.025,.10),[dark,dark,brass,dark,dark,dark],[0,-.304,secondZ]);
+      addTrackedMesh(group,new THREE.BoxGeometry(.045,.009,.045),modelColorMat(powered?0xe94c38:0x60312d,{toneMapped:false}),[0,-.315,.39]);
+      // Delay index is also legible as four tiny etched marks on the body.
+      const mark=modelColorMat(0x4a3d35);
+      for(let i=0;i<4;i++)addTrackedMesh(group,new THREE.BoxGeometry(.012,.006,.028),i===delay?brass:mark,[-.30+i*.20,-.355,-.34]);
     }
   }else if(kind==='stairs'){
     const top=!!state('upside_down_bit');const dir=Number(state('weirdo_direction','direction'))||0;const rot=rotY(dir);
