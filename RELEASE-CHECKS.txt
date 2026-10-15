@@ -1,34 +1,25 @@
-BlockFlow v2.10 Worker + Indexed Chunk + LOD Release
+BlockFlow v2.11.1 — MCStructure-only, detailed redstone geometry, Worker/Chunk/LOD
 
-Automated checks run from the packaged project root:
-- Native baker tests: 22/22 passed
-- Geometry Worker tests: 9/9 passed
-- JavaScript format engine tests: 10/10 passed
-- Format Worker tests: 4/4 passed
-- Atlas mapping tests: 4/4 passed
-- Total automated assertions: 49/49 passed
-- JavaScript syntax checks: passed
-- ZIP integrity: checked after packaging
-- All 1205 atlas texture IDs: source-crop pixel identity verified
-- 1166 unique atlas rectangles: in bounds and non-overlapping
-- Old native WASM converter files: absent
-- Old baked model assets and blockmesh worker: absent
+Scope:
+- Structure Editor imports and exports Minecraft Bedrock .mcstructure only.
+- Alternate-format adapters, converters, import/export selectors and converter workers are removed.
+- Sign boards/text, regular/redstone/soul/copper torches, levers, buttons, repeaters, comparators and redstone dust use dedicated 3D geometry builders.
+- Sign front/back text is read from block-entity NBT and generated as indexed, extruded voxel-like geometry (not a flat text texture).
+- Geometry baking runs in a Worker, with indexed geometry, 16^3 chunks, LOD and partial chunk rebuilding.
 
-Rendering architecture:
-- Geometry calculations run in assets/workers/geometry-baker.js.
-- Geometry is partitioned into 16x16x16 chunks.
-- Meshes use indexed BufferGeometry and Uint16/Uint32 index buffers.
-- Large layers (>= 1800 blocks) receive 1x/2x/4x/8x distance LOD.
-- Single-block edits rebuild target chunks and face-adjacent boundary chunks.
-- A per-layer chunk index avoids scanning every block during a local edit.
-- Special model shape construction remains on the main thread, then its triangles are compiled by the Worker.
+Automated validation:
+- Native baker: 22 checks passed.
+- Geometry Worker: 9 checks passed.
+- Atlas map: 4 checks passed.
+- MCStructure-only and detailed-model suite: 5 test groups passed (45 assertions).
+- Five MCStructure/model test groups (45 assertions): passed.
+- Three existing suites: baker 22/22, geometry Worker 9/9, atlas-map 4/4.
+- JavaScript syntax checks: passed.
+- ZIP integrity: checked after packaging.
 
-Limitations:
-- Real-browser end-to-end regression with large user structures could not be completed in this environment.
-- Coarse voxel LOD is approximate; it may fill small holes or alter sparse silhouettes.
-- Special-model geometry is retained at full detail in coarse LODs, so special-heavy structures gain less LOD reduction.
-- Actual performance varies with structure density, material count, GPU, and browser. No real-device FPS claim is made.
-- BDX support is partial and import-only.
-- MCA support is partial and import-only.
-- MCWorld support extracts supported embedded structure files; LevelDB world database read/write is not implemented.
-- NBT is import-only.
+Known limits:
+- Detailed-model regression checks verify source paths and geometry construction; broad browser screenshots and all Minecraft block-state variants still need visual regression.
+- Sign text glyphs are rasterized into voxel-like geometry; font appearance can vary by platform.
+- Coarse voxel LOD is approximate and may alter small holes or sparse silhouettes.
+- Special-model source geometry is prepared on the main thread before Worker compilation.
+- Actual frame rate varies with structure, material count, GPU and browser; no device FPS claim is made.

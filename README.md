@@ -1,92 +1,91 @@
 # BlockFlow
 
-BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。项目作为静态网站部署到 GitHub Pages；不需要本地服务器或构建步骤。
+BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。当前结构编辑器**仅支持 `.mcstructure` 导入和导出**，不提供其他结构格式解析、转换或导出功能。项目是静态网页，可部署在 GitHub Pages；无需构建步骤。
 
 ## 在线发布
 
 1. 将项目根目录内全部文件和文件夹提交到 GitHub 仓库根目录。
 2. 在仓库 **Settings → Pages** 中选择 `Deploy from a branch`。
 3. 选择 `main` 分支和 `/(root)` 目录并保存。
-4. 发布完成后，从 GitHub Pages 地址打开根目录 `index.html`。
+4. 发布后，从 GitHub Pages 地址打开根目录 `index.html`。
 
 请保留 `.nojekyll`，避免 GitHub Pages 对静态资源目录应用 Jekyll 处理。
 
 ## 页面入口
 
-- `index.html`：网站导航页。
+- `index.html`：BlockFlow 导航页。
 - `CommandEditor/index.html`：命令链编辑器。
-- `StructureEditor/index.html`：结构方块编辑器。
+- `StructureEditor/index.html`：结构编辑器。
 
-## 结构三维烘焙
+## 结构文件支持范围
 
-`assets/js/blockflow-baker.js` 是 BlockFlow 自己的三维几何烘焙器。它不加载预烘焙模型数据库，也不调用外部原生烘焙模块。主要工作包括：
+| 操作 | 支持范围 |
+|---|---|
+| 导入 | Minecraft Bedrock `.mcstructure` |
+| 导出 | Minecraft Bedrock `.mcstructure` |
+| 其他格式 | 不提供导入、转换或导出入口 |
+
+导入时会检查 `.mcstructure` 扩展名，并由 `assets/js/structure-core.js` 解析 Bedrock NBT、结构尺寸、方块调色板、方块索引、方块实体和命令方块数据。导出时由同一核心模块序列化为 `.mcstructure`。编辑期间的自动保存和撤销快照也使用 MCStructure 数据，不经过额外格式转换层。
+
+## 结构三维渲染
+
+`assets/js/blockflow-baker.js` 是 BlockFlow 自己的三维几何烘焙器，不加载预烘焙模型数据库，也不调用原生模型烘焙模块。主要工作包括：
 
 - 为结构建立坐标索引，并按渲染层组织方块。
-- 对普通立方体执行邻面遮挡剔除；透明和 alpha-test 材质采用单独的遮挡规则。
-- 调用结构编辑器的特殊形状构建器生成楼梯、门、铁轨、红石元件、植物、告示牌等非完整立方体模型。
-- 将模型顶点、法线和 UV 变换到结构坐标，并把纹理变换、颜色等信息烘焙进顶点数据。
-- 普通方块按材质批次生成索引化 `BufferGeometry`：相同位置、法线、UV 和颜色的顶点可复用；根据顶点数量自动选择 `Uint16Array` 或 `Uint32Array` 索引。
-- 透明、Alpha Test 和不透明材质使用不同的遮挡规则；特殊方块形状沿用 BlockFlow 自己的形状构建器。
+- 对普通立方体执行邻面遮挡剔除；透明和 Alpha Test 材质采用单独的遮挡规则。
+- 对普通方块按材质批次生成索引化 `BufferGeometry`，复用相同位置、法线、UV 和颜色的顶点；按顶点数量选择 16 位或 32 位索引。
 - 按 16 × 16 × 16 方块划分 Chunk，每个 Chunk 独立生成网格并启用 Three.js 视锥剔除。
-- 几何面剔除、索引合并、Chunk 输出和 LOD 网格在 `assets/workers/geometry-baker.js` 后台 Worker 中执行；主线程每处理一批方块就让出事件循环，准备特殊方块形状后再把纯数据交给 Worker。
-- 单方块修改使用按层、按 Chunk 的方块索引，只重新计算变更 Chunk 和相邻边界 Chunk；邻区数据只作为面剔除上下文，不会被重新输出。
-- 当某一数据层达到 1800 个方块时，为 Chunk 生成 1×、2×、4×、8× 四级细节；Three.js 按摄像机距离在 72、168、336 个世界单位处切换。
-- 过期任务可取消；后台 Worker 通过可转移 TypedArray 将生成的顶点和索引缓冲区交回主线程。
+- 几何面剔除、索引合并、Chunk 输出和 LOD 网格在 `assets/workers/geometry-baker.js` 后台 Worker 中执行；主线程负责准备特殊方块几何和 Three.js 对象装配。
+- 单方块修改通过按层、按 Chunk 的索引定位，只重建变更 Chunk 和相邻边界 Chunk。
+- 当某一数据层达到 1800 个方块时，为 Chunk 生成 1×、2×、4×、8× 四级细节；摄像机距离达到 72、168、336 个世界单位时切换。
+- 过期任务可以取消；Worker 使用 Transferable TypedArray 返回几何缓冲区。
 
-LOD 说明：2×、4×、8×是基于体素占用的远景近似网格，不保证与完整模型逐面一致，细小孔洞和稀疏结构可能被近似填充。特殊方块的几何在各 LOD 中保留原细节，以避免门、楼梯、红石元件等远距离消失；因此它们不会因 LOD 获得同等程度的面数缩减。16³ Chunk 可改善视锥剔除和局部更新，但会增加 Chunk 边界处的 Mesh 管理开销。实际帧率仍取决于结构形态、材质种类、GPU 和浏览器。
+### 特殊方块模型
 
-模型贴图使用 `assets/textures/structure/block-atlas.png`；纹理坐标映射由 `assets/data/blockflow-atlas-map.json` 提供。
+告示牌、红石火把、普通火把、灵魂火把、铜火把、拉杆、按钮、中继器、比较器和红石粉使用独立的三维形状构建逻辑，而不是把整块方块绘制成一张平面贴图。
 
-## 原生 JavaScript 文件格式引擎
+- **告示牌**：使用实体板面、边框、支架/挂链、固定件和双面文字几何；文字从方块实体 NBT 的 `FrontText`、`BackText` 或旧版 `Text1` 至 `Text4` 读取。文字先栅格化为像素轮廓，再生成有厚度的三维小面片几何，最终不是 Canvas 贴图材质。
+- **红石火把及其他火把**：使用圆柱形木杆、金属箍、灯芯/火焰几何；红石火把根据点亮状态显示发光头或熄灭帽，墙面火把根据朝向旋转整个模型。
+- **拉杆**：使用底座、安装螺钉、转轴、杆体和手柄几何，并读取朝向和通电状态调整安装面及杆体姿态。
+- **按钮**：使用安装底板、压边、实体按钮帽和固定件，并根据按下状态改变按钮突出高度。
+- **红石中继器/比较器**：使用实体底座、边缘、导轨、端点和独立红石火把几何；比较器读取减法状态，中继器读取延迟及输出状态。
+- **红石粉**：依据四个方向的连接状态生成中心节点和立体连线，并按照信号强度调整颜色。
 
-`assets/workers/format.js` 是轻量 Worker 通信入口，实际文件解析和转换由 `assets/workers/format-engine.js` 完成。该引擎使用项目自己的 NBT 读写器、方块调色板、紧凑位字段读写、几何索引和序列化逻辑，独立完成支持格式的解析与转换。
+其他楼梯、门、铁轨、栅栏、墙、玻璃板、植物、活板门等也由对应形状构建器生成几何。普通方块仍使用纹理图集提供表面材质；这与把特殊方块整体绘制成平面贴图不同。
 
-### 导入格式
+纹理图集：`assets/textures/structure/block-atlas.png`。对应映射：`assets/data/blockflow-atlas-map.json`。图集中的纹理 ID 保持稳定，坐标由新的 BlockFlow 图集映射提供。
 
-| 格式 | 当前支持范围 |
-|---|---|
-| `.mcstructure` | 基岩版结构 NBT，包含方块调色板、方块索引和方块实体 |
-| `.litematic` | Litematica 区域及紧凑方块状态数据；多区域文件当前读取首个区域 |
-| `.schem` | Sponge v2/v3 结构及方块实体 |
-| `.schematic` | 经典 MCEdit 结构；额外识别 BlockFlow 自有状态扩展 |
-| `.wsmr` | BlockFlow WSMR v2 |
-| `.nbt` | Java 结构模板 |
-| `.bdx` | 支持未压缩和 BDZ/GZIP 的部分 BDX 操作码；运行时方块池、内嵌 NBT 等未支持操作会明确报错。BD@/Brotli 取决于浏览器原生解压支持 |
-| `.mca` | 读取现代 `block_states` 调色板区块；不完整迁移实体、方块实体和旧版区块 |
-| `.zip`、`.mcpack`、`.mcaddon` | 从容器中提取支持的独立结构文件 |
-| `.mcworld` | 仅能提取容器内独立结构文件；不解析 LevelDB 世界数据库 |
+### 性能架构
 
-### 导出格式
+- `assets/workers/geometry-baker.js`：后台执行面剔除、索引几何合并、Chunk 和 LOD 数据生成。
+- `assets/js/blockflow-baker.js`：准备烘焙输入、特殊模型和主线程对象装配。
+- Chunk 尺寸为 16³；单块编辑只更新目标及必要的边界 Chunk。
+- 大型数据层使用近似体素占用 LOD。粗 LOD 可能填补细小孔洞或改变稀疏轮廓；特殊模型保留完整细节，因此特殊方块较多时 LOD 收益会降低。
+- 真实帧率取决于结构分布、材质数量、GPU 和浏览器。自动化测试不等于真实设备 FPS 测试。
 
-- `.mcstructure`：Minecraft Bedrock 结构。
-- `.litematic`：Litematica 结构。
-- `.schem`：Sponge / WorldEdit 结构。
-- `.schematic`：经典 MCEdit 结构，附加 BlockFlow 扩展以便本项目保留较新的方块状态。
-- `.wsmr`：BlockFlow 自有中间格式 v2。
+## 方块数据与模型
 
-BDX 和 `.mcworld` 当前只保留导入入口，未提供导出选项：BDX 导出需要完整运行时方块 ID 映射及 Brotli 编码；`.mcworld` 导出需要 LevelDB 世界数据库写入器。项目不会生成看似成功但实际不兼容的文件。
-
-### 数据保真提醒
-
-Java 格式无法表达 Bedrock 的所有双层共位方块数据；转换到不支持双层结构的格式时会发出警告并优先保留主层。经典 `.schematic` 无法表达大部分现代方块状态，BlockFlow 扩展只保证 BlockFlow 自身的往返识别，不保证其他工具读取该扩展。
+- `assets/js/structure-core.js`：Bedrock MCStructure NBT 解析、方块调色板/索引处理、方块实体读写和 MCStructure 序列化。
+- `assets/js/structure-app.js`：结构编辑器界面、三维场景、特殊方块几何、编辑操作和相机控制。
+- `assets/js/blockflow-baker.js`：BlockFlow 几何烘焙调度与结果装配。
+- `assets/workers/geometry-baker.js`：后台几何 Worker。
+- `assets/workers/snapshot.js`：自动保存与快照序列化 Worker。
+- `assets/workers/batch.js`：批量查找/替换 Worker。
+- `assets/js/broken-chain-core.js`：命令链断链识别共享逻辑。
+- `assets/js/command-editor.js`：命令链编辑器主程序。
+- `assets/js/worker-factory.js`：创建和管理后台 Worker。
 
 ## 自动化测试
 
-开发环境安装 Node.js 后，在项目根目录执行：
+在安装 Node.js 的开发环境中，从项目根目录执行：
 
 ```bash
 node --test tests/*.test.cjs
 ```
 
-当前自动化测试共 49 项：
+测试覆盖：普通方块遮挡、索引几何、Chunk 边界、LOD、Worker 取消、图集坐标、仅 MCStructure 文件入口，以及告示牌/火把/拉杆/按钮/中继器/比较器/红石粉的专用几何模型实现。
 
-- `native-baker.test.cjs`（22 项）：普通方块邻面剔除、透明与 cutout 遮挡、索引几何、UV 变换、特殊模型编译、资源释放、LOD、进度、取消任务、局部 Chunk 边界更新。
-- `geometry-worker.test.cjs`（9 项）：Worker 输出、16³ Chunk、跨 Chunk 面剔除、局部输出、负坐标、特殊模型 LOD、UV 属性对齐，以及后台任务中途取消。
-- `format-engine.test.cjs`（10 项）：NBT 解析/序列化、格式往返、命令方块 NBT 转换和错误输入处理。
-- `format-worker.test.cjs`（4 项）：后台格式引擎初始化、实际转换和错误输入处理。
-- `atlas-map.test.cjs`（4 项）：新图集尺寸、1205 个纹理 ID、坐标边界、唯一矩形不重叠以及编辑器加载路径。
-
-## 公共资源目录
+## 项目目录
 
 ```text
 BlockFlow/
@@ -116,4 +115,4 @@ BlockFlow/
 
 ## 第三方组件
 
-项目包含 Three.js 运行时；其上游许可证声明保留在 `assets/vendor/three-runtime.js` 中。其他资源及数据文件应按其各自来源和授权要求管理。
+项目包含 Three.js 运行时；其上游许可证声明保留在 `assets/vendor/three-runtime.js` 中。其他资源及数据文件按各自来源和授权要求管理。

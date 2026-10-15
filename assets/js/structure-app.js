@@ -33,7 +33,7 @@ function captureUndoSnapshotRaw(label='编辑'){
   try{
     const raw=window.BFSECore.serializeStructure(project);const bytes=raw instanceof Uint8Array?raw.slice():new Uint8Array(raw).slice();
     const size=bytes.byteLength;if(size>64*1024*1024){toast('当前结构超过 64 MiB，无法创建回滚快照','warn',5000);return false;}
-    const entry={label,bytes,size,filename:project.filename||'structure.mcstructure',sourceFormat:project.sourceFormat||'mcstructure',meta:window.BFSECore.cloneNBT(metadata),lastBlockId,selection:selected?{x:selected.x,y:selected.y,z:selected.z,layer:selected.layer}:null,createdAt:Date.now()};
+    const entry={label,bytes,size,filename:project.filename||'structure.mcstructure',meta:window.BFSECore.cloneNBT(metadata),lastBlockId,selection:selected?{x:selected.x,y:selected.y,z:selected.z,layer:selected.layer}:null,createdAt:Date.now()};
     undoHistory.push(entry);undoHistoryBytes+=size;
     while(undoHistory.length>12||undoHistoryBytes>64*1024*1024){const removed=undoHistory.shift();undoHistoryBytes-=removed.size;}
     updateUndoButton();return true;
@@ -51,7 +51,7 @@ async function undoLastEdit(){
   try{
     showModelLoading('正在回滚编辑',`恢复：${entry.label}`,8);clearSceneObjects();
     const buffer=entry.bytes.buffer.slice(entry.bytes.byteOffset,entry.bytes.byteOffset+entry.bytes.byteLength);
-    const restored=window.BFSECore.parseStructure(buffer);restored.filename=entry.filename;restored.sourceFormat=entry.sourceFormat;restored.cameraSaved=false;project=restored;
+    const restored=window.BFSECore.parseStructure(buffer);restored.filename=entry.filename;restored.cameraSaved=false;project=restored;
     invalidateSnapshotBase();applyMeta(entry.meta||{});lastBlockId=entry.lastBlockId||'minecraft:stone';document.getElementById('newBlockIdInput').value=lastBlockId;rebuildSearchIndex();updateFileUI();
     const pending=waitForSceneRebuild();buildScene(true);setModelLoadingProgress(52,'正在恢复方块模型…');await pending;
     if(entry.selection){const b=project.blocks.find(x=>x.x===entry.selection.x&&x.y===entry.selection.y&&x.z===entry.selection.z&&x.layer===entry.selection.layer);selectBlock(b||null);}else selectBlock(null);
@@ -168,7 +168,7 @@ async function serializeProjectAsync(mode='full',layerIndex=null){
   });
 }
 
-async function saveSnapshot(){if(!project)return;const savedProject=project;try{const bytes=(snapshotWorkerReady&&snapshotWorker)?await serializeProjectAsync('full'):serializeStructure(savedProject);if(project!==savedProject)return;const blob=new Blob([bytes],{type:'application/octet-stream'});await dbPut({blob,filename:project.filename||'structure.mcstructure',sourceFormat:project.sourceFormat||'mcstructure',meta:cloneNBT(metadata),lastBlockId,updatedAt:Date.now()});setStatus(`${project.blocks.length.toLocaleString()} 个方块 · 已自动保存`);}catch(error){setStatus('本地自动保存失败');console.error(error);toast('自动保存失败：'+error.message,'err');}}
+async function saveSnapshot(){if(!project)return;const savedProject=project;try{const bytes=(snapshotWorkerReady&&snapshotWorker)?await serializeProjectAsync('full'):serializeStructure(savedProject);if(project!==savedProject)return;const blob=new Blob([bytes],{type:'application/octet-stream'});await dbPut({blob,filename:project.filename||'structure.mcstructure',meta:cloneNBT(metadata),lastBlockId,updatedAt:Date.now()});setStatus(`${project.blocks.length.toLocaleString()} 个方块 · 已自动保存`);}catch(error){setStatus('本地自动保存失败');console.error(error);toast('自动保存失败：'+error.message,'err');}}
 function updateStats(){if(!project){setStatus('0 个方块');return;}setStatus(`${project.blocks.length.toLocaleString()} 个方块 · ${commandBlockCount.toLocaleString()} 个命令方块`);}
 function getTagIdName(b){return b?.name||'';}
 function idExistsInProject(id){return !!project?.palette?.some(n=>getTag(n,'name','')===id);}
@@ -389,7 +389,7 @@ function applyTheme(theme,persist=true){const light=theme==='light';document.doc
 function loadLightSettings(){lightSettings.emitters=true;lightSettings.ambient=.95;lightSettings.sun=1.15;lightSettings.fill=.35;if(hemisphereLight)hemisphereLight.intensity=lightSettings.ambient;if(sunLight)sunLight.intensity=lightSettings.sun;if(fillLight)fillLight.intensity=lightSettings.fill;updateBlockLights();requestSceneRender();}
 function getBlockLightDescriptor(b){
   const n=blockRenderName(b);let color=null,intensity=.85,distance=8;
-  if(n.includes('redstone_torch')){color=0xff3a28;intensity=.9;}
+  if(n.includes('redstone_torch')){const lit=blockStateValue(b,'lit');const off=n.includes('unlit')||(lit!==undefined&&!modelBool(lit))||modelBool(blockStateValue(b,'unlit_bit'));if(off)return null;color=0xff3a28;intensity=.9;}
   else if(n==='torch'||n==='wall_torch'||n==='soul_torch'||n==='soul_wall_torch'){color=n.includes('soul')?0x64dfff:0xffa34b;intensity=.9;}
   else if(n.includes('lantern')){color=0xffc16b;intensity=1.15;distance=10;}
   else if(n==='campfire'||n==='soul_campfire'){color=n.startsWith('soul')?0x54dfff:0xff823c;intensity=1.4;distance=13;}
@@ -435,7 +435,7 @@ const CROSSED_PLANT_NAMES=new Set('dandelion poppy blue_orchid allium azure_blue
 function shapeKindForBlock(b){
   if(!b||b.command)return null;
   const n=blockRenderName(b);
-  if(/(^|_)(standing_sign|wall_sign|hanging_sign)$/.test(n)||n==='standing_sign'||n==='wall_sign')return 'sign';
+  if(n==='sign'||n.endsWith('_sign')||/(^|_)(standing_sign|wall_sign|hanging_sign)$/.test(n))return 'sign';
   if(n==='standing_banner'||n==='wall_banner'||n.endsWith('_standing_banner')||n.endsWith('_wall_banner'))return 'banner';
   if(n==='skull'||n.endsWith('_skull')||n.endsWith('_head'))return 'head';
   if(n==='chest'||n==='trapped_chest'||n==='ender_chest'||n.endsWith('_copper_chest'))return 'chest';
@@ -547,6 +547,166 @@ function modelAddStick(group,b,a,bp,radius,alias,opts={}){
   const {THREE}=threeLib;const start=new THREE.Vector3(...a),end=new THREE.Vector3(...bp),delta=end.clone().sub(start);const mesh=addTrackedMesh(group,new THREE.CylinderGeometry(radius,radius,delta.length(),8),modelMat(alias,b,opts),start.clone().add(end).multiplyScalar(.5).toArray());
   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return mesh;
 }
+function unwrapBlockEntityNode(node){
+  return node&&typeof node==='object'&&Object.prototype.hasOwnProperty.call(node,'value')?node.value:node;
+}
+function getBlockEntityCompound(block){
+  const wrapper=unwrapBlockEntityNode(block?.blockEntityNode);
+  const data=unwrapBlockEntityNode(wrapper?.block_entity_data);
+  return data&&typeof data==='object'&&!Array.isArray(data)?data:null;
+}
+function getCompoundField(compound,...keys){
+  let current=compound;
+  for(const key of keys){current=unwrapBlockEntityNode(current?.[key]);if(current===undefined||current===null)return undefined;}
+  return current;
+}
+function normalizeSignMessage(value){
+  if(value===undefined||value===null)return '';
+  let text=String(value);
+  if(text.startsWith('{')||text.startsWith('[')){
+    try{
+      const parsed=JSON.parse(text);
+      const collect=node=>{
+        if(node===null||node===undefined)return '';
+        if(typeof node==='string'||typeof node==='number')return String(node);
+        if(Array.isArray(node))return node.map(collect).join('');
+        if(typeof node==='object'){
+          if(Array.isArray(node.rawtext))return node.rawtext.map(collect).join('');
+          if(node.text!==undefined)return String(node.text)+collect(node.extra||[]);
+          if(node.translate!==undefined)return String(node.translate);
+          if(node.with!==undefined)return collect(node.with);
+        }
+        return '';
+      };
+      const extracted=collect(parsed);if(extracted)text=extracted;
+    }catch{}
+  }
+  return text.replace(/\r\n?/g,'\n').replace(/\u0000/g,'').slice(0,1024);
+}
+function readSignFaceData(block,face='front'){
+  const entity=getBlockEntityCompound(block);if(!entity)return{text:'',color:0x202020,glowing:false};
+  const faceNode=getCompoundField(entity,face==='back'?'BackText':'FrontText')||{};
+  let text=normalizeSignMessage(getCompoundField(faceNode,'Text')??getCompoundField(faceNode,'Message'));
+  if(!text&&face==='front'){
+    text=normalizeSignMessage(getCompoundField(entity,'Text'));
+    if(!text){text=['Text1','Text2','Text3','Text4'].map(key=>normalizeSignMessage(getCompoundField(entity,key))).filter(Boolean).join('\n');}
+  }
+  const rawColor=getCompoundField(faceNode,'SignTextColor')??getCompoundField(entity,'SignTextColor');
+  let color=0x202020;
+  if(Number.isFinite(Number(rawColor))){const numeric=Number(rawColor)>>>0;color=numeric&0xffffff;if(color===0)color=0x202020;}
+  else if(typeof rawColor==='string'&&/^#[0-9a-f]{6}$/i.test(rawColor))color=Number.parseInt(rawColor.slice(1),16);
+  const glowing=!!(getCompoundField(faceNode,'IgnoreLighting')??getCompoundField(faceNode,'GlowingText'));
+  return{text,color,glowing};
+}
+function createSignPixelTextGeometry(text,width,height,depth){
+  const {THREE}=threeLib;if(typeof document==='undefined')return null;
+  const lines=String(text||'').split(/\n/).slice(0,4);if(!lines.some(line=>line.trim()))return null;
+  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=64;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});if(!ctx)return null;
+  const columns=128,rowsPerLine=10,totalRows=rowsPerLine*4,cellW=width/columns,cellH=height/totalRows;
+  const positions=[],indices=[];
+  const pushBox=(x0,y0,z0,x1,y1,z1)=>{
+    const faces=[
+      [[1,0,0],[[x1,y0,z0],[x1,y0,z1],[x1,y1,z1],[x1,y1,z0]]],
+      [[-1,0,0],[[x0,y0,z1],[x0,y0,z0],[x0,y1,z0],[x0,y1,z1]]],
+      [[0,1,0],[[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]]],
+      [[0,-1,0],[[x0,y0,z1],[x1,y0,z1],[x1,y0,z0],[x0,y0,z0]]],
+      [[0,0,1],[[x1,y0,z1],[x0,y0,z1],[x0,y1,z1],[x1,y1,z1]]],
+      [[0,0,-1],[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0]]]
+    ];
+    for(const [,verts] of faces){const base=positions.length/3;for(const v of verts)positions.push(v[0],v[1],v[2]);indices.push(base,base+1,base+2,base,base+2,base+3);}
+  };
+  const top=height*.5;
+  for(let lineIndex=0;lineIndex<4;lineIndex++){
+    const line=lines[lineIndex]||'';if(!line.trim())continue;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let fontSize=52;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${fontSize}px sans-serif`;
+    while(fontSize>13&&ctx.measureText(line).width>294){fontSize-=2;ctx.font=`700 ${fontSize}px sans-serif`;}
+    ctx.fillStyle='#fff';ctx.fillText(line,160,32,296);
+    const image=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    const bits=new Uint8Array(columns*rowsPerLine);
+    for(let gy=0;gy<rowsPerLine;gy++)for(let gx=0;gx<columns;gx++){
+      const x0=Math.floor(gx*canvas.width/columns),x1=Math.max(x0+1,Math.floor((gx+1)*canvas.width/columns));
+      const y0=Math.floor(gy*canvas.height/rowsPerLine),y1=Math.max(y0+1,Math.floor((gy+1)*canvas.height/rowsPerLine));
+      let alpha=0;for(let py=y0;py<y1&&alpha<72;py++)for(let px=x0;px<x1&&alpha<72;px++)alpha=Math.max(alpha,image[(py*canvas.width+px)*4+3]);
+      bits[gy*columns+gx]=alpha>72?1:0;
+    }
+    for(let gy=0;gy<rowsPerLine;gy++){
+      let gx=0;while(gx<columns){while(gx<columns&&!bits[gy*columns+gx])gx++;if(gx>=columns)break;const start=gx;while(gx<columns&&bits[gy*columns+gx])gx++;const end=gx;
+        const x0=-width/2+start*cellW,x1=-width/2+end*cellW;
+        const y1=top-(lineIndex*rowsPerLine+gy)*cellH,y0=y1-cellH*.84;
+        pushBox(x0,y0,-depth/2,x1,y1,depth/2);
+      }
+    }
+  }
+  if(!indices.length)return null;
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingSphere();
+  return geometry;
+}
+function addSignFaceText(host,block,centerY,boardW,boardH,boardDepth,face='front'){
+  const data=readSignFaceData(block,face);if(!data.text)return null;
+  const innerW=boardW*.88,innerH=boardH*.76,thickness=.0045;
+  const geometry=createSignPixelTextGeometry(data.text,innerW,innerH,thickness);if(!geometry)return null;
+  const material=modelColorMat(data.color,{side:threeLib.THREE.DoubleSide,toneMapped:!data.glowing,depthWrite:true});
+  const textGroup=new threeLib.THREE.Group();textGroup.userData.blockRef=block;textGroup.position.set(0,centerY,face==='front'?boardDepth/2+thickness*.65:-boardDepth/2-thickness*.65);
+  if(face==='back')textGroup.rotation.y=Math.PI;
+  host.add(textGroup);addTrackedMesh(textGroup,geometry,material,[0,0,0]);return textGroup;
+}
+function addDetailedLeverModel(group,block){
+  const {THREE}=threeLib,state=(...keys)=>modelState(block,...keys);
+  const value=String(state('lever_direction','facing_direction','minecraft:cardinal_direction')??'down_east_west').toLowerCase();
+  let mountNormal=[0,1,0],rest=[1,0,0];
+  const directions={down_east_west:[[0,-1,0],[1,0,0]],up_north_south:[[0,1,0],[0,0,1]],up_east_west:[[0,1,0],[1,0,0]],down_north_south:[[0,-1,0],[0,0,1]],north:[[0,0,-1],[0,0,1]],south:[[0,0,1],[0,0,1]],east:[[1,0,0],[0,0,1]],west:[[-1,0,0],[0,0,1]]};
+  if(directions[value]){[mountNormal,rest]=directions[value];}
+  else{const code=modelNumber(state('lever_direction'),-1);const legacy={0:[[0,-1,0],[1,0,0]],1:[[1,0,0],[0,0,1]],2:[[-1,0,0],[0,0,1]],3:[[0,0,1],[0,0,1]],4:[[0,0,-1],[0,0,1]],5:[[0,1,0],[0,0,1]],6:[[0,1,0],[1,0,0]],7:[[0,-1,0],[0,0,1]]};if(legacy[code])[mountNormal,rest]=legacy[code];}
+  const mount=new THREE.Group();mount.userData.blockRef=block;mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...mountNormal));group.add(mount);
+  const plate=modelColorMat(0x666e76),plateTop=modelColorMat(0x92999f),darkMetal=modelColorMat(0x303941),brightMetal=modelColorMat(0xc2c9ce),wood=modelColorMat(0x69472e),woodLight=modelColorMat(0x9a7048);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.34,.065,.34),plate,[0,.445,0]);
+  addTrackedMesh(mount,new THREE.BoxGeometry(.285,.018,.285),plateTop,[0,.485,0]);
+  // Four countersunk mounting screws with visible slots.
+  for(const x of [-.105,.105])for(const z of [-.105,.105]){
+    addTrackedMesh(mount,new THREE.CylinderGeometry(.019,.019,.009,8),brightMetal,[x,.499,z]);
+    addTrackedMesh(mount,new THREE.BoxGeometry(.019,.003,.003),darkMetal,[x,.505,z]);
+  }
+  // A raised socket and pivot pin make the hinge visibly mechanical.
+  addTrackedMesh(mount,new THREE.CylinderGeometry(.073,.073,.028,12),darkMetal,[0,.51,0]);
+  addTrackedMesh(mount,new THREE.CylinderGeometry(.056,.056,.035,12),brightMetal,[0,.535,0]);
+  const powered=modelBool(state('open_bit','powered_bit','lever_powered_bit'));
+  const angle=powered?.58:-.50,axis=rest[0]!==0?new THREE.Vector3(0,0,1):new THREE.Vector3(1,0,0);
+  const pivot=new THREE.Group();pivot.position.set(0,.55,0);pivot.rotation.set(axis.x*angle,axis.y*angle,axis.z*angle);mount.add(pivot);
+  const end=new THREE.Vector3(rest[0]*.255,.13,rest[2]*.255);
+  const start=new THREE.Vector3(0,0,0),delta=end.clone().sub(start);
+  const shaft=addTrackedMesh(pivot,new THREE.CylinderGeometry(.025,.034,delta.length(),9,2),wood,start.clone().add(end).multiplyScalar(.5).toArray());
+  shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize());
+  const collar=addTrackedMesh(pivot,new THREE.CylinderGeometry(.036,.036,.018,10),darkMetal,end.clone().multiplyScalar(.78).toArray());
+  collar.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize());
+  const knob=addTrackedMesh(pivot,new THREE.DodecahedronGeometry(.062,1),woodLight,end.toArray());knob.scale.set(.92,1.12,.92);
+  addTrackedMesh(pivot,new THREE.SphereGeometry(.018,8,6),brightMetal,end.clone().addScaledVector(delta.clone().normalize(),-.025).toArray());
+  return mount;
+}
+function addGeometricTorchHead(group,block,{redstone=false,lit=true,soul=false,copper=false}={}){
+  const {THREE}=threeLib;
+  const shaftColor=redstone?0x48312d:copper?0x8c5633:0x68452c;
+  const shaftMat=modelColorMat(shaftColor),bandMat=modelColorMat(copper?0xb77a43:0x393b3d),darkMat=modelColorMat(0x352b2a);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.025,.041,.31,7,2),shaftMat,[0,-.025,0]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.038,.038,.014,8),bandMat,[0,.118,0]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.031,.031,.012,8),darkMat,[0,.143,0]);
+  if(redstone&&!lit){
+    addTrackedMesh(group,new THREE.CylinderGeometry(.027,.043,.062,6,1),modelColorMat(0x552c30),[0,.178,0]);
+    addTrackedMesh(group,new THREE.SphereGeometry(.022,6,4),modelColorMat(0x321f24),[0,.213,0]);
+    return;
+  }
+  const outer=redstone?0xff4939:soul?0x42d7e8:copper?0xff9b43:0xff7a2d;
+  const inner=redstone?0xffa14d:soul?0xa3fbff:copper?0xffd17b:0xffdf58;
+  const glowMat=modelColorMat(outer,{transparent:true,opacity:.94,depthWrite:false,toneMapped:false});
+  const innerMat=modelColorMat(inner,{transparent:true,opacity:.98,depthWrite:false,toneMapped:false});
+  const flame=addTrackedMesh(group,new THREE.ConeGeometry(.052,.17,6,2),glowMat,[0,.235,0]);flame.rotation.y=Math.PI/6;
+  const core=addTrackedMesh(group,new THREE.ConeGeometry(.029,.105,5,2),innerMat,[0,.235,0]);core.rotation.y=-Math.PI/8;
+  for(const [x,z,rx,rz] of [[-.025,.005,-.24,.14],[.023,-.008,.18,-.18]]){
+    const tongue=addTrackedMesh(group,new THREE.ConeGeometry(.022,.082,5,1),glowMat,[x,.232,z]);tongue.rotation.set(rx,0,rz);
+  }
+  addTrackedMesh(group,new THREE.SphereGeometry(.014,6,4),innerMat,[0,.275,0]);
+}
 function modelFacingYawFrom16(value){return -((modelNumber(value,0)%16+16)%16)*Math.PI/8;}
 function modelAttachGroup(group,normal){group.quaternion.setFromUnitVectors(new threeLib.THREE.Vector3(0,0,1),new threeLib.THREE.Vector3(...normal));return group;}
 function modelConnected(b,dir,stateValue){
@@ -621,19 +781,6 @@ function modelRedstoneDirectionMode(b,dir){
   if(modelRedstoneConnectable(above))return 'up';
   return 'none';
 }
-function modelTintedTextureMaterial(alias,b,color,opts={}){
-  const candidate=terrainCandidate(alias,b);
-  if(!candidate)return modelColorMat(color,opts);
-  const {THREE}=threeLib;
-  const key=`tinted|${candidate.a}|${color}|${opts.transparent!==false?'t':'o'}|${opts.alphaTest??.02}`;
-  if(specialMaterialCache.has(key))return specialMaterialCache.get(key);
-  const material=new THREE.MeshBasicMaterial({
-    map:loadBlockTexture(candidate.a),color,side:THREE.DoubleSide,
-    transparent:opts.transparent!==false,alphaTest:opts.alphaTest??.02,
-    depthWrite:opts.depthWrite??false
-  });
-  specialMaterialCache.set(key,material);return material;
-}
 function modelRedstoneDeviceYaw(b){
   const cardinal=modelState(b,'minecraft:cardinal_direction','cardinal_direction','facing');
   if(cardinal!==undefined)return modelCardinalYaw(cardinal,'south');
@@ -645,12 +792,13 @@ function modelRedstoneDeviceYaw(b){
 }
 function modelAddMiniRedstoneTorch(group,b,x,z,on,scale=1){
   const {THREE}=threeLib;
-  modelAddStick(group,b,[x,-.405*scale,z],[x,-.315*scale,z],.016*scale,'oak_planks');
-  const alias=on?'redstone_torch_on':'redstone_torch_off';
-  const flameMat=modelMat(alias,b,{transparent:true,alphaTest:.025,depthWrite:false});
-  const cap=addTrackedMesh(group,new THREE.CylinderGeometry(.024*scale,.036*scale,.075*scale,4,1),flameMat,[x,-.278*scale,z]);
-  cap.rotation.y=Math.PI/4;
-  if(on)addTrackedMesh(group,new THREE.SphereGeometry(.014*scale,5,4),modelColorMat(0xff7355),[x,-.235*scale,z]);
+  const shaftCenter=-.36*scale;
+  addTrackedMesh(group,new THREE.CylinderGeometry(.012*scale,.018*scale,.09*scale,6,1),modelColorMat(0x49302d),[x,shaftCenter,z]);
+  addTrackedMesh(group,new THREE.CylinderGeometry(.019*scale,.019*scale,.009*scale,7),modelColorMat(0x474b50),[x,-.315*scale,z]);
+  if(on){
+    addTrackedMesh(group,new THREE.ConeGeometry(.026*scale,.075*scale,5,1),modelColorMat(0xff5142,{toneMapped:false}),[x,-.275*scale,z]);
+    addTrackedMesh(group,new THREE.ConeGeometry(.014*scale,.046*scale,5,1),modelColorMat(0xffb15a,{toneMapped:false}),[x,-.274*scale,z]);
+  }else addTrackedMesh(group,new THREE.CylinderGeometry(.016*scale,.024*scale,.035*scale,5),modelColorMat(0x572e33),[x,-.29*scale,z]);
 }
 function renderAdvancedShape(group,b,kind){
   const {THREE}=threeLib,n=blockRenderName(b),state=(...keys)=>modelState(b,...keys),mats=buildBlockMaterials(b);
@@ -660,28 +808,59 @@ function renderAdvancedShape(group,b,kind){
   const cardinal=state('minecraft:cardinal_direction','cardinal_direction','facing','facing_direction')??'south';
   if(kind==='sign'){
     const wall=n.endsWith('_wall_sign')||n.includes('_wall_hanging_sign')||n==='wall_sign',hanging=!wall&&(n.endsWith('_hanging_sign')||n.includes('hanging_sign'));
-    const alias=woodAlias;const boardMat=modelMat(alias,b,{transparent:true,alphaTest:.02});
-    const boardW=hanging?.92:.94,boardH=hanging?.43:.56;
+    const alias=woodAlias,boardW=hanging?.92:.94,boardH=hanging?.43:.56,boardDepth=hanging?.075:.065;
+    const addBoardTrim=(host,centerY)=>{
+      const trim=modelColorMat(0x765034),edge=modelColorMat(0x4e3527);
+      for(const y of [-1,1])modelAddBox(host,b,[boardW+.012,.018,.012],[0,centerY+y*(boardH/2-.009),0],alias);
+      for(const x of [-1,1])modelAddBox(host,b,[.014,boardH,.012],[x*(boardW/2-.007),centerY,0],alias);
+      modelAddBox(host,b,[boardW-.035,.009,.008],[0,centerY-boardH*.30,boardDepth*.48],alias);
+      // Subtle edge grain and dark end-grain pins are geometry, not a face sprite.
+      for(const x of [-1,1])addTrackedMesh(host,new THREE.CylinderGeometry(.006,.006,.018,6),edge,[x*(boardW/2-.025),centerY,boardDepth*.50]);
+      return {trim,edge};
+    };
+    const finishBoard=(host,centerY,frontOffset=0)=>{
+      modelAddBox(host,b,[boardW,boardH,boardDepth],[0,centerY,0],alias,{transparent:false});
+      addBoardTrim(host,centerY);
+      addSignFaceText(host,b,centerY,boardW-.07,boardH-.09,boardDepth,'front');
+      if(readSignFaceData(b,'back').text)addSignFaceText(host,b,centerY,boardW-.07,boardH-.09,boardDepth,'back');
+    };
     if(wall){
       const normal=modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north');
       const wallHanging=n.includes('_wall_hanging_sign');
-      const panel=new THREE.Group();modelAttachGroup(panel,normal);panel.position.set(normal[0]*.46,normal[1]*.46,normal[2]*.46);group.add(panel);
-      modelAddBox(panel,b,[boardW,boardH,.055],[0,.02,-.005],null);
-      modelAddPlane(panel,b,alias,boardW-.04,boardH-.04,[0,.02,.029],[0,0,1]);
-      if(wallHanging){for(const x of [-.28,.28])modelAddStick(panel,b,[x,.30,-.025],[x,.30,-.34],.018,alias);modelAddStick(panel,b,[-.28,.30,-.32],[.28,.30,-.32],.025,alias);}
+      const panel=new THREE.Group();modelAttachGroup(panel,normal);panel.position.set(normal[0]*.462,normal[1]*.462,normal[2]*.462);group.add(panel);
+      finishBoard(panel,.02);
+      const bracket=modelColorMat(0x554b3d);
+      for(const x of [-.30,.30]){
+        modelAddStick(panel,b,[x,-.13,-.005],[x,-.13,-.105],wallHanging?.022:.016,null);
+        addTrackedMesh(panel,new THREE.CylinderGeometry(.018,.018,.025,8),bracket,[x,-.13,-.108],[Math.PI/2,0,0]);
+      }
+      if(wallHanging)modelAddStick(panel,b,[-.30,.31,-.11],[.30,.31,-.11],.022,null);
     }else if(hanging){
-      const yaw=modelCardinalYawState(state('minecraft:cardinal_direction','cardinal_direction','facing_direction')??cardinal);group.rotation.y=yaw;
-      const attached=modelBool(state('attached_bit'));
-      if(attached){modelAddStick(group,b,[-.28,.49,0],[-.28,.23,0],.018,alias);modelAddStick(group,b,[.28,.49,0],[.28,.23,0],.018,alias);}
-      else{modelAddStick(group,b,[-.28,.49,0],[-.28,.28,0],.018,alias);modelAddStick(group,b,[.28,.49,0],[.28,.28,0],.018,alias);modelAddStick(group,b,[-.38,.47,0],[.38,.47,0],.035,alias);}
-      modelAddBox(group,b,[boardW,.09,.075],[0,.21,0],alias);
-      modelAddBox(group,b,[boardW,boardH,.045],[0,-.09,0],alias);
-      modelAddPlane(group,b,alias,boardW-.035,boardH-.035,[0,-.09,.024]);
+      group.rotation.y=modelCardinalYawState(state('minecraft:cardinal_direction','cardinal_direction','facing_direction')??cardinal);
+      const attached=modelBool(state('attached_bit')),metal=modelColorMat(0x55595d);
+      if(attached){
+        for(const x of [-.28,.28]){
+          modelAddStick(group,b,[x,.50,0],[x,.27,0],.018,null);
+          addTrackedMesh(group,new THREE.TorusGeometry(.028,.009,5,10),metal,[x,.50,0],[Math.PI/2,0,0]);
+        }
+      }else{
+        for(const x of [-.28,.28]){
+          modelAddStick(group,b,[x,.50,0],[x,.29,0],.018,null);
+          addTrackedMesh(group,new THREE.TorusGeometry(.03,.009,5,10),metal,[x,.50,0],[Math.PI/2,0,0]);
+        }
+        modelAddStick(group,b,[-.39,.48,0],[.39,.48,0],.026,null);
+      }
+      modelAddBox(group,b,[boardW,.075,.085],[0,.205,0],alias,{transparent:false});
+      finishBoard(group,-.09);
     }else{
       group.rotation.y=modelFacingYawFrom16(state('ground_sign_direction')??0);
-      modelAddCylinder(group,b,.035,.045,.52,[0,-.24,0],alias,8);
-      modelAddBox(group,b,[boardW,boardH,.055],[0,.16,0],alias);
-      modelAddPlane(group,b,alias,boardW-.035,boardH-.035,[0,.16,.029]);
+      modelAddCylinder(group,b,.031,.046,.49,[0,-.255,0],alias,8);
+      modelAddBox(group,b,[.115,.045,.105],[0,-.39,0],alias,{transparent:false});
+      finishBoard(group,.16);
+      const brace=modelColorMat(0x775239);
+      for(const x of [-.30,.30]){
+        const support=addTrackedMesh(group,new THREE.CylinderGeometry(.009,.014,.17,6),brace,[x*.72,-.025,0]);support.rotation.z=x<0?-.35:.35;
+      }
     }
     return true;
   }
@@ -867,20 +1046,7 @@ function renderAdvancedShape(group,b,kind){
     const p=dir.map(v=>v*dist);const plate=modelAddBox(group,b,dims,p,null);plate.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...dir));
     return true;
   }
-  if(kind==='lever'){
-    const value=state('lever_direction')??'down_east_west';const text=String(value).toLowerCase();
-    let mountNormal=[0,1,0],handleDir=[1,0,0];
-    if(text==='down_east_west'){mountNormal=[0,-1,0];handleDir=[1,0,0];}
-    else if(text==='up_north_south'){mountNormal=[0,1,0];handleDir=[0,0,1];}
-    else if(text==='up_east_west'){mountNormal=[0,1,0];handleDir=[1,0,0];}
-    else if(text==='down_north_south'){mountNormal=[0,-1,0];handleDir=[0,0,1];}
-    else if(['east','west','south','north'].includes(text)){mountNormal=modelFacingNormal(text);handleDir=[0,1,0];}
-    else {const code=modelNumber(value,-1);if(code===0){mountNormal=[0,-1,0];handleDir=[1,0,0];}else if(code===1){mountNormal=[1,0,0];handleDir=[0,1,0];}else if(code===2){mountNormal=[-1,0,0];handleDir=[0,1,0];}else if(code===3){mountNormal=[0,0,1];handleDir=[0,1,0];}else if(code===4){mountNormal=[0,0,-1];handleDir=[0,1,0];}else if(code===5){mountNormal=[0,1,0];handleDir=[0,0,1];}else if(code===6){mountNormal=[0,1,0];handleDir=[1,0,0];}else if(code===7){mountNormal=[0,-1,0];handleDir=[0,0,1];}}
-    const mount=new THREE.Group();modelAttachGroup(mount,mountNormal);group.add(mount);modelAddBox(mount,b,[.28,.055,.28],[0,-.01,0],'lever');
-    const handle=new THREE.Group();handle.position.set(0,.03,0);mount.add(handle);const open=modelBool(state('open_bit'));const rest=new THREE.Vector3(...handleDir);const axis=mountNormal[0]!==0?new THREE.Vector3(0,0,1):new THREE.Vector3(1,0,0);const angle=open?-.48:.48;
-    const pivot=new THREE.Group();pivot.rotation.set(axis.x*angle,axis.y*angle,axis.z*angle);handle.add(pivot);const end=rest.clone().multiplyScalar(.32);modelAddStick(pivot,b,[0,0,0],end.toArray(),.045,'lever');modelAddCylinder(pivot,b,.055,.055,.11,end.toArray(),'lever',8);
-    return true;
-  }
+  if(kind==='lever'){addDetailedLeverModel(group,b);return true;}
   if(kind==='fence_gate'){
     const open=modelBool(state('open_bit'));const inWall=modelBool(state('in_wall_bit'));
     group.rotation.y=modelFenceGateYaw(b,cardinal)+(open?Math.PI/2:0);
@@ -902,29 +1068,29 @@ function renderAdvancedShape(group,b,kind){
   }
   if(kind==='redstone_wire'){
     const signal=Math.max(0,Math.min(15,modelNumber(state('redstone_signal','signal_strength'),0)));
-    const glow=signal/15,red=Math.round(92+163*glow),green=Math.round(10+12*glow),blue=Math.round(12+10*glow),wireColor=(red<<16)|(green<<8)|blue;
-    const topCross=modelTintedTextureMaterial('redstone_dust_cross',b,wireColor,{transparent:true,alphaTest:.025,depthWrite:false});
-    const topLine=modelTintedTextureMaterial('redstone_dust_line',b,wireColor,{transparent:true,alphaTest:.025,depthWrite:false});
-    const sideMat=modelColorMat(Math.max(0x230000,wireColor>>2));
-    const crossMats=[sideMat,sideMat,topCross,sideMat,sideMat,sideMat];
-    const lineMats=[sideMat,sideMat,topLine,sideMat,sideMat,sideMat];
-    const levelY=-.472;
+    const glow=signal/15,red=Math.round(92+163*glow),green=Math.round(10+12*glow),blue=Math.round(12+10*glow);
+    const wire=modelColorMat((red<<16)|(green<<8)|blue,{toneMapped:false});
+    const edge=modelColorMat(Math.max(0x230000,((red<<16)|(green<<8)|blue)>>2));
+    const levelY=-.475;
     const modes={north:modelRedstoneDirectionMode(b,'north'),south:modelRedstoneDirectionMode(b,'south'),east:modelRedstoneDirectionMode(b,'east'),west:modelRedstoneDirectionMode(b,'west')};
     const connected=Object.values(modes).some(v=>v!=='none');
-    // Raised textured voxel center and separate volumetric arms; never a camera-facing sprite.
-    addShapeBox(group,b,[connected?.20:.15,.035,connected?.20:.15],[0,levelY,0],[0,0,0],crossMats);
+    addShapeBox(group,b,[connected?.16:.12,.026,connected?.16:.12],[0,levelY,0],[0,0,0],Array(6).fill(wire));
     for(const [dir,mode] of Object.entries(modes)){
       if(mode==='none')continue;
-      const eastWest=dir==='east'||dir==='west',positive=dir==='east'||dir==='south';
-      const size=eastWest?[.46,.035,.105]:[.105,.035,.46];
-      const pos=eastWest?[positive?.285:-.285,levelY,0]:[0,levelY,positive?.285:-.285];
-      const arm=addShapeBox(group,b,size,pos,[0,0,0],lineMats);
+      const ew=dir==='east'||dir==='west',positive=dir==='east'||dir==='south';
+      const size=ew?[.42,.022,.065]:[.065,.022,.42];
+      const pos=ew?[positive?.28:-.28,levelY,0]:[0,levelY,positive?.28:-.28];
+      const arm=addShapeBox(group,b,size,pos,[0,0,0],Array(6).fill(wire));
       if(mode==='up'||mode==='tall'){
-        if(dir==='east')arm.rotation.z=.28;else if(dir==='west')arm.rotation.z=-.28;
-        else if(dir==='north')arm.rotation.x=.28;else arm.rotation.x=-.28;
+        if(dir==='east')arm.rotation.z=.30;else if(dir==='west')arm.rotation.z=-.30;
+        else if(dir==='north')arm.rotation.x=-.30;else arm.rotation.x=.30;
         arm.position.y+=.055;
       }
+      // Tiny rounded node at each connection gives dust a raised, continuous profile.
+      addTrackedMesh(group,new THREE.SphereGeometry(.035,6,4),wire,[pos[0],pos[1]+(mode==='up'||mode==='tall'?.045:0),pos[2]]);
     }
+    // A dark recessed bed is visible only as a narrow edge beneath the dust.
+    addShapeBox(group,b,[.17,.012,.17],[0,levelY-.018,0],[0,0,0],Array(6).fill(edge));
     return true;
   }
   return false;
@@ -956,40 +1122,24 @@ function makeSpecialBlockObject(b,attachToScene=true){
     const center=startPoint.map((v,i)=>v+axisN[i]*.22);
     const torchBody=new THREE.Group();torchBody.userData.blockRef=b;torchBody.position.set(...center);
     torchBody.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...axisN));group.add(torchBody);
-    // The shaft and flame are separate 3D meshes with volume. The flame texture wraps around
-    // a short tapered prism/cylinder instead of being rendered as a single flat plane.
-    modelAddStick(torchBody,b,[0,-.18,0],[0,.13,0],redstone?.031:.034,'oak_planks');
-    const flameAlias=redstone?(unlit?'redstone_torch_off':'redstone_torch_on'):soul?'soul_torch':copper?'copper_torch':'torch_on';
-    const flameMat=modelMat(flameAlias,b,{transparent:true,alphaTest:.025,depthWrite:false});
-    const head=addTrackedMesh(torchBody,new THREE.CylinderGeometry(.034,.055,.145,4,1),flameMat,[0,.205,0]);head.rotation.y=Math.PI/4;
-    const tipColor=unlit?0x4b2023:redstone?0xff4938:soul?0xa4f5ed:copper?0xffc27b:0xffdf84;
-    addTrackedMesh(torchBody,new THREE.SphereGeometry(.018,5,4),modelColorMat(tipColor),[0,.282,0]);
+    // Torch shaft, metal collar, cap and flame are all real 3D geometry; no atlas flame sprite.
+    addGeometricTorchHead(torchBody,b,{redstone,lit:!unlit,soul,copper});
   }else if(kind==='button'){
     const facing=state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction')??2;
     const n=normal(facing),pressed=modelBool(state('button_pressed_bit','pressed_bit'));
     const mount=new THREE.Group();mount.userData.blockRef=b;
     mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...n));group.add(mount);
-    const baseMat=modelMat('stone',b),faceMats=mats;
-    addShapeBox(mount,b,[.30,.27,.055],[0,0,.425],[0,0,0],Array(6).fill(baseMat));
-    addShapeBox(mount,b,[.235,.205,.075],[0,0,pressed?.458:.485],[0,0,0],faceMats);
+    const woodButton=short.includes('wooden')||/(oak|spruce|birch|jungle|acacia|dark_oak|mangrove|cherry|bamboo|crimson|warped)_button/.test(short);
+    const plateMat=modelColorMat(0x555b61),rimMat=modelColorMat(0x292f35);
+    const capMat=modelColorMat(woodButton?0x946b45:0x92999e),capSide=modelColorMat(woodButton?0x62452f:0x626a70);
+    addTrackedMesh(mount,new THREE.BoxGeometry(.34,.29,.065),plateMat,[0,0,.425]);
+    addTrackedMesh(mount,new THREE.BoxGeometry(.30,.25,.018),rimMat,[0,0,.465]);
+    addTrackedMesh(mount,new THREE.BoxGeometry(.235,.185,pressed?.035:.075),capMat,[0,0,pressed?.493:.525]);
+    for(const x of [-.125,.125])for(const y of [-.105,.105]){
+      addTrackedMesh(mount,new THREE.CylinderGeometry(.012,.012,.008,8),capSide,[x,y,.48],[Math.PI/2,0,0]);
+    }
   }else if(kind==='lever'){
-    const dirValue=String(state('lever_direction','facing_direction','minecraft:cardinal_direction')??'up_north').toLowerCase();
-    const parts=dirValue.split('_');let mountNormal=[0,1,0],yaw=0;
-    if(parts.length>1&&['up','down'].includes(parts[0])){
-      mountNormal=parts[0]==='down'?[0,-1,0]:[0,1,0];
-      yaw=modelCardinalYaw(parts[1],'north');
-    }else if(['north','south','east','west'].includes(dirValue))mountNormal=normal(dirValue);
-    const mount=new THREE.Group();mount.userData.blockRef=b;
-    mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...mountNormal));
-    if(yaw)mount.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw));
-    group.add(mount);
-    const metal=modelColorMat(0x777d83),baseTop=modelColorMat(0x898b86),handleMat=modelColorMat(0x57402d);
-    addShapeBox(mount,b,[.30,.075,.30],[0,.445,0],[0,0,0],[metal,metal,baseTop,metal,metal,metal]);
-    const powered=modelBool(state('open_bit','powered_bit','lever_powered_bit'));
-    const angle=powered?.62:-.48;
-    const handle=new THREE.Group();handle.userData.blockRef=b;handle.position.set(0,.49,0);handle.rotation.z=angle;mount.add(handle);
-    modelAddStick(handle,b,[0,0,0],[0,.30,0],.035,'oak_planks');
-    addShapeBox(handle,b,[.105,.095,.105],[0,.30,0],[0,0,0],Array(6).fill(handleMat));
+    addDetailedLeverModel(group,b);
   }else if(kind==='pressure_plate'||kind==='carpet'||kind==='snow_layer'){
     let h=kind==='pressure_plate'?.0625:kind==='carpet'?.0625:Math.max(.125,Math.min(1,((Number(state('height'))||0)+1)/8));
     const pressed=!!state('redstone_signal','powered_bit');if(kind==='pressure_plate'&&pressed)h=.045;
@@ -1033,55 +1183,31 @@ function makeSpecialBlockObject(b,attachToScene=true){
       const centerColor=poweredRail?poweredMat:modelColorMat(activatorRail?0x7b6b3e:0x665f58);
       addShapeBox(railGroup,b,[.16,.026,.72],[0,-.414,0],[0,0,0],Array(6).fill(centerColor));
     }
-  }else if(kind==='redstone_wire'){
-    const signal=Math.max(0,Math.min(15,modelNumber(state('redstone_signal','signal_strength'),0)));
-    const glow=signal/15,red=Math.round(92+163*glow),green=Math.round(10+12*glow),blue=Math.round(12+10*glow),wireColor=(red<<16)|(green<<8)|blue;
-    const topCross=modelTintedTextureMaterial('redstone_dust_cross',b,wireColor,{transparent:true,alphaTest:.025,depthWrite:false});
-    const topLine=modelTintedTextureMaterial('redstone_dust_line',b,wireColor,{transparent:true,alphaTest:.025,depthWrite:false});
-    const sideMat=modelColorMat(Math.max(0x230000,wireColor>>2));
-    const crossMats=[sideMat,sideMat,topCross,sideMat,sideMat,sideMat];
-    const lineMats=[sideMat,sideMat,topLine,sideMat,sideMat,sideMat];
-    const levelY=-.475;
-    const modes={north:modelRedstoneDirectionMode(b,'north'),south:modelRedstoneDirectionMode(b,'south'),east:modelRedstoneDirectionMode(b,'east'),west:modelRedstoneDirectionMode(b,'west')};
-    const connected=Object.values(modes).some(v=>v!=='none');
-    // The center is a small raised voxel pad; each connection is its own raised cuboid strip.
-    addShapeBox(group,b,[connected?.19:.12,.018,connected?.19:.12],[0,levelY,0],[0,0,0],crossMats);
-    for(const [dir,mode] of Object.entries(modes)){
-      if(mode==='none')continue;
-      let size,pos,rotation=[0,0,0];
-      if(dir==='east'||dir==='west'){
-        size=[.47,.018,.105];pos=[dir==='east'?.255:-.255,levelY,0];
-        if(mode==='up')rotation[2]=dir==='east'?Math.PI/4:-Math.PI/4;
-      }else{
-        size=[.105,.018,.47];pos=[0,levelY,dir==='south'?.255:-.255];
-        if(mode==='up')rotation[0]=dir==='south'?Math.PI/4:-Math.PI/4;
-      }
-      addShapeBox(group,b,size,pos,rotation,lineMats);
-    }
   }else if(kind==='redstone_device'){
     group.rotation.y=modelRedstoneDeviceYaw(b);
     const isComparator=short.includes('comparator');
     const powered=short.startsWith('powered_')||modelBool(state('powered_bit','output_lit_bit','lit'));
     const subtract=modelBool(state('output_subtract_bit','subtract_mode'));
-    const deviceAlias=isComparator?(powered?'comparator_on':'comparator'):(powered?'repeater_on':'repeater');
-    const floor=modelMat(deviceAlias,b),top=modelMat(deviceAlias,b,{transparent:true,alphaTest:.025,depthWrite:false});
-    const baseFaces=[floor,floor,top,floor,floor,floor];
-    addShapeBox(group,b,[.94,.095,.94],[0,-.4525,0],[0,0,0],baseFaces);
-    // Raised track and redstone posts are actual meshes with thickness.
+    const baseMat=modelColorMat(isComparator?0x85817a:0x89867f),topMat=modelColorMat(0xb7b3a9),rimMat=modelColorMat(0x565b5e);
+    addShapeBox(group,b,[.94,.095,.94],[0,-.4525,0],[0,0,0],Array(6).fill(baseMat));
+    addShapeBox(group,b,[.84,.018,.84],[0,-.395,0],[0,0,0],Array(6).fill(topMat));
+    for(const x of [-.43,.43])addShapeBox(group,b,[.025,.022,.78],[x,-.395,0],[0,0,0],Array(6).fill(rimMat));
+    for(const z of [-.43,.43])addShapeBox(group,b,[.78,.022,.025],[0,-.395,z],[0,0,0],Array(6).fill(rimMat));
+    // Raised track, terminals and redstone posts are independent solid meshes.
     const trackMat=modelColorMat(subtract?0x6c4a8e:0x8b3830);
-    addShapeBox(group,b,[.055,.025,.34],[0,-.3925,0],[0,0,0],Array(6).fill(trackMat));
+    addShapeBox(group,b,[.055,.025,.34],[0,-.365,0],[0,0,0],Array(6).fill(trackMat));
     if(isComparator){
       modelAddMiniRedstoneTorch(group,b,-.22,.20,true,.82);
       modelAddMiniRedstoneTorch(group,b,.22,.20,true,.82);
       modelAddMiniRedstoneTorch(group,b,0,-.22,powered,.82);
       const modeMat=modelColorMat(subtract?0x9b70be:0xa6a4a0);
-      addShapeBox(group,b,[.20,.035,.07],[0,-.365,0],[0,0,0],Array(6).fill(modeMat));
+      addShapeBox(group,b,[.20,.035,.07],[0,-.335,0],[0,0,0],Array(6).fill(modeMat));
     }else{
       const delay=Math.max(0,Math.min(3,modelNumber(state('repeater_delay','delay'),0)));
       modelAddMiniRedstoneTorch(group,b,0,-.24,!powered,.82);
       modelAddMiniRedstoneTorch(group,b,0,.24,powered,.82);
       const sliderMat=modelColorMat(0xb1a59a);
-      for(let i=0;i<=delay;i++)addShapeBox(group,b,[.035,.028,.035],[0,-.371,-.09+i*.06],[0,0,0],Array(6).fill(sliderMat));
+      for(let i=0;i<=delay;i++)addShapeBox(group,b,[.035,.035,.035],[0,-.335,-.09+i*.06],[0,0,0],Array(6).fill(sliderMat));
     }
   }else if(kind==='stairs'){
     const top=!!state('upside_down_bit');const dir=Number(state('weirdo_direction','direction'))||0;const rot=rotY(dir);
@@ -1411,26 +1537,33 @@ async function applyBatchReplace(){if(!batchReplacePreview?.changes?.length)retu
   document.getElementById('batchReplaceModal').classList.remove('on');batchReplacePreview=null;updateBlockLookups();rebuildSearchIndex();if(selected){const stillSelected=project.blocks.find(b=>b.x===selected.x&&b.y===selected.y&&b.z===selected.z&&b.layer===selected.layer);selectBlock(stillSelected||null);}saveSnapshotDebounced();await rebuildAllWithProgress('正在应用批量替换','正在更新受影响的方块模型…');toast(`批量替换完成，修改 ${plan.changes.length.toLocaleString()} 个方块`,'ok');
 }
 
-function updateFileUI(){document.getElementById('fileName').textContent=project?.filename||'尚未打开结构文件';document.getElementById('exportBtn').disabled=!project||!window.BFSEFormats;document.getElementById('exportFormatSelect').disabled=!project||!window.BFSEFormats;document.getElementById('batchReplaceBtn').disabled=!project;if(project){const outputs=window.BFSEFormats?.outputFormats||[];const preferred=outputs.some(f=>f.key===project.sourceFormat)?project.sourceFormat:'mcstructure';document.getElementById('exportFormatSelect').value=preferred;}}
+function updateFileUI(){
+  document.getElementById('fileName').textContent=project?.filename||'尚未打开结构文件';
+  document.getElementById('exportBtn').disabled=!project;
+  document.getElementById('batchReplaceBtn').disabled=!project;
+}
 async function rebuildAllWithProgress(title,detail='正在构建完整模型…'){
   showModelLoading(title,detail,8);clearSceneObjects();requestSceneRender();
   const pending=waitForSceneRebuild();buildScene(true);await pending;hideModelLoading();
 }
 async function importFile(file){
   if(!file)return;
-  if(!window.BFSEFormats?.detectFormat)throw new Error('格式转换模块尚未初始化，请刷新页面后重试');
+  if(!/\.mcstructure$/i.test(String(file.name||'')))throw new Error('BlockFlow 仅支持导入 .mcstructure 文件。');
   if(file.size>MAX_IMPORT_BYTES)throw new Error(`文件超过 ${MAX_IMPORT_BYTES/1024/1024} MiB 上限`);
-  const sourceFormat=window.BFSEFormats.detectFormat(file.name),previousProject=project,previousMeta=window.BFSECore.cloneNBT(metadata),previousLastBlockId=lastBlockId,previousSelection=selected?{x:selected.x,y:selected.y,z:selected.z,layer:selected.layer}:null;
-  showModelLoading('正在导入结构',file.name,3);selected=null;clearSceneObjects();requestSceneRender();
+  const previousProject=project,previousMeta=window.BFSECore.cloneNBT(metadata),previousLastBlockId=lastBlockId,previousSelection=selected?{x:selected.x,y:selected.y,z:selected.z,layer:selected.layer}:null;
+  showModelLoading('正在导入 MCStructure',file.name,3);selected=null;clearSceneObjects();requestSceneRender();
   try{
-    const converted=await window.BFSEFormats.importToMcstructure(file,{onProgress:message=>setModelLoadingProgress(22,message)});
-    setModelLoadingProgress(38,'文件转换完成，正在解析 NBT…');await new Promise(resolve=>requestAnimationFrame(resolve));
-    const parsed=parseStructure(converted.bytes.buffer);parsed.filename=file.name;parsed.sourceFormat=sourceFormat;parsed.sourceWasConverted=converted.converted;parsed.conversionWarnings=converted.warnings||[];parsed.cameraSaved=false;
+    const buffer=await file.arrayBuffer();
+    setModelLoadingProgress(28,'正在解析 MCStructure NBT…');
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+    const parsed=parseStructure(buffer);
+    parsed.filename=file.name;parsed.cameraSaved=false;
     project=parsed;selected=null;resetUndoHistory();applyMeta({});lastBlockId='minecraft:stone';rebuildSearchIndex();updateFileUI();selectBlock(null);
     setModelLoadingProgress(52,`正在建立模型索引（${project.blocks.length.toLocaleString()} 个方块）…`);
     const pending=waitForSceneRebuild();buildScene(true);await pending;hideModelLoading();
-    const canonicalBytes=await serializeProjectAsync('full');await dbPut({blob:new Blob([canonicalBytes],{type:'application/octet-stream'}),filename:file.name,sourceFormat,meta:{},lastBlockId,updatedAt:Date.now()}).catch(e=>console.warn('IndexedDB save failed',e));
-    if(converted.warnings?.length)toast('导入完成，但该格式存在兼容性限制：'+converted.warnings[0],'warn',6000);else toast(`读取完成：${project.blocks.length.toLocaleString()} 个非空气方块，其中 ${project.commandCount.toLocaleString()} 个命令方块`,'ok');
+    const canonicalBytes=await serializeProjectAsync('full');
+    await dbPut({blob:new Blob([canonicalBytes],{type:'application/octet-stream'}),filename:file.name,meta:{},lastBlockId,updatedAt:Date.now()}).catch(e=>console.warn('IndexedDB save failed',e));
+    toast(`读取完成：${project.blocks.length.toLocaleString()} 个非空气方块，其中 ${project.commandCount.toLocaleString()} 个命令方块`,'ok');
   }catch(error){
     console.error(error);
     if(previousProject){project=previousProject;applyMeta(previousMeta);lastBlockId=previousLastBlockId;rebuildSearchIndex();updateFileUI();try{const pending=waitForSceneRebuild();buildScene(true);await pending;if(previousSelection){const old=project.blocks.find(b=>b.x===previousSelection.x&&b.y===previousSelection.y&&b.z===previousSelection.z&&b.layer===previousSelection.layer);selectBlock(old||null);}else selectBlock(null);}catch(restoreError){console.warn('Previous model restore failed:',restoreError);}}
@@ -1438,8 +1571,22 @@ async function importFile(file){
     hideModelLoading();throw error;
   }
 }
-async function restoreLastSession(){try{const session=await dbGet();if(!session?.blob)return false;showModelLoading('正在恢复结构','正在读取上次编辑会话…',8);const buf=await session.blob.arrayBuffer();const parsed=parseStructure(buf);parsed.filename=session.filename||'上次编辑的结构.mcstructure';parsed.sourceFormat=session.sourceFormat||'mcstructure';parsed.cameraSaved=false;project=parsed;resetUndoHistory();let savedMeta=session.meta||{};try{const quick=localStorage.getItem('bfse-meta:'+project.filename+':'+project.X+'x'+project.Y+'x'+project.Z);if(quick)savedMeta=JSON.parse(quick);}catch(e){console.warn('Quick metadata restore failed',e);}applyMeta(savedMeta);lastBlockId=session.lastBlockId||'minecraft:stone';document.getElementById('newBlockIdInput').value=lastBlockId;rebuildSearchIndex();updateFileUI();const pending=waitForSceneRebuild();buildScene(true);await pending;hideModelLoading();toast('已恢复上次编辑会话','ok');return true;}catch(error){hideModelLoading();console.warn('Restore session failed',error);toast('恢复上次会话失败：'+error.message,'err');return false;}}
-async function exportFile(){if(!project)return;if(!window.BFSEFormats?.exportFromMcstructure){toast('格式转换模块尚未初始化，暂时无法导出。请刷新页面。','err');return;}const button=document.getElementById('exportBtn'),select=document.getElementById('exportFormatSelect'),format=select.value;button.disabled=true;select.disabled=true;button.textContent='正在导出…';try{const canonicalBytes=await serializeProjectAsync('full');const baseName=(project.filename||'structure').replace(/@\[.*$/,'').replace(/\.[^.]+$/,'').replace(/-edited$/i,'')||'structure';const converted=await window.BFSEFormats.exportFromMcstructure(canonicalBytes,format,baseName,{onProgress:message=>{button.textContent='正在转换…';setStatus(message);}});const randomSuffix=String(Math.floor(Math.random()*1000000)).padStart(6,'0');const filename=baseName+randomSuffix+converted.format.ext;const blob=new Blob([converted.bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);if(converted.warnings?.length)toast('已导出 '+filename+'；注意：'+converted.warnings[0],'warn',6500);else toast(`已导出 ${filename}（${(converted.bytes.length/1024/1024).toFixed(2)} MiB）`,'ok');}catch(error){console.error(error);toast('导出失败：'+error.message,'err');}finally{button.disabled=!project;select.disabled=!project;button.textContent='导出结构';}}
+
+async function restoreLastSession(){try{const session=await dbGet();if(!session?.blob)return false;showModelLoading('正在恢复结构','正在读取上次编辑会话…',8);const buf=await session.blob.arrayBuffer();const parsed=parseStructure(buf);parsed.filename=session.filename||'上次编辑的结构.mcstructure';parsed.cameraSaved=false;project=parsed;resetUndoHistory();let savedMeta=session.meta||{};try{const quick=localStorage.getItem('bfse-meta:'+project.filename+':'+project.X+'x'+project.Y+'x'+project.Z);if(quick)savedMeta=JSON.parse(quick);}catch(e){console.warn('Quick metadata restore failed',e);}applyMeta(savedMeta);lastBlockId=session.lastBlockId||'minecraft:stone';document.getElementById('newBlockIdInput').value=lastBlockId;rebuildSearchIndex();updateFileUI();const pending=waitForSceneRebuild();buildScene(true);await pending;hideModelLoading();toast('已恢复上次编辑会话','ok');return true;}catch(error){hideModelLoading();console.warn('Restore session failed',error);toast('恢复上次会话失败：'+error.message,'err');return false;}}
+async function exportFile(){
+  if(!project)return;
+  const button=document.getElementById('exportBtn');button.disabled=true;button.textContent='正在导出 MCStructure…';
+  try{
+    const bytes=await serializeProjectAsync('full');
+    const baseName=(project.filename||'structure').replace(/@\[.*$/,'').replace(/\.[^.]+$/,'').replace(/-edited$/i,'')||'structure';
+    const randomSuffix=String(Math.floor(Math.random()*1000000)).padStart(6,'0');
+    const filename=`${baseName}${randomSuffix}.mcstructure`;
+    const blob=new Blob([bytes],{type:'application/octet-stream'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    toast(`已导出 ${filename}（${(bytes.byteLength/1024/1024).toFixed(2)} MiB）`,'ok');
+  }catch(error){console.error(error);toast('导出失败：'+error.message,'err');}
+  finally{button.disabled=!project;button.textContent='导出 MCStructure';}
+}
+
 
 function setMobileInspectorOpen(open){
   const panel=document.getElementById('inspectorPanel');
@@ -1487,5 +1634,5 @@ function setupUI(){
   window.addEventListener('pagehide',()=>{if(project){clearTimeout(saveTimer);saveSnapshot();}});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&project){clearTimeout(saveTimer);saveSnapshot();}});
 }
 
-(async function start(){setupUI();updateUndoButton();try{await initThree();const restored=await restoreLastSession();if(!restored)toast('请选择一个支持的结构文件开始编辑');}catch(error){document.getElementById('loading').textContent='3D 引擎初始化失败：'+error.message;console.error(error);}})();
+(async function start(){setupUI();updateUndoButton();try{await initThree();const restored=await restoreLastSession();if(!restored)toast('请选择一个 .mcstructure 文件开始编辑');}catch(error){document.getElementById('loading').textContent='3D 引擎初始化失败：'+error.message;console.error(error);}})();
 
