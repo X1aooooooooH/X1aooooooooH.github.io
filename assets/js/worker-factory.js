@@ -1,11 +1,11 @@
 window.BlockFlowWorkers=(()=>{
  const assetRoot=new URL('../',document.currentScript.src);
- const files=Object.freeze({snapshot:'snapshot.js',batch:'batch.js',format:'format.js'});
+ const files=Object.freeze({snapshot:'snapshot.js',batch:'batch.js',format:'format.js',geometry:'geometry-baker.js'});
  const workers=new Set();
  const create=id=>{
   const file=files[id];
   if(!file)throw new Error('未知后台任务：'+id);
-  const worker=new Worker(new URL('workers/'+file+'?v=2.8.1',assetRoot).href,{name:'BlockFlow-'+id});
+  const worker=new Worker(new URL('workers/'+file+'?v=2.10.0-worker-chunk-lod',assetRoot).href,{name:'BlockFlow-'+id});
   workers.add(worker);
   const terminate=worker.terminate.bind(worker);
   worker.terminate=()=>{terminate();workers.delete(worker);};

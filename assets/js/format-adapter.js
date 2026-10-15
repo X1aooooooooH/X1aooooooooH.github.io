@@ -6,10 +6,8 @@
     { id: 0, key: 'mcstructure', ext: '.mcstructure', label: 'Mcstructure（基岩版）' },
     { id: 1, key: 'litematic', ext: '.litematic', label: 'Litematic（Litematica）' },
     { id: 2, key: 'schem', ext: '.schem', label: 'Schem（Sponge / WorldEdit）' },
-    { id: 3, key: 'wsmr', ext: '.wsmr', label: 'WSMR（中间格式）' },
-    { id: 4, key: 'bdx', ext: '.bdx', label: 'BDX（基岩版）' },
-    { id: 5, key: 'schematic', ext: '.schematic', label: 'Schematic（MCEdit 旧版）' },
-    { id: 6, key: 'mcworld', ext: '.mcworld', label: 'Mcworld（基岩版世界）' }
+    { id: 3, key: 'wsmr', ext: '.wsmr', label: 'WSMR（BlockFlow 中间格式 v2）' },
+    { id: 5, key: 'schematic', ext: '.schematic', label: 'Schematic（MCEdit 旧版）' }
   ]);
   const INPUT_EXTENSIONS = Object.freeze(['.mcstructure','.litematic','.schem','.wsmr','.bdx','.schematic','.nbt','.mca','.mcworld','.mcpack','.mcaddon','.zip']);
   const FORMAT_BY_EXT = new Map(OUTPUT_FORMATS.map(f => [f.ext, f]));
@@ -37,7 +35,7 @@
         if (data.type === 'progress') { task.onProgress?.(data.message); return; }
         pending.delete(data.id);
         if (data.type === 'error') task.reject(new Error(data.message || '格式转换失败'));
-        else if (data.type === 'result') task.resolve({ bytes: new Uint8Array(data.out), bbox: data.bbox || null });
+        else if (data.type === 'result') task.resolve({ bytes: new Uint8Array(data.out), bbox: data.bbox || null, warnings: data.warnings || [], stats: data.stats || null, elapsed: data.elapsed || 0 });
       };
       worker.onerror = event => {
         const error = new Error(event.message || '格式转换 Worker 运行失败');
@@ -64,14 +62,13 @@
     const warnings = [];
     if (sourceFormat === 'bdx') warnings.push('BDX 与 mcstructure 的信息范围不同；部分方块实体数据可能无法完整往返。');
     if (sourceFormat === 'schematic') warnings.push('旧版 .schematic 面向 Java 1.12；新版本方块和部分方块实体信息可能在转换时丢失。');
-    if (sourceFormat === 'mcworld' || sourceFormat === 'mca') warnings.push('世界/区块文件可能包含多个区域；当前转换规则对多区域输入仅取第 1 个区域。需要指定坐标范围时，请在文件名中使用 @[x,y,z]~[x,y,z]。');
+    if (sourceFormat === 'mcworld') warnings.push('当前仅能从 ZIP 容器中提取内部包含的结构文件；直接读取 LevelDB 世界数据库尚未实现。');
+    if (sourceFormat === 'mca') warnings.push('MCA 导入目前仅读取现代 block_states 调色板区块；方块实体、实体和旧版区块数据未完整迁移。');
     return warnings;
   }
   function warningsForExport(key, bbox) {
     const warnings = [];
-    if (key === 'bdx') warnings.push('BDX 导出不保留原点信息；转换核心注明箱子内物品暂不保留。');
-    if (key === 'schematic') warnings.push('旧版 .schematic 可能无法表达新版本方块；BlockFlow 会写入标准 TileEntities 命令方块数据及兼容清单，但第三方旧工具可能忽略扩展字段。');
-    if (key === 'mcworld' && bbox) warnings.push('已将结构写入虚空世界；世界坐标范围已编码进文件名。');
+    if (key === 'schematic') warnings.push('旧版 .schematic 无法表达大部分现代方块状态；BlockFlow 会额外写入自有调色板扩展以保证 BlockFlow 内部往返，但其他工具可能忽略该扩展。');
     return warnings;
   }
   const converters = Object.freeze(Object.fromEntries(OUTPUT_FORMATS.map(format => [format.key, Object.freeze({
@@ -80,16 +77,16 @@
       const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
       if (format.key === 'mcstructure') return { bytes:new Uint8Array(input), converted:false, bbox:null, warnings:[] };
       const result = await convert(input, 'mcstructure', name, options);
-      return { ...result, converted:true, warnings:warningsForImport(format.key) };
+      return { ...result, converted:true, warnings:[...(result.warnings || []), ...warningsForImport(format.key)] };
     },
     async exportFromCanonical(bytes, name=`export${format.ext}`, options={}) {
       const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
       if (format.key === 'mcstructure') return { bytes:new Uint8Array(input), bbox:null, warnings:[] };
       const result = await convert(input, format.key, name, options);
-      return { ...result, warnings:warningsForExport(format.key, result.bbox) };
+      return { ...result, warnings:[...(result.warnings || []), ...warningsForExport(format.key, result.bbox)] };
     }
   })])));
-  const INPUT_ONLY_FORMATS = Object.freeze(['nbt','mca','mcpack','mcaddon','zip']);
+  const INPUT_ONLY_FORMATS = Object.freeze(['nbt','mca','mcpack','mcaddon','zip','mcworld','bdx']);
   const inputConverters = Object.freeze({
     ...converters,
     ...Object.fromEntries(INPUT_ONLY_FORMATS.map(key => [key, Object.freeze({
@@ -97,7 +94,7 @@
       async importToCanonical(bytes, name=`import.${key}`, options={}) {
         const input = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
         const result = await convert(input, 'mcstructure', name, options);
-        return { ...result, converted:true, warnings:warningsForImport(key) };
+        return { ...result, converted:true, warnings:[...(result.warnings || []), ...warningsForImport(key)] };
       }
     })]))
   });

@@ -1,11 +1,10 @@
 
 
-let project=null,selected=null,threeLib=null,scene=null,camera=null,renderer=null,controls=null,raycaster=null,pickTargets=[],blockGeometry=null,solidMaterial=null,textureCache={},textureClones=new Set(),commandMaterialCache=new Map(),textureLoader=null,outline=null,canvas=null,saveTimer=0,toastTimer=0,pendingInsert=null,dragOrigin=null,cameraMoveKeys=new Set(),lastCameraMoveAt=0,specialGeometries=new Set(),specialMaterialCache=new Map(),specialHitboxGeometry=null,specialHitboxMaterial=null,blockPositionSet=new Set(),blockLookupByLayer=new Map(),blockCountByLayer=new Map(),blockArrayIndex=new Map(),blockListByLayer=new Map(),blockLayerArrayIndex=new Map(),commandBlockCount=0;
-let bakedGroup=null,bakedAtlas=null,bakedAtlasPromise=null,legacyAtlasMap=null,legacyAtlasMapPromise=null,bakeBuildSequence=0;
-const renderLod=1;
+let project=null,selected=null,threeLib=null,scene=null,camera=null,renderer=null,controls=null,raycaster=null,pickTargets=[],solidMaterial=null,textureCache={},textureClones=new Set(),commandMaterialCache=new Map(),textureLoader=null,outline=null,canvas=null,saveTimer=0,toastTimer=0,pendingInsert=null,dragOrigin=null,cameraMoveKeys=new Set(),lastCameraMoveAt=0,specialGeometries=new Set(),specialMaterialCache=new Map(),specialHitboxGeometry=null,specialHitboxMaterial=null,blockPositionSet=new Set(),blockLookupByLayer=new Map(),blockCountByLayer=new Map(),blockArrayIndex=new Map(),blockListByLayer=new Map(),blockLayerArrayIndex=new Map(),blocksByLayerChunk=new Map(),blockChunkArrayIndex=new Map(),commandBlockCount=0;
+let bakedGroup=null,bakedAtlas=null,bakedAtlasPromise=null,blockflowAtlasMap=null,blockflowAtlasMapPromise=null,bakeBuildSequence=0;
 let snapshotWorker=null,snapshotWorkerReady=false,snapshotSeq=0,snapshotPending=new Map(),snapshotLoadPending=new Map(),snapshotWorkerProject=null,snapshotBasePromise=null;let snapshotDirtyLayers=new Set();
 let blockLayerBounds=new Map(),highlightOverlay=null,highlightFillOverlay=null,highlightedBlockKeys=new Set(),sourceLightGroup=null,hemisphereLight=null,sunLight=null,fillLight=null,lightSourceCache=new Map();
-let renderRaf=0,renderingFrame=false,rebuildTimer=0,rebuildRunning=false,rebuildQueuedLayers=new Set(),rebuildQueuedFull=false;
+let renderRaf=0,renderingFrame=false,rebuildTimer=0,rebuildRunning=false,rebuildQueuedLayers=new Set(),rebuildQueuedChunks=new Map(),rebuildQueuedFull=false;
 // Incremental edit previews are tracked separately from the baked layer meshes.
 // This map must exist before clearSceneObjects(), removeEditPreview() or
 // renderFastEditPreview() can run (including the first edit after loading).
@@ -192,12 +191,13 @@ function disposeCommandMaterialCache(){
   textureCache={};
 }
 function clearSceneObjects(){
+  bakeBuildSequence++;window.BlockFlowBaker?.cancelAll?.();
+  rebuildQueuedLayers.clear();rebuildQueuedChunks.clear();rebuildQueuedFull=false;
   if(!scene)return;
   if(bakedGroup){scene.remove(bakedGroup);disposeLayerGroup(bakedGroup);bakedGroup=null;}
   for(const group of editPreviewGroups.values()){scene.remove(group);group.traverse(node=>{node.geometry?.dispose?.();});}editPreviewGroups.clear();
   for(const target of pickTargets)scene.remove(target.mesh);
   pickTargets=[];
-  if(blockGeometry){blockGeometry.dispose();blockGeometry=null;}
   for(const geometry of specialGeometries)geometry.dispose();
   specialGeometries.clear();
   if(specialHitboxGeometry){specialHitboxGeometry.dispose();specialHitboxGeometry=null;}
@@ -213,21 +213,21 @@ function clearSceneObjects(){
   if(sourceLightGroup)while(sourceLightGroup.children.length)sourceLightGroup.remove(sourceLightGroup.children[0]);
 }
 async function ensureLegacyAtlasMap(){
-  if(legacyAtlasMap)return legacyAtlasMap;
-  if(!legacyAtlasMapPromise){
-    legacyAtlasMapPromise=fetch('../assets/data/legacy-atlas-map.json?v=2.8.0',{cache:'force-cache'}).then(response=>{
+  if(blockflowAtlasMap)return blockflowAtlasMap;
+  if(!blockflowAtlasMapPromise){
+    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.8.2-blockflow-atlas',{cache:'force-cache'}).then(response=>{
       if(!response.ok)throw new Error('方块图集索引加载失败：'+response.status);
       return response.json();
-    }).then(data=>{legacyAtlasMap=data;return data;}).catch(error=>{legacyAtlasMapPromise=null;throw error;});
+    }).then(data=>{blockflowAtlasMap=data;return data;}).catch(error=>{blockflowAtlasMapPromise=null;throw error;});
   }
-  return legacyAtlasMapPromise;
+  return blockflowAtlasMapPromise;
 }
 function ensureBlockAtlasLoaded(){
   if(bakedAtlasPromise)return bakedAtlasPromise;
   if(!textureLoader||!threeLib)return Promise.reject(new Error('纹理加载器尚未初始化'));
   const {THREE}=threeLib;
   bakedAtlasPromise=new Promise((resolve,reject)=>{
-    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.8.0',loaded=>{
+    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.8.2-blockflow-atlas',loaded=>{
       requestSceneRender();resolve(loaded);
     },undefined,error=>{bakedAtlas=null;bakedAtlasPromise=null;reject(error||new Error('方块图集加载失败'));});
     bakedAtlas=texture;
@@ -241,10 +241,10 @@ function getBlockAtlasBaseTexture(){
   return bakedAtlas;
 }
 function makeAtlasTexture(assetId,repeatY=1,offsetY=0){
-  const rect=legacyAtlasMap?.textures?.[assetId];
+  const rect=blockflowAtlasMap?.textures?.[assetId];
   const base=getBlockAtlasBaseTexture();
   if(!rect||!base)return null;
-  const [x,y,w,h]=rect;const {width,height}=legacyAtlasMap;
+  const [x,y,w,h]=rect;const {width,height}=blockflowAtlasMap;
   const {THREE}=threeLib;const texture=base.clone();
   texture.wrapS=THREE.ClampToEdgeWrapping;texture.wrapT=THREE.ClampToEdgeWrapping;
   texture.repeat.set(Math.max(0,w-1)/width,Math.max(0,h-1)/height*repeatY);
@@ -1137,93 +1137,68 @@ function makeSpecialBlockObject(b,attachToScene=true){
   }
   if(attachToScene){scene.add(group);pickTargets.push({mesh:group,block:b});}return group;
 }
-function createInstanceGroup(blocks,material){
-  if(!blocks.length)return;
-  const {THREE}=threeLib;const mesh=new THREE.InstancedMesh(blockGeometry,material,blocks.length);
-  mesh.frustumCulled=false;const dummy=new THREE.Object3D(),color=new THREE.Color();
-  for(let i=0;i<blocks.length;i++){
-    const b=blocks[i];dummy.position.set(b.x+.5,b.y+.5+(b.layer?1.08:0),b.z+.5);dummy.updateMatrix();
-    mesh.setMatrixAt(i,dummy.matrix);
-    const mark=!!metadata[metaKey(b)]?.highlight;
-    color.set(mark?0xffd36c:0xffffff);
-    mesh.setColorAt(i,color);
-  }
-  mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
-  mesh.computeBoundingSphere();scene.add(mesh);pickTargets.push({mesh,blocks});
-}
-function buildSceneLegacy(fit=false){
-  if(!scene||!project)return;const {THREE}=threeLib;clearSceneObjects();
-  const live=project.blocks;
-  updateBlockLookups();
-  if(live.length){
-    blockGeometry=new THREE.BoxGeometry(1,1,1);
-    const renderGroups=new Map();
-    for(const b of live){
-      const shape=shapeKindForBlock(b);
-      if(shape){makeSpecialBlockObject(b);continue;}
-      const key=blockRenderSignature(b);
-      if(!renderGroups.has(key))renderGroups.set(key,{blocks:[],sample:b});
-      renderGroups.get(key).blocks.push(b);
-    }
-    for(const group of renderGroups.values())createInstanceGroup(group.blocks,buildBlockMaterials(group.sample));
-  }
-  if(fit||!project.cameraSaved){
-    let minX=Infinity,minY=Infinity,minZ=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
-    for(const b of live){const displayY=b.y+(b.layer?1.08:0);minX=Math.min(minX,b.x);minY=Math.min(minY,displayY);minZ=Math.min(minZ,b.z);maxX=Math.max(maxX,b.x+1);maxY=Math.max(maxY,displayY+1);maxZ=Math.max(maxZ,b.z+1);}
-    if(minX===Infinity){minX=0;minY=0;minZ=0;maxX=project.X;maxY=project.Y;maxZ=project.Z;}
-    const sx=Math.max(1,maxX-minX),sy=Math.max(1,maxY-minY),sz=Math.max(1,maxZ-minZ);
-    const cx=(minX+maxX)/2,cy=(minY+maxY)/2,cz=(minZ+maxZ)/2;
-    const maxSpan=Math.max(sx,sy,sz,4),distance=Math.max(9,maxSpan*2.15);
-    controls.target.set(cx,cy,cz);
-    camera.position.set(cx+distance*.78,cy+distance*.58,cz+distance*.78);
-    camera.near=.1;camera.far=Math.max(2000,distance*20);camera.updateProjectionMatrix();controls.update();project.cameraSaved=true;
-  }
-  updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();requestSceneRender();
-}
-
-function disposeLayerGroup(group){if(!group)return;group.traverse(node=>{if(node.geometry)node.geometry.dispose();if(node.material){for(const m of (Array.isArray(node.material)?node.material:[node.material])){if(!m||m===bakedAtlas)continue;m.userData?.blockFlowOwnedMap?.dispose?.();m.dispose?.();}}});}
+function disposeLayerGroup(group){if(!group)return;const disposedMaterials=new Set();group.traverse(node=>{if(node.geometry)node.geometry.dispose();if(node.material){for(const m of (Array.isArray(node.material)?node.material:[node.material])){if(!m||m===bakedAtlas||disposedMaterials.has(m))continue;disposedMaterials.add(m);m.userData?.blockFlowOwnedMap?.dispose?.();m.dispose?.();}}});}
 
 function updateLayerBoundsAdd(b){let box=blockLayerBounds.get(b.layer);if(!box){box={minX:b.x,minY:b.y,minZ:b.z,maxX:b.x,maxY:b.y,maxZ:b.z};blockLayerBounds.set(b.layer,box);}else{box.minX=Math.min(box.minX,b.x);box.minY=Math.min(box.minY,b.y);box.minZ=Math.min(box.minZ,b.z);box.maxX=Math.max(box.maxX,b.x);box.maxY=Math.max(box.maxY,b.y);box.maxZ=Math.max(box.maxZ,b.z);}}
-function registerBlockLookup(b){const key=metaKey(b);blockPositionSet.add(key);blockLookupByLayer.set(key,b);blockCountByLayer.set(b.layer,(blockCountByLayer.get(b.layer)||0)+1);let layerBlocks=blockListByLayer.get(b.layer);if(!layerBlocks){layerBlocks=[];blockListByLayer.set(b.layer,layerBlocks);}blockLayerArrayIndex.set(b,layerBlocks.length);layerBlocks.push(b);if(b.command)commandBlockCount++;if(project)blockArrayIndex.set(b,project.blocks.length-1);refreshBlockLightEntry(b);updateLayerBoundsAdd(b);}
-function unregisterBlockLookup(b){const key=metaKey(b);blockPositionSet.delete(key);blockLookupByLayer.delete(key);const count=(blockCountByLayer.get(b.layer)||1)-1;if(count>0)blockCountByLayer.set(b.layer,count);else blockCountByLayer.delete(b.layer);if(b.command)commandBlockCount=Math.max(0,commandBlockCount-1);lightSourceCache.delete(key);const layerBlocks=blockListByLayer.get(b.layer),layerIndex=blockLayerArrayIndex.get(b);if(layerBlocks&&layerIndex!==undefined&&layerIndex>=0&&layerIndex<layerBlocks.length){const tail=layerBlocks.pop();if(layerIndex<layerBlocks.length){layerBlocks[layerIndex]=tail;blockLayerArrayIndex.set(tail,layerIndex);}}if(!layerBlocks?.length)blockListByLayer.delete(b.layer);blockLayerArrayIndex.delete(b);const index=blockArrayIndex.get(b),lastIndex=project.blocks.length-1;if(index!==undefined&&index>=0&&index<=lastIndex){const last=project.blocks[lastIndex];project.blocks.pop();if(index<lastIndex){project.blocks[index]=last;blockArrayIndex.set(last,index);}}blockArrayIndex.delete(b);const box=blockLayerBounds.get(b.layer);if(box&&(b.x===box.minX||b.x===box.maxX||b.y===box.minY||b.y===box.maxY||b.z===box.minZ||b.z===box.maxZ)){blockLayerBounds.delete(b.layer);for(const other of (blockListByLayer.get(b.layer)||[]))updateLayerBoundsAdd(other);}}
+function getBlockChunkKey(b){return `${Math.floor(b.x/16)},${Math.floor(b.y/16)},${Math.floor(b.z/16)}`;}
+function addBlockToChunkIndex(b){let chunks=blocksByLayerChunk.get(b.layer);if(!chunks)blocksByLayerChunk.set(b.layer,chunks=new Map());const key=getBlockChunkKey(b);let list=chunks.get(key);if(!list)chunks.set(key,list=[]);blockChunkArrayIndex.set(b,list.length);list.push(b);}
+function removeBlockFromChunkIndex(b){const chunks=blocksByLayerChunk.get(b.layer);const key=getBlockChunkKey(b);const list=chunks?.get(key);const index=blockChunkArrayIndex.get(b);if(list&&index!==undefined&&index>=0&&index<list.length){const tail=list.pop();if(index<list.length){list[index]=tail;blockChunkArrayIndex.set(tail,index);}}if(!list?.length)chunks?.delete(key);if(!chunks?.size)blocksByLayerChunk.delete(b.layer);blockChunkArrayIndex.delete(b);}
+function collectChunkContextBlocks(layer,targetChunkKeys){const chunks=blocksByLayerChunk.get(layer);if(!chunks)return[];const query=new Set();for(const key of targetChunkKeys||[]){const parts=String(key).split(',').map(Number);if(parts.length!==3||parts.some(value=>!Number.isFinite(value)))continue;const[cx,cy,cz]=parts;query.add(key);for(const[dx,dy,dz]of[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]])query.add(`${cx+dx},${cy+dy},${cz+dz}`);}const result=[];for(const key of query){const list=chunks.get(key);if(list)result.push(...list);}return result;}
+function registerBlockLookup(b){const key=metaKey(b);blockPositionSet.add(key);blockLookupByLayer.set(key,b);blockCountByLayer.set(b.layer,(blockCountByLayer.get(b.layer)||0)+1);let layerBlocks=blockListByLayer.get(b.layer);if(!layerBlocks){layerBlocks=[];blockListByLayer.set(b.layer,layerBlocks);}blockLayerArrayIndex.set(b,layerBlocks.length);layerBlocks.push(b);addBlockToChunkIndex(b);if(b.command)commandBlockCount++;if(project)blockArrayIndex.set(b,project.blocks.length-1);refreshBlockLightEntry(b);updateLayerBoundsAdd(b);}
+function unregisterBlockLookup(b){const key=metaKey(b);blockPositionSet.delete(key);blockLookupByLayer.delete(key);removeBlockFromChunkIndex(b);const count=(blockCountByLayer.get(b.layer)||1)-1;if(count>0)blockCountByLayer.set(b.layer,count);else blockCountByLayer.delete(b.layer);if(b.command)commandBlockCount=Math.max(0,commandBlockCount-1);lightSourceCache.delete(key);const layerBlocks=blockListByLayer.get(b.layer),layerIndex=blockLayerArrayIndex.get(b);if(layerBlocks&&layerIndex!==undefined&&layerIndex>=0&&layerIndex<layerBlocks.length){const tail=layerBlocks.pop();if(layerIndex<layerBlocks.length){layerBlocks[layerIndex]=tail;blockLayerArrayIndex.set(tail,layerIndex);}}if(!layerBlocks?.length)blockListByLayer.delete(b.layer);blockLayerArrayIndex.delete(b);const index=blockArrayIndex.get(b),lastIndex=project.blocks.length-1;if(index!==undefined&&index>=0&&index<=lastIndex){const last=project.blocks[lastIndex];project.blocks.pop();if(index<lastIndex){project.blocks[index]=last;blockArrayIndex.set(last,index);}}blockArrayIndex.delete(b);const box=blockLayerBounds.get(b.layer);if(box&&(b.x===box.minX||b.x===box.maxX||b.y===box.minY||b.y===box.maxY||b.z===box.minZ||b.z===box.maxZ)){blockLayerBounds.delete(b.layer);for(const other of (blockListByLayer.get(b.layer)||[]))updateLayerBoundsAdd(other);}}
 function updateBlockLookups(){
-  blockPositionSet=new Set();blockLookupByLayer=new Map();blockLayerBounds=new Map();blockCountByLayer=new Map();blockArrayIndex=new Map();blockListByLayer=new Map();blockLayerArrayIndex=new Map();lightSourceCache=new Map();commandBlockCount=0;
-  for(let i=0;i<project.blocks.length;i++){const b=project.blocks[i],key=metaKey(b);blockPositionSet.add(key);blockLookupByLayer.set(key,b);blockArrayIndex.set(b,i);blockCountByLayer.set(b.layer,(blockCountByLayer.get(b.layer)||0)+1);let layerBlocks=blockListByLayer.get(b.layer);if(!layerBlocks){layerBlocks=[];blockListByLayer.set(b.layer,layerBlocks);}blockLayerArrayIndex.set(b,layerBlocks.length);layerBlocks.push(b);if(b.command)commandBlockCount++;const light=getBlockLightDescriptor(b);if(light)lightSourceCache.set(key,light);updateLayerBoundsAdd(b);}
+  blockPositionSet=new Set();blockLookupByLayer=new Map();blockLayerBounds=new Map();blockCountByLayer=new Map();blockArrayIndex=new Map();blockListByLayer=new Map();blockLayerArrayIndex=new Map();blocksByLayerChunk=new Map();blockChunkArrayIndex=new Map();lightSourceCache=new Map();commandBlockCount=0;
+  for(let i=0;i<project.blocks.length;i++){const b=project.blocks[i],key=metaKey(b);blockPositionSet.add(key);blockLookupByLayer.set(key,b);blockArrayIndex.set(b,i);blockCountByLayer.set(b.layer,(blockCountByLayer.get(b.layer)||0)+1);let layerBlocks=blockListByLayer.get(b.layer);if(!layerBlocks){layerBlocks=[];blockListByLayer.set(b.layer,layerBlocks);}blockLayerArrayIndex.set(b,layerBlocks.length);layerBlocks.push(b);addBlockToChunkIndex(b);if(b.command)commandBlockCount++;const light=getBlockLightDescriptor(b);if(light)lightSourceCache.set(key,light);updateLayerBoundsAdd(b);}
   project.commandCount=commandBlockCount;
 }
-async function buildBakedScene(fit=false,layersToBuild=null){
+async function buildBakedScene(fit=false,layersToBuild=null,chunksToBuild=null){
   if(!project)return false;
   if(!window.BlockFlowBaker?.bakeLayer)throw new Error('BlockFlow 原生模型烘焙模块未加载');
   await ensureBlockAtlasLoaded();
   const sequence=++bakeBuildSequence;
-  const targets=layersToBuild?Array.from(new Set(layersToBuild)).filter(i=>i>=0&&i<project.layers.length):project.layers.map((_,i)=>i);
+  const targetSet=new Set();
+  if(Array.isArray(layersToBuild))for(const layer of layersToBuild)if(layer>=0&&layer<project.layers.length)targetSet.add(layer);
+  if(chunksToBuild instanceof Map)for(const layer of chunksToBuild.keys())if(layer>=0&&layer<project.layers.length)targetSet.add(layer);
+  if(layersToBuild===null&&(!chunksToBuild||!chunksToBuild.size))for(let i=0;i<project.layers.length;i++)targetSet.add(i);
+  const targets=Array.from(targetSet).sort((a,b)=>a-b);
   const replacements=[];
   let layerProgressIndex=0;
   try{
     for(const layer of targets){
-    const blocks=blockListByLayer.get(layer)||[];
-    if(!blocks.length){replacements.push({layer,group:null});layerProgressIndex++;continue;}
-    setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`正在使用 BlockFlow 原生算法烘焙第 ${layerProgressIndex+1}/${targets.length} 层…`);
-    const group=await window.BlockFlowBaker.bakeLayer({
-      THREE:threeLib.THREE,
-      blocks,
-      atlas:bakedAtlas,
-      layer,
-      getMaterials:buildBlockMaterials,
-      isSpecialBlock:block=>!!shapeKindForBlock(block),
-      createSpecialBlockGroup:block=>makeSpecialBlockObject(block,false),
-      releaseSourceGeometry:geometry=>specialGeometries.delete(geometry),
-      chunkSize:160,
-      isCancelled:()=>sequence!==bakeBuildSequence,
-      onProgress:(done,total)=>{
-        const ratio=total?done/total:1;
-        setModelLoadingProgress(55+35*((layerProgressIndex+ratio)/Math.max(1,targets.length)),`BlockFlow 原生烘焙：第 ${layerProgressIndex+1}/${targets.length} 层，${done.toLocaleString()}/${total.toLocaleString()} 个方块…`);
-      }
-    });
+      const allLayerBlocks=blockListByLayer.get(layer)||[];
+      const chunkKeys=chunksToBuild instanceof Map ? chunksToBuild.get(layer) : null;
+      const partial=Array.isArray(chunkKeys)&&chunkKeys.length>0&&!layersToBuild?.includes?.(layer);
+      const blocks=partial?collectChunkContextBlocks(layer,chunkKeys):allLayerBlocks;
+      if(!blocks.length&&!partial){replacements.push({layer,group:new threeLib.THREE.Group(),partial:false});layerProgressIndex++;setModelLoadingProgress(55+40*(layerProgressIndex/Math.max(1,targets.length)),`已完成 ${layerProgressIndex}/${targets.length} 层后台模型烘焙…`);continue;}
+      setModelLoadingProgress(55+40*(layerProgressIndex/Math.max(1,targets.length)),`正在使用 BlockFlow Worker 烘焙第 ${layerProgressIndex+1}/${targets.length} 层…`);
+      const group=await window.BlockFlowBaker.bakeLayer({
+        THREE:threeLib.THREE,
+        blocks,
+        totalLayerBlocks:blockCountByLayer.get(layer)||allLayerBlocks.length,
+        atlas:bakedAtlas,
+        layer,
+        getMaterials:buildBlockMaterials,
+        isSpecialBlock:block=>!!shapeKindForBlock(block),
+        createSpecialBlockGroup:block=>makeSpecialBlockObject(block,false),
+        releaseSourceGeometry:geometry=>specialGeometries.delete(geometry),
+        chunkSize:16,
+        lodThreshold:1800,
+        enableLOD:true,
+        targetChunks:partial?chunkKeys:null,
+        isCancelled:()=>sequence!==bakeBuildSequence,
+        onProgress:(done,total,phase)=>{
+          const ratio=total?Math.min(1,done/total):1;
+          const layerSpan=40/Math.max(1,targets.length);
+          const layerBase=55+layerSpan*layerProgressIndex;
+          const percent=layerBase+(phase==='prepare'?layerSpan*.2*ratio:layerSpan*(.2+.8*ratio));
+          setModelLoadingProgress(percent,`BlockFlow 后台烘焙：第 ${layerProgressIndex+1}/${targets.length} 层，${done.toLocaleString()}/${total.toLocaleString()}（${phase}）…`);
+        }
+      });
       if(sequence!==bakeBuildSequence){disposeLayerGroup(group);for(const item of replacements)if(item.group)disposeLayerGroup(item.group);return false;}
-      replacements.push({layer,group});
+      group.userData.partial=partial;
+      replacements.push({layer,group,partial,chunkKeys:partial?chunkKeys:null});
       layerProgressIndex++;
-      setModelLoadingProgress(55+35*(layerProgressIndex/Math.max(1,targets.length)),`已完成 ${layerProgressIndex}/${targets.length} 层原生模型烘焙…`);
+      setModelLoadingProgress(55+40*(layerProgressIndex/Math.max(1,targets.length)),`已完成 ${layerProgressIndex}/${targets.length} 层后台模型烘焙…`);
     }
   }catch(error){
     for(const item of replacements)if(item.group)disposeLayerGroup(item.group);
@@ -1232,10 +1207,20 @@ async function buildBakedScene(fit=false,layersToBuild=null){
   if(sequence!==bakeBuildSequence){for(const item of replacements)if(item.group)disposeLayerGroup(item.group);return false;}
   if(!bakedGroup){bakedGroup=new threeLib.THREE.Group();bakedGroup.name='BlockFlowBakedStructure';scene.add(bakedGroup);}
   for(const replacement of replacements){
-    const old=bakedGroup.children.find(child=>child.name===`BakedLayer_${replacement.layer}`);
-    if(old){bakedGroup.remove(old);disposeLayerGroup(old);}
-    removeEditPreview(replacement.layer);
-    if(replacement.group)bakedGroup.add(replacement.group);
+    let oldLayer=bakedGroup.children.find(child=>child.name===`BakedLayer_${replacement.layer}`);
+    if(replacement.partial){
+      if(!oldLayer){oldLayer=new threeLib.THREE.Group();oldLayer.name=`BakedLayer_${replacement.layer}`;bakedGroup.add(oldLayer);}
+      for(const nextChunk of [...replacement.group.children]){
+        const oldChunk=oldLayer.children.find(child=>child.name===nextChunk.name);
+        if(oldChunk){oldLayer.remove(oldChunk);disposeLayerGroup(oldChunk);}
+        oldLayer.add(nextChunk);
+      }
+      replacement.group.clear();
+      replacement.group=null;
+    }else{
+      if(oldLayer){bakedGroup.remove(oldLayer);disposeLayerGroup(oldLayer);}
+      bakedGroup.add(replacement.group);
+    }
   }
   pickTargets=pickTargets.filter(target=>!target.isBaked);
   for(const child of bakedGroup.children){const layer=Number(child.name.split('_').pop());pickTargets.push({mesh:child,blocks:null,layer,isBaked:true});}
@@ -1246,41 +1231,54 @@ async function buildBakedScene(fit=false,layersToBuild=null){
     const sx=Math.max(1,maxX-minX),sy=Math.max(1,maxY-minY),sz=Math.max(1,maxZ-minZ),cx=(minX+maxX)/2,cy=(minY+maxY)/2,cz=(minZ+maxZ)/2;
     const span=Math.max(sx,sy,sz,4),distance=Math.max(9,span*2.15);controls.target.set(cx,cy,cz);camera.position.set(cx+distance*.78,cy+distance*.58,cz+distance*.78);camera.near=.1;camera.far=Math.max(2000,distance*20);camera.updateProjectionMatrix();controls.update();project.cameraSaved=true;
   }
-  updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();setModelLoadingProgress(96,'正在完成 BlockFlow 原生模型整理…');requestSceneRender();return true;
+  updateSelectionOutline();updateHighlightOverlay();updateBlockLights();updateStats();setModelLoadingProgress(96,'正在完成 BlockFlow 分区模型整理…');requestSceneRender();return true;
 }
-
 function removeEditPreview(layer){
   const group=editPreviewGroups.get(layer);if(!group)return;
   scene?.remove(group);group.traverse(node=>{node.geometry?.dispose?.();});editPreviewGroups.delete(layer);
 }
-const MAX_FAST_EDIT_PREVIEW_BLOCKS=1400;
 function renderFastEditPreview(layer){
-  if(!scene||!project||!threeLib)return;
-  const blocks=blockListByLayer.get(layer)||[];
-  // Keep the last baked/preview geometry visible on large layers. The worker
-  // rebuild runs asynchronously; allocating another full layer of instances
-  // on the main thread would reintroduce the edit hitch this path avoids.
-  if(blocks.length>MAX_FAST_EDIT_PREVIEW_BLOCKS){requestSceneRender();return;}
-  const {THREE}=threeLib;removeEditPreview(layer);
-  const oldBaked=bakedGroup?.children.find(child=>child.name===`BakedLayer_${layer}`);
-  if(oldBaked){bakedGroup.remove(oldBaked);disposeLayerGroup(oldBaked);}
-  pickTargets=pickTargets.filter(target=>!(target.isBaked&&target.layer===layer));
-  if(!blocks.length){requestSceneRender();return;}
-  const preview=new THREE.Group();preview.name=`FastEditPreview_${layer}`;preview.position.y=layer?1.08:0;
-  const buckets=new Map();
-  for(const block of blocks){const signature=blockRenderSignature(block);let bucket=buckets.get(signature);if(!bucket){bucket={sample:block,blocks:[]};buckets.set(signature,bucket);}bucket.blocks.push(block);}
-  const geometry=new THREE.BoxGeometry(1,1,1);const dummy=new THREE.Object3D(),color=new THREE.Color();
-  for(const bucket of buckets.values()){
-    const mesh=new THREE.InstancedMesh(geometry,buildBlockMaterials(bucket.sample),bucket.blocks.length);
-    mesh.frustumCulled=false;mesh.name=`FastEditInstances_${layer}`;
-    for(let i=0;i<bucket.blocks.length;i++){const block=bucket.blocks[i];dummy.position.set(block.x+.5,block.y+.5,block.z+.5);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);color.set(metadata[metaKey(block)]?.highlight?0xffd36c:0xffffff);mesh.setColorAt(i,color);}
-    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();preview.add(mesh);
-  }
-  scene.add(preview);editPreviewGroups.set(layer,preview);requestSceneRender();
+  // Keep the current chunk visible while its replacement is computed off-thread.
+  // Avoid rebuilding a whole layer of InstancedMesh objects on the main thread.
+  requestSceneRender();
 }
-async function runRebuildQueue(){if(rebuildRunning)return;rebuildRunning=true;let fatal=null;try{while(rebuildQueuedFull||rebuildQueuedLayers.size){const full=rebuildQueuedFull;const layers=full?null:Array.from(rebuildQueuedLayers);rebuildQueuedFull=false;rebuildQueuedLayers.clear();try{const ok=await buildBakedScene(false,layers);if(!ok&&full)throw new Error('BlockFlow 原生烘焙未完成');}catch(error){console.error('Incremental baked rebuild failed:',error);toast('本层模型更新失败：'+error.message,'err');if(full){try{clearSceneObjects();buildSceneLegacy(false);}catch(fallbackError){fatal=fallbackError;}}else{rebuildQueuedFull=true;}}}}finally{rebuildRunning=false;if(rebuildQueuedFull||rebuildQueuedLayers.size)runRebuildQueue();else{if(modelLoadingActive)setModelLoadingProgress(100,'模型更新完成');settleSceneRebuild(fatal);}}}
-function scheduleSceneRebuild(layer=null,fit=false){if(!scene||!project)return;if(fit)project.cameraSaved=false;if(layer===null)rebuildQueuedFull=true;else{renderFastEditPreview(layer);rebuildQueuedLayers.add(layer);}clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,layer===null?0:180);}
-function buildScene(fit=false,layers=null){if(!scene||!project)return;updateBlockLookups();if(fit||!project.cameraSaved)project.cameraSaved=false;setStatus(`正在更新 ${project.blocks.length.toLocaleString()} 个方块…`);if(modelLoadingActive)setModelLoadingProgress(50,`正在准备 ${project.blocks.length.toLocaleString()} 个方块模型…`);if(Array.isArray(layers)){for(const layer of layers)rebuildQueuedLayers.add(layer);}else rebuildQueuedFull=true;clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,Array.isArray(layers)?110:0);}
+function queueDirtyBlockChunks(layer,block){
+  if(!block){rebuildQueuedLayers.add(layer);rebuildQueuedChunks.delete(layer);return;}
+  if(rebuildQueuedLayers.has(layer))return;
+  let keys=rebuildQueuedChunks.get(layer);if(!keys)rebuildQueuedChunks.set(layer,keys=new Set());
+  for(const key of window.BlockFlowBaker.neighboringChunkKeys(block))keys.add(key);
+}
+async function runRebuildQueue(){
+  if(rebuildRunning)return;rebuildRunning=true;let fatal=null;
+  try{
+    while(rebuildQueuedFull||rebuildQueuedLayers.size||rebuildQueuedChunks.size){
+      const full=rebuildQueuedFull;
+      const layers=full?null:Array.from(rebuildQueuedLayers);
+      const chunks=full?null:new Map(Array.from(rebuildQueuedChunks,([layer,set])=>[layer,Array.from(set)]));
+      rebuildQueuedFull=false;rebuildQueuedLayers.clear();rebuildQueuedChunks.clear();
+      try{const ok=await buildBakedScene(false,layers,chunks);if(!ok&&full)throw new Error('BlockFlow 后台烘焙未完成');}
+      catch(error){console.error('Chunked geometry rebuild failed:',error);toast('模型更新失败：'+error.message,'err');if(full){fatal=error;}else{rebuildQueuedFull=true;}}
+    }
+  }finally{
+    rebuildRunning=false;
+    if(rebuildQueuedFull||rebuildQueuedLayers.size||rebuildQueuedChunks.size)runRebuildQueue();
+    else{if(modelLoadingActive)setModelLoadingProgress(100,'模型更新完成');settleSceneRebuild(fatal);}
+  }
+}
+function scheduleSceneRebuild(layer=null,fit=false,dirtyBlock=null){
+  if(!scene||!project)return;if(fit)project.cameraSaved=false;
+  if(layer===null){rebuildQueuedFull=true;rebuildQueuedLayers.clear();rebuildQueuedChunks.clear();}
+  else{renderFastEditPreview(layer);queueDirtyBlockChunks(layer,dirtyBlock);}
+  clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,layer===null?0:120);
+}
+function buildScene(fit=false,layers=null){
+  if(!scene||!project)return;updateBlockLookups();if(fit||!project.cameraSaved)project.cameraSaved=false;
+  setStatus(`正在更新 ${project.blocks.length.toLocaleString()} 个方块…`);
+  if(modelLoadingActive)setModelLoadingProgress(50,`正在准备 ${project.blocks.length.toLocaleString()} 个方块模型…`);
+  if(Array.isArray(layers)){for(const layer of layers)rebuildQueuedLayers.add(layer);}else{rebuildQueuedFull=true;rebuildQueuedLayers.clear();rebuildQueuedChunks.clear();}
+  clearTimeout(rebuildTimer);rebuildTimer=setTimeout(runRebuildQueue,Array.isArray(layers)?110:0);
+}
+
 function updateSelectionOutline(){
   if(!scene||!threeLib)return;const {THREE}=threeLib;
   if(!outline){const geo=new THREE.EdgesGeometry(new THREE.BoxGeometry(1.035,1.035,1.035));const mat=new THREE.LineBasicMaterial({color:0xffd36c,transparent:true,opacity:1,depthTest:true});outline=new THREE.LineSegments(geo,mat);outline.renderOrder=10;scene.add(outline);}
@@ -1366,8 +1364,8 @@ function ensureBounds(x,y,z){const minX=Math.min(0,x),minY=Math.min(0,y),minZ=Ma
   for(const b of project.blocks){b.x+=dx;b.y+=dy;b.z+=dz;b.lin=indexOf(b.x,b.y,b.z,{X:nx,Y:ny,Z:nz});}const shiftedMeta={};for(const [key,value] of Object.entries(metadata)){const m=key.match(/^(\d+)\|(-?\d+),(-?\d+),(-?\d+)$/);if(!m){shiftedMeta[key]=value;continue;}shiftedMeta[`${m[1]}|${Number(m[2])+dx},${Number(m[3])+dy},${Number(m[4])+dz}`]=value;}applyMeta(shiftedMeta);
   project.layers=newLayers;project.bpd=remapped;project.X=nx;project.Y=ny;project.Z=nz;updateBlockLookups();invalidateSnapshotBase();const root=project.root.value;root.size=T.list(TAG.INT,[T.int(nx),T.int(ny),T.int(nz)]);if(root.structure_world_origin)translateNumericList(root.structure_world_origin,[-dx,-dy,-dz]);shiftEntityCoordinates(root.structure?.value?.entities,[dx,dy,dz]);return{x:x+dx,y:y+dy,z:z+dz};}
 function addBlockAt(x,y,z,name,layer=0,options={}){if(!project)return;try{if(!validBlockId(name))throw new Error(`方块 ID 不在当前离线注册表中：${name}`);const current=countAtLayer(x,y,z,layer);if(current.length&&!options.allowReplace)throw new Error(`坐标 ${x}, ${y}, ${z} 已经有方块，请先移除占位方块`);if(!options.historyCaptured)captureUndoSnapshot('新增方块');if(current.length)for(const old of current)removeBlockModel(old,false);const before=`${project.X},${project.Y},${project.Z}`;const pos=ensureBounds(x,y,z);x=pos.x;y=pos.y;z=pos.z;const expanded=before!==`${project.X},${project.Y},${project.Z}`;if(layer>=project.layers.length)throw new Error('目标数据层不存在');if(getCellPaletteIndex(layer,x,y,z)>=0)throw new Error('目标位置已被占用');const command=isCommandName(name);const facing=options.facing??2,conditional=!!options.conditional,auto=options.auto!==false;const paletteIndex=addPalette(name,{command,facing,conditional});const b={uid:'new:'+Date.now()+':'+Math.random(),x,y,z,layer,lin:indexOf(x,y,z,project),paletteIndex,name,command,cmd:'',conditional,auto,facing};project.layers[layer][b.lin]=paletteIndex;markSnapshotLayerDirty(layer);project.blocks.push(b);registerBlockLookup(b);project.commandCount=commandBlockCount;if(command)syncCommandEntity(project,b);lastBlockId=name;document.getElementById('newBlockIdInput').value=name;rebuildAndSelect(b,expanded);upsertSearchEntry(b);saveSnapshotDebounced();toast(`已新增 ${name}，位置 ${x}, ${y}, ${z}`,'ok');}catch(error){toast(error.message,'err');}}
-function removeBlockModel(b,refresh=true){if(!b||!project)return;const layer=b.layer;const lin=indexOf(b.x,b.y,b.z,project);project.layers[layer][lin]=-1;markSnapshotLayerDirty(layer);removeBpdForBlock(b);const meta=metaKey(b);delete metadata[meta];highlightedBlockKeys.delete(meta);unregisterBlockLookup(b);removeSearchEntry(b);project.commandCount=commandBlockCount;if(selected===b)selected=null;if(refresh){scheduleSceneRebuild(layer);selectBlock(null);updateHighlightOverlay();scheduleSearchRefresh();saveSnapshotDebounced();}}
-function rebuildAndSelect(b,allLayers=false){selected=b;scheduleSceneRebuild(allLayers?null:b.layer);selectBlock(b);}
+function removeBlockModel(b,refresh=true){if(!b||!project)return;const layer=b.layer;const lin=indexOf(b.x,b.y,b.z,project);project.layers[layer][lin]=-1;markSnapshotLayerDirty(layer);removeBpdForBlock(b);const meta=metaKey(b);delete metadata[meta];highlightedBlockKeys.delete(meta);unregisterBlockLookup(b);removeSearchEntry(b);project.commandCount=commandBlockCount;if(selected===b)selected=null;if(refresh){scheduleSceneRebuild(layer,false,b);selectBlock(null);updateHighlightOverlay();scheduleSearchRefresh();saveSnapshotDebounced();}}
+function rebuildAndSelect(b,allLayers=false){selected=b;scheduleSceneRebuild(allLayers?null:b.layer,false,allLayers?null:b);selectBlock(b);}
 function applyBlockType(){if(!selected||!project)return;const id=document.getElementById('blockIdInput').value.trim();if(!validBlockId(id)){toast('方块 ID 不正确或不在当前离线 ID 表/结构调色板中，请从搜索建议中选择','err');return;}if(id===selected.name){toast('方块类型没有变化');return;}captureUndoSnapshot('修改方块 ID');if(id==='minecraft:air'){removeBlockModel(selected);toast('已将方块移除（空气不作为实体方块显示）','ok');return;}const wasCommand=selected.command,willCommand=isCommandName(id);if(!(wasCommand&&willCommand))removeBpdForBlock(selected);if(wasCommand!==willCommand){commandBlockCount=Math.max(0,commandBlockCount+(willCommand?1:-1));project.commandCount=commandBlockCount;}selected.name=id;selected.command=willCommand;document.getElementById('panelTitle').textContent=id;refreshBlockLightEntry(selected);if(willCommand&&!wasCommand){selected.cmd='';selected.auto=true;selected.conditional=false;}else if(!willCommand)selected.cmd='';if(willCommand){const pi=addPalette(id,{command:true,facing:selected.facing,conditional:selected.conditional});setBlockIndex(selected,pi);syncCommandEntity(project,selected);}else{const pi=addPalette(id);setBlockIndex(selected,pi);}lastBlockId=id;document.getElementById('newBlockIdInput').value=id;rebuildAndSelect(selected);upsertSearchEntry(selected);saveSnapshotDebounced();toast('方块类型已更改','ok');}
 function updateCommandText(){if(!selected?.command)return;beginUndoGroup('修改命令内容','command-text:'+metaKey(selected));selected.cmd=document.getElementById('commandInput').value;syncCommandEntity(project,selected);scheduleSearchRefresh(selected);saveSnapshotDebounced();}
 function updateCommandFlag(which,value){if(!selected?.command)return;captureUndoSnapshot(which==='auto'?'修改自动执行':'修改条件状态');if(which==='auto')selected.auto=!!value;else{selected.conditional=!!value;const pi=addPalette(selected.name,{command:true,facing:selected.facing,conditional:selected.conditional});setBlockIndex(selected,pi);}syncCommandEntity(project,selected);saveSnapshotDebounced();}
