@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111722">
+<meta name="theme-color" content="#f4f6f8">
 <meta name="description" content="BlockFlow Minecraft Bedrock 工具集">
 <title>BlockFlow</title>
 <link rel="icon" href="./assets/icons/favicon.ico" type="image/x-icon">
 <style>
-:root{color-scheme:dark;--bg:#111722;--panel:#192231;--panel-hover:#202c3d;--line:#2a3749;--text:#edf2f8;--muted:#9aa8ba;--accent:#9ac7a9;--accent-strong:#c1e3cb}
+:root{color-scheme:light;--bg:#f4f6f8;--panel:#ffffff;--panel-hover:#f5f8f6;--line:#dce3e8;--text:#202b35;--muted:#687783;--accent:#548166;--accent-strong:#356b4b}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif}body{min-height:100svh;display:flex;flex-direction:column}
 a{color:inherit;text-decoration:none}.shell{width:min(920px,calc(100% - 48px));margin:0 auto;flex:1;display:flex;flex-direction:column}
 .header{height:76px;display:flex;align-items:center;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:11px;font-size:18px;font-weight:700;letter-spacing:.01em}.brand img{width:30px;height:30px;object-fit:contain}.header-note{margin-left:auto;color:var(--muted);font-size:12px}
 main{width:100%;margin:auto;padding:62px 0 72px}.intro{margin-bottom:34px}.eyebrow{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}.intro h1{font-size:clamp(28px,5vw,42px);line-height:1.18;letter-spacing:-.035em;margin:0 0 12px;font-weight:680}.intro p{margin:0;color:var(--muted);font-size:14px;line-height:1.8;max-width:610px}
-.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tool{position:relative;display:flex;min-height:190px;flex-direction:column;padding:23px 24px 20px;border:1px solid var(--line);border-radius:10px;background:var(--panel);transition:background .16s,border-color .16s,transform .16s}.tool:hover{background:var(--panel-hover);border-color:#536b60;transform:translateY(-2px)}.tool-top{display:flex;align-items:center;gap:11px;margin-bottom:21px}.tool-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #425345;border-radius:8px;color:var(--accent-strong);font-size:17px}.tool-index{margin-left:auto;color:#8493a7;font:11px/1.2 ui-monospace,Consolas,monospace}.tool h2{margin:0 0 8px;font-size:19px;font-weight:650}.tool p{margin:0;color:var(--muted);font-size:13px;line-height:1.75;max-width:360px}.tool-bottom{display:flex;align-items:center;margin-top:auto;padding-top:20px;color:var(--accent-strong);font-size:12px;font-weight:650}.arrow{margin-left:auto;font-size:18px;line-height:1}
-.footer{height:58px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;color:#8492a4;font-size:11px}
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tool{position:relative;display:flex;min-height:190px;flex-direction:column;padding:23px 24px 20px;border:1px solid var(--line);border-radius:10px;background:var(--panel);transition:background .16s,border-color .16s,transform .16s}.tool:hover{background:var(--panel-hover);border-color:#91b29a;transform:translateY(-2px)}.tool-top{display:flex;align-items:center;gap:11px;margin-bottom:21px}.tool-icon{width:34px;height:34px;display:grid;place-items:center;border:1px solid #cbd8cf;border-radius:8px;color:var(--accent-strong);font-size:17px}.tool-index{margin-left:auto;color:#84919c;font:11px/1.2 ui-monospace,Consolas,monospace}.tool h2{margin:0 0 8px;font-size:19px;font-weight:650}.tool p{margin:0;color:var(--muted);font-size:13px;line-height:1.75;max-width:360px}.tool-bottom{display:flex;align-items:center;margin-top:auto;padding-top:20px;color:var(--accent-strong);font-size:12px;font-weight:650}.arrow{margin-left:auto;font-size:18px;line-height:1}
+.footer{height:58px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;color:#7a8792;font-size:11px}
 @media(max-width:650px){.shell{width:calc(100% - 32px)}.header{height:62px}.header-note{font-size:10px}main{padding:45px 0 52px}.intro{margin-bottom:24px}.intro p{font-size:13px}.tools{grid-template-columns:1fr;gap:10px}.tool{min-height:166px;padding:19px}.tool-top{margin-bottom:16px}.tool-bottom{padding-top:16px}.footer{height:auto;min-height:56px;gap:12px;flex-wrap:wrap;padding:15px 0;font-size:10px}}
 </style>
 </head>
