@@ -1,7 +1,7 @@
-/* BlockFlow geometry worker.
- * Receives plain data only: the worker never touches the DOM, WebGL, or Three.js.
- * It builds chunked indexed meshes and coarse voxel LODs, then transfers buffers.
- */
+                             
+                                                                                  
+                                                                                  
+   
 'use strict';
 
 const CHUNK_SIZE = 16;

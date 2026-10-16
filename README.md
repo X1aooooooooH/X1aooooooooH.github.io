@@ -1,125 +1,166 @@
 # BlockFlow
 
-**当前版本：v2.11.4** — MCStructure Only / Extracted Special-Block Models
+**版本：v2.12.1** · Minecraft Bedrock 命令链编辑器与结构编辑器
 
-BlockFlow 是面向 Minecraft Bedrock 的结构编辑器与命令链编辑器。当前结构编辑器**仅支持 `.mcstructure` 导入和导出**，不提供其他结构格式解析、转换或导出功能。项目是静态网页，可部署在 GitHub Pages；无需构建步骤。
+BlockFlow 是一套面向 Minecraft Bedrock Edition 的浏览器工具，包含命令链编辑器和结构编辑器。项目采用静态网页部署方式，可托管在 GitHub Pages。结构解析、命令编辑、方块编辑、三维场景构建和文件导出均在浏览器本地完成，不需要单独部署后端服务。
 
-## 在线发布
+## 功能概览
 
-1. 将项目根目录内全部文件和文件夹提交到 GitHub 仓库根目录。
-2. 在仓库 **Settings → Pages** 中选择 `Deploy from a branch`。
-3. 选择 `main` 分支和 `/(root)` 目录并保存。
-4. 发布后，从 GitHub Pages 地址打开根目录 `index.html`。
+### 命令链编辑器
 
-请保留 `.nojekyll`，避免 GitHub Pages 对静态资源目录应用 Jekyll 处理。
+命令链编辑器用于查看和编辑 `.mcstructure` 中的命令方块结构，也可以从纯文本命令列表创建命令链。
 
-## 页面入口
+主要功能：
 
-- `index.html`：BlockFlow 导航页。
-- `CommandEditor/index.html`：命令链编辑器。
-- `StructureEditor/index.html`：结构编辑器。
+- 读取结构中的命令方块及其位置、方向、类型、条件和执行状态。
+- 识别普通命令链、断链结构和闭合循环链。
+- 在三维结构总览与单条命令链视图之间切换。
+- 直接编辑命令内容、命令方块类型、条件状态和执行方式。
+- 使用文本模式逐行编辑命令，并查看行号及语法高亮。
+- 新增脉冲链、断链和循环链，调整命令链排列顺序。
+- 搜索命令内容，进行批量替换。
+- 撤销和重做编辑操作。
+- 导入 `.mcstructure` 或按行排列的纯文本命令列表。
+- 将编辑后的命令链导出为 `.mcstructure`。
+- 在浏览器支持本地存储时保存和恢复编辑进度。
 
-## 结构文件支持范围
+命令链编辑器的命令链导出面向命令方块结构。导出结果不应被视为原始结构中普通方块、实体和所有附加数据的完整备份。
 
-| 操作 | 支持范围 |
-|---|---|
-| 导入 | Minecraft Bedrock `.mcstructure` |
-| 导出 | Minecraft Bedrock `.mcstructure` |
-| 其他格式 | 不提供导入、转换或导出入口 |
+### 结构编辑器
 
-导入时会检查 `.mcstructure` 扩展名，并由 `assets/js/structure-core.js` 解析 Bedrock NBT、结构尺寸、方块调色板、方块索引、方块实体和命令方块数据。导出时由同一核心模块序列化为 `.mcstructure`。编辑期间的自动保存和撤销快照也使用 MCStructure 数据，不经过额外格式转换层。
+结构编辑器用于查看和编辑 Minecraft Bedrock `.mcstructure` 文件。**结构编辑器只支持 `.mcstructure` 导入和导出。**
 
-## 结构三维渲染
+主要功能：
 
-`assets/js/blockflow-baker.js` 是 BlockFlow 自己的三维几何烘焙器，不加载预烘焙模型数据库，也不调用原生模型烘焙模块。主要工作包括：
+- 解析结构尺寸、方块调色板、方块状态和方块实体数据。
+- 在三维场景中选择和检查方块。
+- 修改方块 ID、状态和可编辑属性。
+- 添加、删除和替换方块。
+- 使用六方向放置控件指定新方块的放置方向。
+- 编辑命令方块内容、类型、条件和执行设置。
+- 查看命令方块链关系及相关命令文本。
+- 搜索方块 ID、注释和命令内容。
+- 对方块进行标记、高亮和注释。
+- 执行批量替换，支持规则表达式的场景按界面提供的选项处理。
+- 撤销和重做编辑操作。
+- 自动保存结构编辑会话，并在重新打开页面时尝试恢复。
+- 将修改后的结构导出为 `.mcstructure`。
 
-- 为结构建立坐标索引，并按渲染层组织方块。
-- 对普通立方体执行邻面遮挡剔除；透明和 Alpha Test 材质采用单独的遮挡规则。
-- 对普通方块按材质批次生成索引化 `BufferGeometry`，复用相同位置、法线、UV 和颜色的顶点；按顶点数量选择 16 位或 32 位索引。
-- 按 16 × 16 × 16 方块划分 Chunk，每个 Chunk 独立生成网格并启用 Three.js 视锥剔除。
-- 几何面剔除、索引合并、Chunk 输出和 LOD 网格在 `assets/workers/geometry-baker.js` 后台 Worker 中执行；主线程负责准备特殊方块几何和 Three.js 对象装配。
-- 单方块修改通过按层、按 Chunk 的索引定位，只重建变更 Chunk 和相邻边界 Chunk。
-- 当某一数据层达到 1800 个方块时，为 Chunk 生成 1×、2×、4×、8× 四级细节；摄像机距离达到 72、168、336 个世界单位时切换。
-- 过期任务可以取消；Worker 使用 Transferable TypedArray 返回几何缓冲区。
+特殊方块具有独立的状态模型。告示牌会读取方块实体中的正反面文字数据；拉杆、按钮、火把、中继器、比较器和绊线相关方块会根据方块状态选择外观和朝向。未覆盖的方块状态可能使用通用模型或默认外观。
 
-### 特殊方块模型
+## 三维视图与性能
 
-告示牌、火把、拉杆、按钮、中继器、比较器、绊线钩和绊线使用从项目作者提供的 Dislink 模型烘焙数据中提取的实际三维网格。提取结果已转换为 BlockFlow 自己的模型数据格式，并重新打包所需纹理切片；运行时只加载 `blockflow-special-models.json` 和 `blockflow-special-atlas.png`，不加载 Dislink 的 WASM、模型数据库、Worker 或原始纹理图集。BlockFlow 负责 Bedrock 状态选择、朝向变换、告示牌 NBT 文字、Chunk 集成和几何缓存。
+结构编辑器采用分区几何构建和后台计算，以减少大结构编辑时的主线程负担。
 
-- **告示牌**：区分落地、墙面、悬挂和墙面悬挂类型。落地牌使用 `ground_sign_direction` 的 16 向旋转；墙面牌读取 `facing_direction`；悬挂牌读取 `ground_sign_direction`、`attached_bit` 和朝向。牌面由有厚度的木板、端面材质、边框、固定件/挂链组成。正反面文字从方块实体 NBT 的 `FrontText`、`BackText` 或旧版 `Text1` 至 `Text4` 读取，解析颜色和发光状态，再生成带厚度、可索引的像素轮廓几何。
-- **普通/红石/灵魂/铜火把**：使用实体杆体、金属箍、灯芯及分层火焰几何；红石火把根据 `lit`、`unlit_bit` 或方块 ID 状态切换火焰/熄灭帽。墙面火把读取 `torch_facing_direction` 并旋转整个模型。
-- **拉杆**：读取八种 `lever_direction` 安装状态，以及 `open_bit`/通电状态；使用安装板、螺钉、轴承、转轴、木柄、金属箍和手柄构成模型，通电时改变手柄倾角并更新状态指示。
-- **按钮**：读取六种 `facing_direction` 和 `button_pressed_bit`；使用贴合方块表面的底板、压边、实体按钮帽和固定件。按下时按钮帽缩回，不再出现重复偏移造成的悬出问题。
-- **红石中继器**：读取四向 `direction`、四档 `repeater_delay` 和供电状态；使用底座、边缘、导轨、两个独立红石火把、滑动载体和延迟标记。
-- **红石比较器**：读取方向、`output_subtract_bit` 和 `output_lit_bit`；使用底座、导轨、两个输入火把、输出火把和可区分比较/减法状态的实体选择器。
-- **红石粉**：读取 `redstone_signal` 强度和东/西/南/北四向连接状态；根据 `none`、`side`、`up` 等状态生成中心节点、薄带连接及爬升段，并随信号强度改变颜色。
+- 普通方块执行相邻面遮挡剔除。
+- 几何数据使用索引缓冲区，减少重复顶点。
+- 结构按 `16 × 16 × 16` 方块划分 Chunk。
+- Chunk 可独立更新，并通过视锥剔除减少不可见区域的绘制。
+- 几何烘焙和网格处理由 Web Worker 执行。
+- 大型结构可生成多个 LOD 细节级别，在不同观察距离使用不同几何。
+- 特殊方块模型与普通方块网格进入统一的场景管理和资源释放流程。
 
-其他楼梯、门、铁轨、栅栏、墙、玻璃板、植物、活板门等仍由 BlockFlow 对应形状构建器生成几何。普通方块使用 BlockFlow 图集；提取的特殊方块模型使用独立的 `blockflow-special-atlas.png`。
+LOD 是面向远距离观察的近似表示。较小孔洞、薄层、细小装饰和稀疏结构在低细节级别下可能出现简化。需要检查精细结构时，应切换到较高细节或靠近场景观察。
 
-特殊模型数据包含 513 个状态模型条目，覆盖八种拉杆安装方向及开关状态、木质告示牌落地/墙面/悬挂类型、按钮六面安装、火把和红石火把、中继器延迟、比较器模式、绊线钩与绊线。模型顶点原本按单个方块局部坐标记录，现已转换为以方块中心为原点的坐标；落地告示牌、顶部安装拉杆和红石设备的支撑面定位在 `y=-0.5`，悬挂告示牌的顶部锚点定位在 `y=+0.5`，墙面悬挂告示牌会朝支撑墙方向补偿提取网格的内缩，使安装面贴合 `x/z=±0.5` 的支撑墙边界。缺少拉杆状态时默认使用顶部安装方向，避免误用天花板安装模型。
+## 开始使用
 
-纹理图集：`assets/textures/structure/block-atlas.png`。对应映射：`assets/data/blockflow-atlas-map.json`。图集中的纹理 ID 保持稳定，坐标由新的 BlockFlow 图集映射提供。
+### 在线使用
 
-详细的模型提取范围、纹理重打包和各安装面的坐标验证见 `MODEL-EXTRACTION.md`。
+1. 打开已部署的 BlockFlow 网站。
+2. 在首页选择“命令链编辑器”或“结构编辑器”。
+3. 选择对应的 `.mcstructure` 文件，等待解析和三维场景构建完成。
+4. 在编辑器中完成修改。
+5. 使用导出功能保存新的 `.mcstructure` 文件。
 
-### 性能架构
+### 部署到 GitHub Pages
 
-- `assets/workers/geometry-baker.js`：后台执行面剔除、索引几何合并、Chunk 和 LOD 数据生成。
-- `assets/js/blockflow-baker.js`：准备烘焙输入、特殊模型和主线程对象装配。
-- Chunk 尺寸为 16³；单块编辑只更新目标及必要的边界 Chunk。
-- 大型数据层使用近似体素占用 LOD。粗 LOD 可能填补细小孔洞或改变稀疏轮廓；特殊模型保留完整细节，因此特殊方块较多时 LOD 收益会降低。
-- 真实帧率取决于结构分布、材质数量、GPU 和浏览器。自动化测试不等于真实设备 FPS 测试。
+1. 下载并解压本项目。
+2. 将项目根目录中的全部文件和目录提交到 GitHub 仓库根目录。
+3. 打开仓库的 **Settings → Pages**。
+4. 将发布方式设为 **Deploy from a branch**。
+5. 选择 `main` 分支和 `/(root)` 目录并保存。
+6. 等待 GitHub Pages 发布完成后，使用仓库页面显示的网站地址访问。
 
-## 方块数据与模型
+根目录的 `.nojekyll` 文件需要保留。不要只上传 `index.html`；两个编辑器依赖共享 CSS、JavaScript、纹理、模型数据、Three.js 运行时和 Worker 文件。
 
-- `assets/js/structure-core.js`：Bedrock MCStructure NBT 解析、方块调色板/索引处理、方块实体读写和 MCStructure 序列化。
-- `assets/js/structure-app.js`：结构编辑器界面、三维场景、特殊方块几何、编辑操作和相机控制。
-- `assets/js/blockflow-baker.js`：BlockFlow 几何烘焙调度与结果装配。
-- `assets/workers/geometry-baker.js`：后台几何 Worker。
-- `assets/workers/snapshot.js`：自动保存与快照序列化 Worker。
-- `assets/workers/batch.js`：批量查找/替换 Worker。
-- `assets/js/broken-chain-core.js`：命令链断链识别共享逻辑。
-- `assets/js/command-editor.js`：命令链编辑器主程序。
-- `assets/js/worker-factory.js`：创建和管理后台 Worker。
+### 本地运行
 
-## 自动化测试
+建议通过 GitHub Pages 或本地静态 HTTP 服务器访问。不要直接双击 `file://` 地址打开页面，因为浏览器通常会限制 Worker、Fetch 和模块资源的加载。
 
-在安装 Node.js 的开发环境中，从项目根目录执行：
+## 操作说明
 
-```bash
-node --test tests/*.test.cjs
-```
+### 鼠标与键盘
 
-测试覆盖：普通方块遮挡、索引几何、Chunk 边界、LOD、Worker 取消、图集坐标、仅 MCStructure 文件入口，以及告示牌/火把/拉杆/按钮/中继器/比较器/红石粉的状态解析。新增 Three.js 运行时测试会实际创建按钮、拉杆、告示牌板面、中继器和比较器几何，并检查按钮六面安装和按压位移。
+- 鼠标左键拖动：旋转三维视角。
+- 鼠标滚轮：缩放视图。
+- 视图支持的平移操作以编辑器当前交互提示为准。
+- 命令链编辑器支持 `W`、`A`、`S`、`D` 移动摄像机，`空格` 和 `Shift` 控制摄像机升降。
+- 常见文本编辑快捷键在命令输入框中保持浏览器默认行为。
+
+### 触屏设备
+
+移动设备可使用单指旋转、双指缩放/平移，以及界面中的摄像机方向控制。不同设备的触控行为可能受浏览器和屏幕尺寸影响。
+
+## 文件与隐私
+
+- 页面不会将导入的结构文件上传到 BlockFlow 自有服务器。
+- 结构编辑器使用浏览器本地数据库保存编辑会话和结构快照。
+- 命令链编辑器使用浏览器本地存储保存自动恢复数据。
+- 清除浏览器站点数据或更换浏览器后，本地保存的会话可能无法恢复。
+- 导出的文件由浏览器生成，保存位置由浏览器下载设置决定。
 
 ## 项目目录
 
 ```text
 BlockFlow/
 ├── index.html
-├── .nojekyll
 ├── README.md
+├── .nojekyll
+├── css/                       全站共享样式
+├── js/                        全站共享逻辑
+├── assets/
+│   ├── data/                  图集映射与特殊模型数据
+│   ├── icons/                 图标
+│   ├── textures/              方块纹理图集
+│   └── vendor/                Three.js 运行时
 ├── CommandEditor/
-│   └── index.html
+│   ├── index.html
+│   ├── css/
+│   └── js/
 ├── StructureEditor/
-│   └── index.html
-├── tests/
-└── assets/
-    ├── css/
-    ├── data/
-    ├── icons/
-    ├── js/
-    ├── textures/structure/
-    ├── vendor/
-    └── workers/
+│   ├── index.html
+│   ├── css/
+│   ├── js/
+│   └── workers/
+└── docs/                      技术说明
 ```
 
-## 手机端操作
+## 浏览器与兼容性
 
-- 3D 视图：单指旋转，双指捏合缩放、双指拖动平移。
-- 方向键：左右移动摄像机，上下升降摄像机。
-- 选择方块后，属性面板会使用适配手机屏幕的抽屉布局。
+建议使用近期版本的 Chrome、Microsoft Edge 或 Firefox，并启用 WebGL。处理大型结构时，浏览器可用内存、显卡性能和设备温度都会影响加载速度与编辑体验。结构文件中的新增方块状态、附加组件方块和特殊方块实体可能需要后续版本补充支持。
+
+## 常见问题
+
+**页面打开后没有三维场景？**
+
+确认使用 HTTPS 网站或本地 HTTP 服务器访问，检查浏览器是否启用 WebGL，并确认仓库中的 `assets/`、`css/`、`js/`、`CommandEditor/` 和 `StructureEditor/` 目录都已完整上传。
+
+**导入后某些方块外观不正确？**
+
+可能是方块 ID、状态组合或方块实体数据尚未覆盖。可记录对应方块 ID、状态和 Minecraft 版本，用于补充模型映射。
+
+**结构编辑器能否打开其他格式？**
+
+不能。结构编辑器仅支持 Minecraft Bedrock `.mcstructure` 文件。命令链编辑器另外支持按行读取纯文本命令列表。
+
+**刷新页面后能否恢复编辑？**
+
+在浏览器本地存储可用且数据未被清除的情况下，编辑器会尝试恢复上次保存的会话。重要修改仍建议及时导出文件备份。
 
 ## 第三方组件
 
-项目包含 Three.js 运行时；其上游许可证声明保留在 `assets/vendor/three-runtime.js` 中。其他资源及数据文件按各自来源和授权要求管理。
+项目使用 Three.js 提供三维场景和 WebGL 渲染。相关许可证信息见 [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md)。
+
+---
+
+<sub>部分内容借助了 [dislink.github.io](https://dislink.github.io)。</sub>

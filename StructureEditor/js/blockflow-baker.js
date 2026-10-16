@@ -1,8 +1,8 @@
-/* BlockFlow native geometry baker.
- * Main thread: resolves BlockFlow materials and serializes special models.
- * Worker: face culling, indexed geometry, chunk partitioning and distance LOD.
- * No model-baking WASM or external pre-baked model registry is used.
- */
+                                   
+                                                                           
+                                                                               
+                                                                     
+   
 (function registerBlockFlowBaker(root) {
   'use strict';
 
@@ -11,6 +11,9 @@
   let nextJobId = 1;
   const jobs = new Map();
   const cubeFaceTemplateCache = new WeakMap();
+  const bakerScriptUrl = typeof document !== 'undefined'
+    ? (document.currentScript?.src || new URL('./blockflow-baker.js', location.href).href)
+    : 'http://localhost/StructureEditor/js/blockflow-baker.js';
 
   function getTextureMatrix(texture) {
     if (!texture) return null;
@@ -172,8 +175,7 @@
     if (worker) return worker;
     if (root.BlockFlowWorkers?.create) worker = root.BlockFlowWorkers.create('geometry');
     else {
-      const base = document.currentScript?.src || location.href;
-      worker = new Worker(new URL('../workers/geometry-baker.js', base), { name: 'BlockFlow-geometry-baker' });
+      worker = new Worker(new URL('../workers/geometry-baker.js', bakerScriptUrl), { name: 'BlockFlow-geometry-baker' });
     }
     worker.onmessage = event => {
       const message = event.data || {};
@@ -246,8 +248,8 @@
       geometry.setAttribute('color', new THREE.BufferAttribute(bucket.colors, 3));
       if (bucket.uvs?.length) geometry.setAttribute('uv', new THREE.BufferAttribute(bucket.uvs, 2));
       geometry.setIndex(new THREE.BufferAttribute(bucket.indices, 1));
-      // All positions are chunk-local. A conservative fixed sphere avoids a full main-thread
-      // vertex scan for every material in every LOD level.
+                                                                                             
+                                                           
       geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(CHUNK_SIZE/2, CHUNK_SIZE/2, CHUNK_SIZE/2), CHUNK_SIZE * 1.15);
       const material = getChunkMaterial(descriptor);
       const mesh = new THREE.Mesh(geometry, material);
@@ -393,8 +395,8 @@
       return group;
     } catch (error) {
       if (error?.name === 'AbortError') {
-        // The worker checks cancellation at yield points. Also mark any in-flight job
-        // through the progress callback; a later full rebuild receives a fresh job id.
+                                                                                      
+                                                                                       
       }
       throw error;
     }

@@ -86,8 +86,8 @@ const BLOCK_COLOR={command:0xf59e0b,chain:0x10b981,repeating:0x8b5cf6};
 const TYPE_LABEL={command:'脉冲命令方块',chain:'链式命令方块',repeating:'重复命令方块'};
 const STD_Z=32;
 const MAX_STRUCTURE_SIZE=64;
-// Import limits prevent oversized or adversarial NBT files from exhausting browser memory.
-// 支持较大的 mcstructure；128 MiB 是文件字节上限，结构体积仍单独受 MAX_IMPORT_VOLUME 保护。
+                                                                                           
+                                                                   
 const MAX_IMPORT_BYTES=128*1024*1024;
 const MAX_IMPORT_VOLUME=1_000_000;
 const MAX_NBT_DEPTH=96;
@@ -175,21 +175,21 @@ document.getElementById('themeBtn').onclick=()=>{setCurrentAction('切换主题'
 })();
 
 function extractBlockIndexLayers(node){
-  // mcstructure format_version=1 常见布局：List<List<Int>>。
-  // format_version=2 常见布局：List<IntArray>。
-  // 同时兼容旧文件直接使用单个 IntArray 作为主层的情况。
+                                                       
+                                          
+                                    
   if(node?.type===TAG.INT_ARRAY&&Array.isArray(node.value))return[node.value];
   if(node?.type!==TAG.LIST||!node.value||!Array.isArray(node.value.items))return null;
   const items=node.value.items;
   if(items.length<1||items.length>2)return null;
 
-  // v2: 两层（或单层）IntArray。
+                         
   if(node.value.elementType===TAG.INT_ARRAY&&
      items.every(item=>item?.type===TAG.INT_ARRAY&&Array.isArray(item.value))){
     return items.map(item=>item.value);
   }
 
-  // v1: 两层（或单层）List<Int>。NBT Reader 将每个 Int 包装为 {type,value}。
+                                                              
   if(node.value.elementType===TAG.LIST&&items.every(item=>
     item?.type===TAG.LIST&&item.value?.elementType===TAG.INT&&
     Array.isArray(item.value.items)&&item.value.items.every(value=>value?.type===TAG.INT)
@@ -224,9 +224,9 @@ function getOffsetPosition(b,facing,step=1){
   if(!F)return null;
   return{x:b.x+F[0]*step,y:b.y+F[1]*step,z:b.z+F[2]*step};
 }
-// Detect intentional self-closed command-block loops. Only cycles of 2–4
-// chain-command blocks are treated as supported loops; larger loops are left
-// to the normal validation path because they are considered malformed layouts.
+                                                                         
+                                                                             
+                                                                               
 function detectSelfClosedCycles(blockMap,maxCycleSize=4){
   const cycles=[];
   const signatures=new Set();
@@ -242,8 +242,8 @@ function detectSelfClosedCycles(blockMap,maxCycleSize=4){
       const key=blockKey(current.x,current.y,current.z);
       if(position.has(key)){
         const keys=path.slice(position.get(key));
-        // The two canonical /setblock markers intentionally face into one
-        // another. That is a broken-head encoding, not a self-closed chain.
+                                                                          
+                                                                            
         const markerCycle=keys.some(cycleKey=>{
           const node=blockMap.get(cycleKey);
           return isSetblockFirstMarker(node?.cmd||'')||isSetblockSecondMarker(node?.cmd||'');
@@ -272,8 +272,8 @@ function isChainPlacementSetblock(cmd){
   return /^\/?setblock\b[\s\S]*?\bchain_command_block\b/i.test(s)||
     /^\/?execute\b[\s\S]*?\brun\s+\/?setblock\b[\s\S]*?\bchain_command_block\b/i.test(s);
 }
-// Shared, side-effect-free canonical broken-head recognizer. The import pre-scan
-// and trace pass intentionally use this exact geometry so their semantics cannot drift.
+                                                                                 
+                                                                                        
 function identifyBrokenHeadGeometry(root,getExact,isMarker){
   if(!root||root.blockType==='chain'||typeof getExact!=='function'||typeof isMarker!=='function')return null;
   const cmd=String(root.cmd||'').trim();
@@ -330,9 +330,9 @@ function replaceBrokenChainSetblock(cmd,replacement){
   const executeRun=source.match(/^(\/?execute\b[\s\S]*?\brun\s+)\/?setblock\b[\s\S]*$/i);
   return executeRun?executeRun[1]+replacement:replacement;
 }
-// A broken head is a specific, canonical format, not simply any two /setblock
-// commands. Execute heads fold their first marker into the execute command;
-// testfor heads use the next two command blocks as markers.
+                                                                              
+                                                                            
+                                                            
 function getBrokenHeadKind(items){
   if(!Array.isArray(items)||items.length<2)return null;
   const cmdAt=i=>String(typeof items[i]==='string'?items[i]:items[i]?.cmd||'').trim();
@@ -347,9 +347,9 @@ function isBrokenChainPlaceholder(items){
   return isSetblockFirstMarker(items[1]?.cmd??items[1])&&isSetblockSecondMarker(items[2]?.cmd??items[2]);
 }
 function collapseExecuteBrokenPlaceholder(blocks){
-  // The blank broken-chain template starts with marker1 + marker2. When its
-  // root is changed to an execute/setblock head, marker1 is folded into the
-  // execute command and the old marker2 template block becomes redundant.
+                                                                            
+                                                                            
+                                                                          
   if(getBrokenHeadKind(blocks)!=='execute'||!Array.isArray(blocks)||blocks.length<3)return false;
   if(isSetblockFirstMarker(blocks[1]?.cmd??blocks[1])&&isSetblockSecondMarker(blocks[2]?.cmd??blocks[2])){
     blocks.splice(2,1);
@@ -389,9 +389,9 @@ function buildStructureBlockMap(X,Y,Z,blockIndices,paletteList){
     const z=rem%Z;
     const states=pe.states?.value||{};
     const facingRaw=states.facing_direction?.value;
-    // The palette identifies physical command blocks even when their block entity
-    // is missing Command. Seed empty command and palette condition state here; the
-    // block_position_data pass below will override these defaults when available.
+                                                                                  
+                                                                                   
+                                                                                  
     map.set(blockKey(x,y,z),{
       x,y,z,type,name,blockType:type,cmd:'',
       cond:states.conditional_bit?.value?1:0,auto:1,
@@ -447,8 +447,8 @@ function parseMcstructure(buf){
   const blockMap=buildStructureBlockMap(X,Y,Z,blockIndices,paletteList);
   let parseWarnings=0;
   const commandTypes=new Set(['command','repeating','chain']);
-  // Parse block entities without filtering empty Command strings. Physical command
-  // blocks remain part of the graph even when their Command tag is empty or absent.
+                                                                                   
+                                                                                    
   for(const key of Object.keys(bpd)){
     try{
       const entry=bpd[key]?.value;
@@ -462,7 +462,7 @@ function parseMcstructure(buf){
       if(!pe)continue;
       const name=pe.name?.value||'';
       const blockType=blockTypeFromName(name);
-      // Non-command block entities (signs, chests, etc.) do not enter the command graph.
+                                                                                         
       if(!commandTypes.has(blockType))continue;
       const bed=entry.block_entity_data.value;
       const cmdRaw=typeof bed.Command?.value==='string'?bed.Command.value:'';
@@ -472,8 +472,8 @@ function parseMcstructure(buf){
       const states=pe.states?.value||{};
       const facingRaw=states.facing_direction?.value;
       const facing=(facingRaw!==undefined)?facingRaw:2;
-      // Game-exported command blocks may carry the misspelled legacy key
-      // LPCondionalMode, the newer conditionalMode key, or both.
+                                                                         
+                                                                 
       const condRaw=bed.conditionalMode?.value??bed.LPCondionalMode?.value??states.conditional_bit?.value??0;
       const cond=condRaw?1:0;
       const auto=bed.auto?.value!==undefined?(bed.auto.value?1:0):1;
@@ -490,8 +490,8 @@ function parseMcstructure(buf){
       }
     }catch(err){parseWarnings++;}
   }
-  // Build roots from every physical command block in the primary layer, not
-  // only from non-empty Command strings. Empty root blocks are valid nodes too.
+                                                                            
+                                                                                
   const commands=[...blockMap.values()]
     .filter(b=>commandTypes.has(b.type||b.blockType))
     .map(b=>({
@@ -512,8 +512,8 @@ function traceChain(root,context,owner){
   const emptyPathByTarget=new Map();
   const rememberSkippedEmpty=(target,path)=>{
     if(!target||!Array.isArray(path)||path.length===0)return;
-    // Important: claimLogical() looks up by the exact physical node returned by
-    // getLogical(). Never key this map by the downstream blocked/owned candidate.
+                                                                                
+                                                                                  
     emptyPathByTarget.set(blockKey(target.x,target.y,target.z),path.slice());
   };
   const isCommandType=t=>t==='command'||t==='repeating'||t==='chain';
@@ -530,8 +530,8 @@ function traceChain(root,context,owner){
     while(candidate){
       const k=blockKey(candidate.x,candidate.y,candidate.z);
       if(discarded?.has(k)||blockedKeys?.has(k)||owner.has(k)||rootKeys?.has(k)||seen.has(k)){
-        // Preserve a terminal empty physical block even when it cannot lead to
-        // another non-empty command. The owner/blocked guards still win.
+                                                                               
+                                                                         
         if(skippedEmpty.length){
           const terminal=skippedEmpty[skippedEmpty.length-1];
           const terminalKey=blockKey(terminal.x,terminal.y,terminal.z);
@@ -550,8 +550,8 @@ function traceChain(root,context,owner){
       skippedEmpty.push(candidate);
       candidate=getExact(candidate,candidate.facing,1);
     }
-    // Important: trailing empty command blocks are still physical nodes. Return
-    // the final one and let claimLogical include both it and any skipped empties.
+                                                                                
+                                                                                  
     if(skippedEmpty.length){
       const terminal=skippedEmpty[skippedEmpty.length-1];
       if(skippedEmpty.length>1)rememberSkippedEmpty(terminal,skippedEmpty.slice(0,-1));
@@ -570,8 +570,8 @@ function traceChain(root,context,owner){
     orderedIndex.set(k,copy);
     return true;
   };
-  // getLogical can look past blank physical chain blocks to continue tracing.
-  // Keep those blocks in the ordered chain instead of silently dropping them.
+                                                                              
+                                                                              
   const claimLogical=b=>{
     if(!b)return false;
     const k=blockKey(b.x,b.y,b.z);
@@ -605,9 +605,9 @@ function traceChain(root,context,owner){
     let current=start;const seen=new Set();const keys=[];
     while(current&&isCommandType(current.type)){
       const k=blockKey(current.x,current.y,current.z);
-      // A wrong-facing branch must never walk backward into a command already
-      // known to be a predecessor of the broken head. This is especially
-      // important when the second marker points back at marker #1.
+                                                                              
+                                                                         
+                                                                   
       if(protectedKeys.has(k)||seen.has(k)||local.has(k)||owner.has(k)||discarded?.has(k)||rootKeys?.has(k))break;
       seen.add(k);keys.push(k);
       const next=getExact(current,current.facing,1);
@@ -637,19 +637,19 @@ function traceChain(root,context,owner){
             blockKey(wrong.x,wrong.y,wrong.z)
           ])
           :new Set([blockKey(root.x,root.y,root.z),blockKey(wrong.x,wrong.y,wrong.z)]);
-        // The gap itself may be deliberately excluded as part of this broken-head
-        // encoding, but traversal must stop before reaching the second marker.
-        // Otherwise the cleanup walk blocks a marker that matchBrokenHeadExact
-        // immediately needs to claim.
+                                                                                  
+                                                                               
+                                                                               
+                                      
         blockWrongBranchExact(skipped,protectedKeys);
       }
     }
     return pattern;
   };
   const brokenHead=matchBrokenHeadExact();
-  // Use the shared reverse-source + per-node-facing walker when a supported
-  // command head participates in a physically broken run. Canonical legacy
-  // marker geometry above remains authoritative when it matches.
+                                                                            
+                                                                           
+                                                                 
   if(!brokenHead&&isSupportedBrokenHeadCandidate(root.cmd)){
     const shared=window.BlockFlowBrokenChainCore;
     if(shared?.identifyCommandChain){
@@ -660,8 +660,8 @@ function traceChain(root,context,owner){
         const rec={...b,layer:0,name:b.name||'',command:isCommandType(b.type),conditional:!!b.cond};
         adapted.set(k,rec);return rec;
       };
-      // Materialize all physical positions, including auxiliary blocks, so the
-      // recognizer can distinguish a solid boundary from an empty cell.
+                                                                               
+                                                                        
       for(const b of blockMap.values())coreRecord(b);
       const rootKey=blockKey(root.x,root.y,root.z);
       const coreRoot=adapted.get(rootKey);
@@ -676,9 +676,9 @@ function traceChain(root,context,owner){
       const result=coreRoot?shared.identifyCommandChain(coreRoot,getCoreAt):null;
       const sourceKey=result?.source?blockKey(result.source.x,result.source.y,result.source.z):'';
       if(result?.ok&&sourceKey===rootKey&&Array.isArray(result.chain)&&result.chain.length>1){
-        // A normal chain endpoint commonly faces empty space; that alone is not
-        // a broken head. Require evidence that a wrong-facing target was excluded
-        // while an already-established physical run continued.
+                                                                                
+                                                                                  
+                                                               
         const hasBrokenGeometry=result.chain.some(item=>item.status==='broken-facing-continuation')||
           (result.boundaries||[]).some(item=>item.type==='wrong-facing-target-ignored'||item.type==='wrong-facing-empty-target');
         if(hasBrokenGeometry){
@@ -811,9 +811,9 @@ function relayoutBlocks(ordered,chainType,xCol){
   if(!ordered||ordered.length===0)return[];
   const headKind=chainType==='snake'?(getBrokenHeadKind(ordered)||(ordered?._coreSourceKind==='execute'?'execute':ordered?._coreSourceKind==='testfor'?'testfor':null)):null;
   const placeholder=chainType==='snake'&&!headKind&&isBrokenChainPlaceholder(ordered);
-  // Keep the first physical row at the full 32-block depth. The broken-head
-  // signature controls rows two and onward: /execute uses 30 blocks per row,
-  // /testfor uses 29. This distinction must survive imports and live edits.
+                                                                            
+                                                                             
+                                                                            
   const firstCapacity=STD_Z;
   const otherCapacity=chainType==='snake'
     ?(headKind==='execute'?30:29)
@@ -858,9 +858,9 @@ function relayoutBlocks(ordered,chainType,xCol){
     const src=ordered[i];
     blocks.push({x:xCol,y:pos.y,z:pos.z,facing,blockType:i===0?firstBlockType:'chain',cmd:String(src.cmd||''),cond:src.cond?1:0,auto:src.auto!==0?1:0,marked:!!src.marked,note:src.note||''});
   }
-  // Exactly one marker is intentionally misoriented. Keep this in the actual
-  // block state as well as in the canonical marker command, otherwise a later
-  // export/import round-trip silently turns the broken head into a normal chain.
+                                                                             
+                                                                              
+                                                                                 
   if(chainType==='snake'&&(headKind||placeholder)){
     const markerIndexes=findBrokenChainSetblockIndexes(ordered);
     const wrongFacingIndex=markerIndexes[1];
@@ -890,14 +890,14 @@ function processCommands(commands,context={}){
     return p?(blockMap.get(blockKey(p.x,p.y,p.z))||null):null;
   };
   const isCommandBlockRecord=b=>!!b&&(b.type==='command'||b.type==='repeating'||b.type==='chain');
-  // Detect canonical broken heads before tracing any roots. Their second
-  // marker intentionally has a different facing. Only the command block that
-  // marker actually points at is excluded; we do not blindly discard its
-  // whole forward branch. The immediately previous command is an explicit
-  // exception and must remain readable.
+                                                                         
+                                                                             
+                                                                         
+                                                                          
+                                        
   const inspectBrokenHead=(root)=>identifyBrokenHeadGeometry(root,getExactFromMap,isBrokenHeadMarkerBlock);
-  // Broken-chain heads must claim their marker blocks before an adjacent
-  // standalone command can claim the same block as its own chain tail.
+                                                                         
+                                                                       
   const rootReachesSelfClosedCycle=root=>{
     let current=root;const seen=new Set();
     for(let i=0;i<blockMap.size&&i<10000;i++){
@@ -909,8 +909,8 @@ function processCommands(commands,context={}){
     }
     return false;
   };
-  // Sorting may invoke its comparator O(n log n) times. Cycle reachability can
-  // walk an entire chain, so compute each root's metadata only once up front.
+                                                                               
+                                                                              
   const rootMeta=new Map();
   for(const root of roots){
     const brokenPattern=inspectBrokenHead(root);
@@ -932,8 +932,8 @@ function processCommands(commands,context={}){
     const pattern=rootMeta.get(root)?.brokenPattern||null;
     if(!pattern)continue;
     const source=pattern.wrongFacingBlock;
-    // If the block's facing still follows the intended broken-chain direction,
-    // it is not the mismatched-facing case described by the format.
+                                                                               
+                                                                    
     if(!source||source.facing===pattern.direction)continue;
     const target=getExactFromMap(source,source.facing,1);
     if(!isCommandBlockRecord(target))continue;
@@ -942,8 +942,8 @@ function processCommands(commands,context={}){
       pattern.gap&&isCommandBlockRecord(pattern.gap)?blockKey(pattern.gap.x,pattern.gap.y,pattern.gap.z):null
     ].filter(Boolean));
     if(previousKeys.has(blockKey(target.x,target.y,target.z)))continue;
-    // One target is invalid. Do not cascade through its facing direction:
-    // that can swallow legitimate commands behind it or cross into another chain.
+                                                                          
+                                                                                  
     blockedKeys.add(blockKey(target.x,target.y,target.z));
   }
   graphContext.blockedKeys=blockedKeys;
@@ -965,8 +965,8 @@ function processCommands(commands,context={}){
     const canonicalPair=brokenIndexes.length>=2&&isSetblockFirstMarker(ordered[brokenIndexes[0]]?.cmd||'')&&isSetblockSecondMarker(ordered[brokenIndexes[1]]?.cmd||'');
     const brokenHeadKind=getBrokenHeadKind(ordered);
     const matchedBroken=!!ordered._brokenMatched;
-    // Trust the canonical command head even if the source block orientations
-    // were unusual enough to bypass the geometric fast-path matcher.
+                                                                             
+                                                                     
     if(!matchedBroken&&!canonicalPair&&!brokenHeadKind&&!coreBrokenDetected&&(rootLooksBroken||brokenIndexes.length>0))type='repeat';
     if(matchedBroken||brokenHeadKind||coreBrokenDetected)type='snake';
     if(type==='snake')normalizeBrokenChainBlocks(ordered);
@@ -997,14 +997,14 @@ function processCommands(commands,context={}){
       toast(`已删除错误朝向分支 ${count} 个命令方块（详见日志）`,'warn',6000);
     }
   }
-  // pendingWrongKeys only contains non-root nodes (the producer explicitly
-  // excludes rootKeys), so filtering chains by c.rootKey here could never remove
-  // a chain. Keep all successfully traced roots; apply pendingWrongKeys only to
-  // physical chain nodes/cycles where those keys can actually occur.
+                                                                           
+                                                                                 
+                                                                                
+                                                                     
   const filtered=chains;
   const represented=new Set(filtered.flatMap(c=>(c.blocks||[]).map(b=>blockKey(b.x,b.y,b.z))));
-  // A self-closed chain can have no repeating/impulse root at all. Preserve such
-  // supported 2–4 block cycles as physical loops instead of dropping them.
+                                                                                 
+                                                                           
   for(const cycle of selfClosedDetection.cycles){
     if(cycle.some(k=>represented.has(k)||blockedKeys.has(k)||discarded.has(k)||pendingWrongKeys.has(k)))continue;
     const cycleBlocks=cycle.map(k=>blockMap.get(k)).filter(Boolean).map(b=>({
@@ -1014,9 +1014,9 @@ function processCommands(commands,context={}){
     filtered.push({type:'repeat',selfClosed:true,selfClosedCycleKeys:cycle.slice(),preservePhysicalType:true,blocks:cycleBlocks});
     for(const k of cycle)represented.add(k);
   }
-  // Empty chain-command blocks are physical nodes, even if malformed orientation
-  // or a missing head prevents them from joining a recognized path. Keep only those
-  // not intentionally excluded as a broken-head target/wrong branch.
+                                                                                 
+                                                                                    
+                                                                     
   for(const b of blockMap.values()){
     if(b?.type!=='chain'||String(b.cmd??'').trim()!=='')continue;
     const k=blockKey(b.x,b.y,b.z);
@@ -1055,8 +1055,8 @@ function buildOutput(){
   const layout=buildExportLayout(app.chains);
   const allBlocks=layout.blocks;
   if(allBlocks.length===0)throw new Error('没有命令方块');
-  // Export-only packing: app.chains is never mutated, so every chain remains
-  // on the same Y level and continues extending along X in the 3D editor.
+                                                                             
+                                                                          
   const minX=allBlocks.reduce((min,b)=>Math.min(min,b.x),Infinity);
   const spanX=layout.spanX;
   const maxY=layout.sizeY;
@@ -1065,16 +1065,16 @@ function buildOutput(){
     states:T.comp({conditional_bit:T.byte(cond),facing_direction:T.int(facing)}),
     version:T.int(18168865)});
   const palette=[];
-  // facing_direction is a six-value enum: 0=down, 1=up, 2=north,
-  // 3=south, 4=west, 5=east. Self-closed loops require preserving all values.
+                                                                 
+                                                                              
   for(const nm of ['minecraft:command_block','minecraft:chain_command_block','minecraft:repeating_command_block'])
     for(let c=0;c<=1;c++)for(let f=0;f<=5;f++)palette.push(mk(nm,c,f));
   const airIndex=palette.length;
   palette.push(T.comp({name:T.str('minecraft:air'),states:T.comp({}),version:T.int(18168865)}));
   const volume=spanX*maxY*maxZ;
   const mainIndices=new Array(volume).fill(airIndex);
-  // The secondary layer is intentionally void: exported command-chain blocks occupy
-  // the primary layer only. Both arrays must have exactly the structure volume.
+                                                                                    
+                                                                                
   const secondaryIndices=new Array(volume).fill(-1);
   const bpd={};
   const offsets={command:0,chain:12,repeating:24};
@@ -1092,15 +1092,15 @@ function buildOutput(){
   }
   const base=app.originalRoot?cloneNBT(app.originalRoot):T.comp({});
   const rootValue=base.value||{};
-  // The writer serializes block_indices as a ListTag of IntArrayTags,
-  // which is .mcstructure format v2. Writing format_version=1 here causes
-  // current Bedrock loaders to reject the mismatched layout.
+                                                                      
+                                                                          
+                                                             
   rootValue.format_version=T.int(2);
   rootValue.size=T.list(TAG.INT,[T.int(spanX),T.int(maxY),T.int(maxZ)]);
   const originalStructure=rootValue.structure?.value?cloneNBT(rootValue.structure.value):{};
   originalStructure.block_indices=T.list(TAG.INT_ARRAY,[T.ia(mainIndices),T.ia(secondaryIndices)]);
-  // This editor reflows only command chains; retaining source entities would leave
-  // their positions unrelated to the rebuilt structure, so export an empty list.
+                                                                                   
+                                                                                 
   originalStructure.entities=T.list(TAG.COMPOUND,[]);
   originalStructure.palette=T.comp({default:T.comp({block_palette:T.list(TAG.COMPOUND,palette),block_position_data:T.comp(bpd)})});
   rootValue.structure=T.comp(originalStructure);
@@ -1118,7 +1118,7 @@ let lastSelectionPulseMark=0;
 let previewReady=false;
 let currentBounds=null;
 let cameraAnim=null;
-// Skip unnecessary WebGL draws when the scene and camera have not changed.
+                                                                           
 let renderDirty=true;
 function markRenderDirty(){renderDirty=true;}
 
@@ -1128,8 +1128,8 @@ let sharedEdgeMat=null;
 const matArrayCache=new Map();
 const solidMaterialCache=new Map();
 const solidMaterialPool=new Set();
-// Batched renderer state: one InstancedMesh per visual material key instead of
-// one Mesh + one edge object per command block.
+                                                                               
+                                                
 let pickMeshes=[];
 const pickIndexMap=new Map();
 let blockBatchMeta=[];
@@ -1142,7 +1142,7 @@ async function ensureThree(){
   if(three)return three;
   const localThree=window.BlockFlowThree;
   if(!localThree||!localThree.THREE||!localThree.OrbitControls){
-    throw new Error('本地 Three.js 依赖未加载。请在离线打包器中重新生成 offline-release。');
+    throw new Error('Three.js 引擎未加载。请检查根目录 assets/vendor/three-runtime.js 是否存在并可访问。');
   }
   three={THREE:localThree.THREE,OrbitControls:localThree.OrbitControls};
   window._sceneReady=true;
@@ -1182,7 +1182,7 @@ function initScene(){
   mainCanvas.className='main-canvas';
   wrap.appendChild(mainCanvas);
   renderer=new THREE.WebGLRenderer({canvas:mainCanvas,antialias:true,preserveDrawingBuffer:false,powerPreference:'high-performance'});
-  // Cap HiDPI render cost: 2x DPR quadruples the drawing-buffer pixels.
+                                                                        
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
   renderer.setSize(w,h);
   renderer.shadowMap.enabled=false;
@@ -1331,9 +1331,9 @@ function closeChainAddModal(){
 }
 function normalizeImportedCommands(text){
   const source=String(text??'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
-  // A single final newline is the conventional TXT line terminator, not an
-  // additional physical command block. Interior blank rows remain physical
-  // empty blocks. To express an explicit final empty block, end with two '\n'.
+                                                                           
+                                                                           
+                                                                               
   if(source.length===0)return[];
   const normalized=source.endsWith('\n')?source.slice(0,-1):source;
   if(normalized.length===0)return[];
@@ -1343,8 +1343,8 @@ function classifyTxtChain(commands){
   return (getBrokenHeadKind(commands)||isBrokenChainPlaceholder(commands))?'snake':'repeat';
 }
 function serializeTextEditorBlocks(blocks){
-  // Text rows map 1:1 to physical command blocks. An empty Command is an empty row,
-  // not a missing row; otherwise selection/conditions/export silently shift.
+                                                                                    
+                                                                             
   return (Array.isArray(blocks)?blocks:[]).map(b=>String(b?.cmd??'').trim()).join('\n');
 }
 function cloneChainForTextEditor(chain){
@@ -1464,8 +1464,8 @@ function highlightCommandBody(source){
     if(coord){append('tok-coordinate',coord[0]);i+=coord[0].length;continue;}
     const number=text.slice(i).match(/^-?(?:\d+(?:\.\d+)?|\.\d+)/);
     if(number){append('tok-number',number[0]);i+=number[0].length;continue;}
-    // Namespace IDs must be matched before ':' is treated as punctuation.
-    // This also recognizes the value side of key=minecraft:block expressions.
+                                                                          
+                                                                              
     const resourceId=text.slice(i).match(/^[A-Za-z0-9_.-]+:[A-Za-z0-9_./-]+/);
     if(resourceId){append('tok-id',resourceId[0]);i+=resourceId[0].length;continue;}
     const punc=text[i].match(/[\[\]{}(),:]/);
@@ -1568,8 +1568,8 @@ function updateTextEditorDraft(){
   for(let lineIndex=0;lineIndex<newLines.length;lineIndex++){
     const cmd=String(newLines[lineIndex]??'').trim();
     const oldLineIndex=lineMap[lineIndex];
-    // Since every text line corresponds to one physical block, block metadata
-    // is indexed by line, not by the count of non-empty commands before it.
+                                                                              
+                                                                            
     const oldBlockIndex=oldLineIndex===null||oldLineIndex===undefined||oldLineIndex<0?-1:oldLineIndex;
     const oldBlock=oldBlockIndex>=0?previousBlocks[oldBlockIndex]:null;
     newBlockRecords.push({cmd,cond:newConditions[lineIndex]?1:0,oldBlock});
@@ -1593,7 +1593,7 @@ function updateTextEditorHint(){
   const nonEmpty=lines.filter(line=>String(line||'').trim());
   const conditions=Array.isArray(textEditDraft.conditionLines)?textEditDraft.conditionLines:[];
   const conditionCount=lines.reduce((count,line,i)=>count+(String(line||'').trim()&&conditions[i]?1:0),0);
-  // Include physical blank rows when detecting the special blank broken-head template.
+                                                                                       
   const inferred=classifyTxtChain(lines.map(line=>String(line??'').trim()));
   const type=inferred==='snake'?'snake':(textEditDraft.type==='impulse'||textEditDraft.firstBlockType==='command'?'impulse':'repeat');
   const emptyCount=lines.filter(line=>String(line||'').trim()==='').length;
@@ -1616,9 +1616,9 @@ function buildTextEditorChains(){
   const type=inferred==='snake'?'snake':(textEditDraft.type==='impulse'||textEditDraft.firstBlockType==='command'?'impulse':'repeat');
   const sourceBlocks=textEditDraft.blocks||[];
   const firstBlockType=textEditDraft.firstBlockType==='command'?'command':'repeating';
-  // Text-only edits to a supported self-closed cycle must not flatten its
-  // physical topology. Preserve positions/facing/block types when row count is
-  // unchanged; inserting/removing rows intentionally falls back to normal layout.
+                                                                          
+                                                                               
+                                                                                  
   const preserveCycleGeometry=!!textEditDraft.selfClosed&&parsed.length===sourceBlocks.length&&
     sourceBlocks.length>=2&&sourceBlocks.every(b=>b&&
       [b.x,b.y,b.z].every(Number.isInteger)&&Number.isInteger(b.facing)&&b.facing>=0&&b.facing<=5&&
@@ -1700,10 +1700,10 @@ function getStructureDimensions(chains){
   return{X:maxX-minX+1,Y:maxY+1,Z:maxZ+1};
 }
 function ensureStructureSize(chains,label='结构'){
-  // The editor view intentionally keeps every chain on the same Y baseline and
-  // permits the overall X span to grow. Only each individual chain's dimensions
-  // and the shared editable Y/Z ranges are constrained here. Export performs
-  // the separate 32-chain-per-layer packing in buildExportLayout().
+                                                                               
+                                                                                
+                                                                             
+                                                                    
   const size=getStructureDimensions(chains);
   const offenders=[];
   let invalidCoordinate=null;
@@ -1770,8 +1770,8 @@ function buildExportLayout(chains){
         }
         return{b,dx,localY,z,k};
       });
-      // Detect repeated coordinates within a single chain rather than letting
-      // the later block silently overwrite the earlier one in the NBT array.
+                                                                              
+                                                                             
       const ownKeys=new Set();
       for(const item of normalized){
         const key=blockKey(item.dx,item.localY,item.z);
@@ -1816,13 +1816,13 @@ function buildExportLayout(chains){
   if(sizeZ>MAX_STRUCTURE_SIZE){
     throw new Error(`导出后 Z 尺寸为 ${sizeZ}，超过 ${MAX_STRUCTURE_SIZE} 格。`);
   }
-  // Final invariant: each serialized block occupies a unique coordinate.
+                                                                         
   if(occupied.size!==blocks.length)throw new Error('导出失败：结构中存在重复方块坐标');
   return{blocks,spanX,sizeY,sizeZ,layerCount};
 }
-// Keep whole chains' internal geometry intact while preventing exact 3D
-// coordinate collisions after reflow. Shifting X does not change a closed
-// cycle's relative coordinates or its facing directions.
+                                                                        
+                                                                          
+                                                         
 function resolveChainCoordinateOverlaps(chains){
   const occupied=new Set();
   for(let i=0;i<(Array.isArray(chains)?chains.length:0);i++){
@@ -1836,13 +1836,13 @@ function resolveChainCoordinateOverlaps(chains){
     }
     const collides=dx=>blocks.some(b=>occupied.has(blockKey(Number(b.x)+dx,Number(b.y),Number(b.z))));
     let dx=0;
-    // Occupied coordinates are finite, so moving left eventually finds a free
-    // column unless the chain itself contains a duplicate (checked above).
+                                                                              
+                                                                           
     while(collides(dx))dx--;
     if(dx)for(const b of blocks)b.x=Number(b.x)+dx;
-    // Cached cycle keys contain absolute coordinates, so refresh them after a
-    // rigid translation; otherwise snapshots/text-edit state can refer to the
-    // pre-reflow positions.
+                                                                              
+                                                                              
+                            
     if(Array.isArray(chains[i].selfClosedCycleKeys)||blocks.some(b=>b.selfClosedCycle)){
       chains[i].selfClosedCycleKeys=blocks.filter(b=>b.selfClosedCycle).map(b=>blockKey(Number(b.x),Number(b.y),Number(b.z)));
     }
@@ -1854,9 +1854,9 @@ function resolveChainCoordinateOverlaps(chains){
 function reflowChainsForSize(chains){
   for(let i=0;i<chains.length;i++){
     const chain=chains[i];
-    // Re-detect a closed loop after every edit instead of trusting stale flags.
-    // This lets a user break a loop by changing a node's block type, while
-    // preserving a valid 2–4 chain-block cycle through reflow/undo/redo.
+                                                                                
+                                                                           
+                                                                         
     const localBlockMap=new Map((chain.blocks||[]).map(b=>[blockKey(Number(b.x),Number(b.y),Number(b.z)),{...b,type:b.blockType}]));
     const localCycles=detectSelfClosedCycles(localBlockMap,4);
     const hasSelfClosedCycle=localCycles.cycles.length>0;
@@ -1871,7 +1871,7 @@ function reflowChainsForSize(chains){
       continue;
     }
     if(chain.preservePhysicalType&&chain.blocks.length===1){
-      // Keep a standalone empty chain block visible as the same block type/facing.
+                                                                                   
       const anchorX=Number(chain.blocks[0].x);
       if(!Number.isInteger(anchorX))throw new Error('孤立命令方块 X 坐标无效');
       const dx=-2*i-anchorX;
@@ -1887,8 +1887,8 @@ function reflowChainsForSize(chains){
     const headKind=getBrokenHeadKind(chain.blocks);
     const placeholder=chain.type==='snake'&&isBrokenChainPlaceholder(chain.blocks);
     if(headKind){
-      // Keep command text canonical while preserving the user's chosen
-      // conditional flags during an edit/reflow operation.
+                                                                       
+                                                           
       normalizeBrokenChainBlocks(chain.blocks,{applyCondition:false});
       chain.type='snake';
     }else if(placeholder){
@@ -2091,7 +2091,7 @@ function deleteChainAt(ci){
     updateChainBar();
     renderChainManager();
     document.getElementById('exitChainBtn').style.display='none';
-    // Keep the empty editor visible so Ctrl+Z can restore the deleted final chain.
+                                                                                   
     toast('已删除最后一条链（可使用 Ctrl+Z 撤销）','ok');
     return;
   }
@@ -2130,7 +2130,7 @@ function setupKeyboardMovement(){
 let keyboardMoveScratch=null;
 function updateKeyboardMovement(dt){
   if(!camera||!controls||cameraAnim)return;
-  // Avoid allocating vectors or asking the camera for its direction on idle frames.
+                                                                                    
   if(!keysDown['KeyW']&&!keysDown['KeyS']&&!keysDown['KeyA']&&!keysDown['KeyD']&&
      !keysDown['Space']&&!keysDown['ShiftLeft']&&!keysDown['ShiftRight'])return;
 
@@ -2169,8 +2169,8 @@ function renderFrames(force=false){
 }
 
 let chainPickBox=null,chainPickPoint=null;
-// In chain mode, test only the selected chain's unit block bounds. This avoids
-// calling InstancedMesh.raycast for every instance in every material batch.
+                                                                               
+                                                                            
 function pickBlockInChain(chainIndex){
   const chain=app.chains[chainIndex];
   if(!chain||!chain.blocks||!raycaster||!three)return null;
@@ -2248,9 +2248,9 @@ function disposeTexturedMaterialCache(){
 function clearScene(){
   disposeTexturedMaterialCache();
   if(blockGroup&&scene){
-    // Removing an InstancedMesh from the scene does not release its per-instance
-    // GPU buffers. Dispose only the instance objects here; base geometry and
-    // materials are shared caches and must remain alive.
+                                                                                 
+                                                                             
+                                                         
     blockGroup.traverse(o=>{
       if(o.isInstancedMesh&&typeof o.dispose==='function')o.dispose();
     });
@@ -2338,8 +2338,8 @@ function updateEdgeVisibility(chainIndex=-1){
       attr.array.set(src,writeOffset);writeOffset+=src.length;
     }
   }
-  // The buffer is sized for all edges and reused, so changing chains does not
-  // allocate/dispose GPU buffers on every navigation action.
+                                                                              
+                                                             
   attr.needsUpdate=true;
   edgeLineGeometry.setDrawRange(0,writeOffset/3);
 }
@@ -2351,7 +2351,7 @@ function setBlockVisibility(chainIndex=-1){
   for(const batch of blockBatchMeta){
     const mesh=batch.mesh;
     if(visibleBlockChain<0){
-      // Restore original instance order and count for overview raycasting.
+                                                                           
       for(let i=0;i<batch.records.length;i++){
         const rec=batch.records[i];
         matrix.makeTranslation(rec.block.x+0.5,rec.block.y+0.5,rec.block.z+0.5);
@@ -2360,8 +2360,8 @@ function setBlockVisibility(chainIndex=-1){
       mesh.count=batch.records.length;
       mesh.userData.blockRecords=batch.records;
     }else{
-      // Compact only the selected chain's instances to the front of each batch
-      // and lower mesh.count. Zero-scale instances still cost instance processing.
+                                                                               
+                                                                                   
       const visibleRecords=[];
       let writeIndex=0;
       for(const rec of batch.records){
@@ -2412,8 +2412,8 @@ function renderAllBlocks(){
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
   const batchMap=new Map();
   const localEdgePos=edgeGeo.attributes.position.array;
-  // Allocate one edge buffer per chain up front. Filling these directly avoids
-  // creating one temporary Float32Array per block on every scene rebuild.
+                                                                               
+                                                                          
   edgePositionsByChain=app.chains.map(chain=>new Float32Array((chain.blocks?.length||0)*localEdgePos.length));
   const edgeWriteOffsets=Array.from({length:app.chains.length},()=>0);
   const totalEdgeFloats=edgePositionsByChain.reduce((n,a)=>n+a.length,0);
@@ -2455,8 +2455,8 @@ function renderAllBlocks(){
     }
   }
 
-  // Material-compatible blocks are sent as instances. This reduces the main
-  // block draw calls from O(block count) to O(material variants).
+                                                                            
+                                                                  
   const matrix=new THREE.Matrix4();
   for(const batch of batchMap.values()){
     const mesh=new THREE.InstancedMesh(geo,batch.material,batch.records.length);
@@ -2538,8 +2538,8 @@ function applyChainCamera(){
   if(ci<0||ci>=app.chains.length)return;
   const chain=app.chains[ci];
   if(!chain?.blocks?.length)return;
-  // Use the full occupied bounds (block coordinates plus the unit block size),
-  // not the last block's x coordinate, so irregular chains center correctly.
+                                                                               
+                                                                             
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
   for(const b of chain.blocks){
     minX=Math.min(minX,b.x);maxX=Math.max(maxX,b.x+1);
@@ -2920,7 +2920,7 @@ function scheduleAutosave(){
       }
       if(!storageSet(app.autosaveKey,JSON.stringify(base)))throw new Error('无法保存命令链快照');
     }catch(e){
-      // Free a possibly oversized root payload, then try to preserve the editable chains.
+                                                                                          
       storageRemove(autosaveRootKey());
       base.hasOriginalRoot=false;
       if(!storageSet(app.autosaveKey,JSON.stringify(base))){
@@ -2957,7 +2957,7 @@ async function restoreAutosave(){
       toast('自动保存中没有可恢复的命令链，已清除过期恢复入口','warn');
       return false;
     }
-    // Validate into a temporary model before mutating application state.
+                                                                         
     const restoredChains=data.chains.map((chain,ci)=>{
       if(!chain||typeof chain!=='object'||!Array.isArray(chain.blocks))
         throw new Error(`自动保存中的第 ${ci+1} 条链格式无效`);
@@ -2969,8 +2969,8 @@ async function restoreAutosave(){
         const blockType=['command','repeating','chain'].includes(b.blockType)?b.blockType:
           (['command','repeating','chain'].includes(b.type)?b.type:'chain');
         const facing=Number(b.facing);
-        // Whitelist the persisted model fields. Unknown legacy fields should not
-        // silently leak into the live editor state after a restore.
+                                                                                 
+                                                                    
         return{x,y,z,cmd:String(b.cmd??''),cond:b.cond?1:0,auto:b.auto!==0?1:0,
           facing:Number.isInteger(facing)&&facing>=0&&facing<=5?facing:2,
           blockType,selfClosedCycle:!!b.selfClosedCycle,marked:!!b.marked,note:String(b.note??'')};
@@ -2978,7 +2978,7 @@ async function restoreAutosave(){
       if(blocks.length===0)throw new Error(`自动保存中的第 ${ci+1} 条链没有命令方块`);
       const type=['impulse','repeat','snake'].includes(chain.type)?chain.type:
         (blocks[0].blockType==='command'?'impulse':'repeat');
-      // Chain metadata is also whitelisted to discard stale schema fields.
+                                                                           
       return{type,blocks,selfClosed:!!chain.selfClosed,preservePhysicalType:!!chain.preservePhysicalType,
         selfClosedCycleKeys:Array.isArray(chain.selfClosedCycleKeys)?chain.selfClosedCycleKeys.filter(k=>typeof k==='string').slice():[]};
     });
@@ -2991,7 +2991,7 @@ async function restoreAutosave(){
       if(rootText){try{app.originalRoot=JSON.parse(rootText,autosaveNBTReviver);}catch(e){logWarn('原始 NBT 恢复失败，将仅恢复命令链','恢复自动保存');}}
       else logWarn('自动保存引用的原始 NBT 数据不存在，将仅恢复命令链','恢复自动保存');
     }else if(data.originalRoot){
-      // Backward compatibility with older autosaves using an inline root field.
+                                                                                
       app.originalRoot=data.originalRoot;
     }
     app.originalSize=data.originalSize||null;
@@ -3059,8 +3059,8 @@ function syncHistoryScreen(){
   const editor=document.getElementById('editorView');
   if(!upload||!editor)return;
   const empty=app.chains.length===0;
-  // Keep the editor visible for an empty state when redo is available; otherwise
-  // switching to upload view would hide the only redo control and strand history.
+                                                                                 
+                                                                                  
   const canUndo=app.historyIndex>0;
   const canRedo=app.historyIndex>=0&&app.historyIndex<app.history.length-1;
   const showUpload=empty&&!canUndo&&!canRedo;
@@ -3485,7 +3485,7 @@ document.getElementById('infoDel').onclick=()=>{
       updateStats();
       updateChainBar();
       renderChainManager();
-      // Do not hide the editor: the final deletion remains undoable with Ctrl+Z.
+                                                                                 
       toast('已删除最后一个命令方块（可使用 Ctrl+Z 撤销）','ok');
       return;
     }
@@ -3509,8 +3509,8 @@ document.getElementById('infoDel').onclick=()=>{
     c.blocks.splice(bi,1);
     reflowAllChains();
   }
-  // Deleting the last block of a chain removes a whole chain. Reflow the remaining
-  // chains just like deleteChainAt() so overview coordinates and export layout stay aligned.
+                                                                                   
+                                                                                             
   if(chainRemoved&&app.chains.length>0){
     reflowAllChains();
     app.singleChain=app.chains.length===1;
@@ -3554,8 +3554,8 @@ document.addEventListener('keydown',e=>{
   if(!isInputFocused()&&app.mode==='chain'&&(e.key==='['||e.key===']')){
     e.preventDefault();cycleBlock(e.key===']'?1:-1);return;
   }
-  // Let native text-editing shortcuts work inside textareas/inputs, and don't
-  // mutate a hidden editor while dialogs or the upload screen are active.
+                                                                              
+                                                                          
   if(isInputFocused())return;
   if(!document.getElementById('editorView')?.classList.contains('on'))return;
   if(document.querySelector('.feature-modal.on,.chain-add-modal.on,.text-editor-overlay.on'))return;

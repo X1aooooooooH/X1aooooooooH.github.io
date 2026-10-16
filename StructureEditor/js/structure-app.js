@@ -6,9 +6,9 @@ let extractedVoxelModels=null,extractedVoxelModelsPromise=null,extractedVoxelAtl
 let snapshotWorker=null,snapshotWorkerReady=false,snapshotSeq=0,snapshotPending=new Map(),snapshotLoadPending=new Map(),snapshotWorkerProject=null,snapshotBasePromise=null;let snapshotDirtyLayers=new Set();
 let blockLayerBounds=new Map(),highlightOverlay=null,highlightFillOverlay=null,highlightedBlockKeys=new Set(),sourceLightGroup=null,hemisphereLight=null,sunLight=null,fillLight=null,lightSourceCache=new Map();
 let renderRaf=0,renderingFrame=false,rebuildTimer=0,rebuildRunning=false,rebuildQueuedLayers=new Set(),rebuildQueuedChunks=new Map(),rebuildQueuedFull=false;
-// Incremental edit previews are tracked separately from the baked layer meshes.
-// This map must exist before clearSceneObjects(), removeEditPreview() or
-// renderFastEditPreview() can run (including the first edit after loading).
+                                                                                
+                                                                         
+                                                                            
 let editPreviewGroups=new Map();
 let searchIndex=[],searchTimer=0,searchEntryByBlock=new Map(),searchIndexPosition=new Map();
 let undoHistory=[],undoHistoryBytes=0,historyGroupTimer=0,historyGroupKey='',historyGroupActive=false,restoringHistory=false;
@@ -63,7 +63,6 @@ async function undoLastEdit(){
 function openDatabase(){return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('浏览器不支持 IndexedDB'));return;}const request=indexedDB.open(DB_NAME,DB_VERSION);request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE);};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('打开本地存储失败'));});}
 async function dbGet(){const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readonly'),r=tx.objectStore(DB_STORE).get('current');r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);tx.oncomplete=()=>db.close();});}
 async function dbPut(value){const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(value,'current');tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error||new Error('保存失败'));};tx.onabort=()=>{db.close();reject(tx.error||new Error('保存失败'));};});}
-async function dbClear(){const db=await openDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).delete('current');tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error);};});}
 function metaKey(b){return`${b.layer}|${b.x},${b.y},${b.z}`;}
 function applyMeta(saved){for(const key of Object.keys(metadata))delete metadata[key];highlightedBlockKeys.clear();if(saved&&typeof saved==='object')for(const [k,v] of Object.entries(saved)){metadata[k]={highlight:!!v.highlight,note:String(v.note||'')};if(v?.highlight)highlightedBlockKeys.add(k);}}
 function saveSnapshotDebounced(){if(!project)return;clearTimeout(saveTimer);document.getElementById('stats').textContent='正在保存…';saveTimer=setTimeout(()=>saveSnapshot(),1100);}
@@ -116,9 +115,9 @@ function cloneRootTemplate(node,key=''){
 function invalidateSnapshotBase(){snapshotWorkerProject=null;snapshotBasePromise=null;snapshotDirtyLayers.clear();}
 function markSnapshotLayerDirty(layer){if(Number.isInteger(layer))snapshotDirtyLayers.add(layer);}
 function copyLayerForSnapshotWorker(layer){
-  // parseStructure currently stores block-index layers as normal Arrays.
-  // Transfer lists require actual Transferable objects, so always create a
-  // detached-safe Int32Array copy before posting to the Worker.
+                                                                         
+                                                                           
+                                                                
   return Int32Array.from(layer || []);
 }
 async function ensureSnapshotProject(){
@@ -171,7 +170,6 @@ async function serializeProjectAsync(mode='full',layerIndex=null){
 
 async function saveSnapshot(){if(!project)return;const savedProject=project;try{const bytes=(snapshotWorkerReady&&snapshotWorker)?await serializeProjectAsync('full'):serializeStructure(savedProject);if(project!==savedProject)return;const blob=new Blob([bytes],{type:'application/octet-stream'});await dbPut({blob,filename:project.filename||'structure.mcstructure',meta:cloneNBT(metadata),lastBlockId,updatedAt:Date.now()});setStatus(`${project.blocks.length.toLocaleString()} 个方块 · 已自动保存`);}catch(error){setStatus('本地自动保存失败');console.error(error);toast('自动保存失败：'+error.message,'err');}}
 function updateStats(){if(!project){setStatus('0 个方块');return;}setStatus(`${project.blocks.length.toLocaleString()} 个方块 · ${commandBlockCount.toLocaleString()} 个命令方块`);}
-function getTagIdName(b){return b?.name||'';}
 function idExistsInProject(id){return !!project?.palette?.some(n=>getTag(n,'name','')===id);}
 function validBlockId(id){if(typeof id!=='string'||id!==id.trim()||!/^([a-z0-9_.-]+):([a-z0-9_./-]+)$/.test(id))return false;const namespace=id.split(':')[0];if(namespace==='minecraft')return vanillaIdSet.has(id)||idExistsInProject(id);return idExistsInProject(id);}
 function blockIdChoices(){const set=new Set(vanillaIdSet);if(project)for(const node of project.palette){const name=getTag(node,'name','');if(name)set.add(name);}return [...set];}
@@ -213,10 +211,10 @@ function clearSceneObjects(){
   highlightOverlaySignature='';
   if(sourceLightGroup)while(sourceLightGroup.children.length)sourceLightGroup.remove(sourceLightGroup.children[0]);
 }
-async function ensureLegacyAtlasMap(){
+async function ensureBlockflowAtlasMap(){
   if(blockflowAtlasMap)return blockflowAtlasMap;
   if(!blockflowAtlasMapPromise){
-    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.11.4-dislink-model-extraction',{cache:'force-cache'}).then(response=>{
+    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.12.1',{cache:'force-cache'}).then(response=>{
       if(!response.ok)throw new Error('方块图集索引加载失败：'+response.status);
       return response.json();
     }).then(data=>{blockflowAtlasMap=data;return data;}).catch(error=>{blockflowAtlasMapPromise=null;throw error;});
@@ -228,7 +226,7 @@ function ensureBlockAtlasLoaded(){
   if(!textureLoader||!threeLib)return Promise.reject(new Error('纹理加载器尚未初始化'));
   const {THREE}=threeLib;
   bakedAtlasPromise=new Promise((resolve,reject)=>{
-    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.11.4-dislink-model-extraction',loaded=>{
+    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.12.1',loaded=>{
       requestSceneRender();resolve(loaded);
     },undefined,error=>{bakedAtlas=null;bakedAtlasPromise=null;reject(error||new Error('方块图集加载失败'));});
     bakedAtlas=texture;
@@ -241,12 +239,12 @@ async function ensureExtractedVoxelModels(){
   if(extractedVoxelModels&&extractedVoxelMaterials)return extractedVoxelModels;
   if(!extractedVoxelModelsPromise){
     extractedVoxelModelsPromise=(async()=>{
-      const response=await fetch('../assets/data/blockflow-special-models.json?v=2.11.4-dislink-model-extraction',{cache:'force-cache'});
+      const response=await fetch('../assets/data/blockflow-special-models.json?v=2.12.1',{cache:'force-cache'});
       if(!response.ok)throw new Error('专用方块模型数据加载失败：'+response.status);
       const data=await response.json();
       if(data?.schema!=='BlockFlow.SpecialVoxelModels'||!data.models)throw new Error('专用方块模型数据格式无效');
       if(!textureLoader||!threeLib)throw new Error('专用模型纹理加载器尚未初始化');
-      const texture=await new Promise((resolve,reject)=>textureLoader.load('../assets/textures/structure/blockflow-special-atlas.png?v=2.11.4-dislink-model-extraction',resolve,undefined,reject));
+      const texture=await new Promise((resolve,reject)=>textureLoader.load('../assets/textures/structure/blockflow-special-atlas.png?v=2.12.1',resolve,undefined,reject));
       const {THREE}=threeLib;
       texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.generateMipmaps=false;texture.colorSpace=THREE.SRGBColorSpace;texture.needsUpdate=true;
       extractedVoxelAtlas=texture;
@@ -271,8 +269,8 @@ function getExtractedModelPartGeometry(part,cacheKey){
     template.setIndex(part.i);template.computeBoundingBox();template.computeBoundingSphere();
     extractedVoxelGeometryCache.set(cacheKey,template);
   }
-  // Each temporary source mesh gets its own disposable geometry shell while
-  // immutable BufferAttributes are shared across repeated blocks of the same model.
+                                                                            
+                                                                                    
   const geometry=new THREE.BufferGeometry();
   for(const [name,attribute] of Object.entries(template.attributes))geometry.setAttribute(name,attribute);
   geometry.setIndex(template.index);
@@ -293,9 +291,9 @@ function modelExtractedFaceName(value,fallback='north'){
   return ['down','up','north','south','west','east'].includes(text)?text:fallback;
 }
 function modelExtractedWallYaw(normal){
-  // Dislink's wall-mounted meshes place their bearing plane at local -X.
-  // Rotate that plane to the requested block-facing normal so it lands exactly
-  // on the cell boundary shared with the supporting wall block.
+                                                                         
+                                                                               
+                                                                
   return Math.atan2(normal[2],-normal[0]);
 }
 function modelExtractedDeviceDirection(block){
@@ -335,36 +333,48 @@ function modelExtractedButtonKey(block){
   if(!woodMatch)return `button/stone/${face}/${pressed}`;
   return `button/${woodMatch[1]}/${face}/${pressed}`;
 }
+function modelResolveTorchPlacement(block){
+  const name=blockRenderName(block);
+  const raw=modelState(block,'torch_facing_direction');
+                                                                       
+                                                                            
+  const numericFaces={0:'unknown',1:'west',2:'east',3:'north',4:'south',5:'top'};
+  let face=raw===undefined?'top':raw;
+  if(typeof face==='number'||/^\d+$/.test(String(face)))face=numericFaces[Number(face)]||'unknown';
+  face=String(face).toLowerCase();
+  if(!['west','east','north','south','top'].includes(face))face='top';
+  const wall=face!=='top';
+  const isRedstone=name==='redstone_torch'||name==='unlit_redstone_torch'||name==='redstone_wall_torch';
+  const rawLit=modelState(block,'lit');
+  const unlit=name==='unlit_redstone_torch'||name.startsWith('unlit_redstone_')||modelBool(modelState(block,'unlit_bit'))||(rawLit!==undefined&&!modelBool(rawLit));
+  return {face,wall,mountNormal:wall?directionNormal(face,[0,1,0]):[0,1,0],redstone:isRedstone,lit:!unlit,soul:name.includes('soul'),copper:name.includes('copper')};
+}
 function modelExtractedTorchKey(block){
-  const name=blockRenderName(block),redstone=name.includes('redstone'),wall=name.includes('wall_torch')||name==='wall_torch'||name==='redstone_wall_torch'||name==='soul_wall_torch';
-  const face=modelExtractedFaceName(modelState(block,'torch_facing_direction','facing_direction','minecraft:facing_direction')??'north');
-  if(redstone&&wall){
-    const unlit=name.includes('unlit')||modelBool(modelState(block,'unlit_bit'))||(modelState(block,'lit')!==undefined&&!modelBool(modelState(block,'lit')));
-    return `redstone/wall_torch/${face}/${unlit?'off':'on'}`;
+  const placement=modelResolveTorchPlacement(block);
+  if(placement.redstone){
+    const state=placement.lit?'on':'off';
+    return placement.wall?`redstone/wall_torch/${placement.face}/${state}`:`redstone/torch/${state}`;
   }
-  if(wall){if(name.includes('soul'))return `torch/soul_wall/${face}`;return `torch/wall/${face}`;}
-  if(redstone){
-    const lit=modelState(block,'lit');
-    // Dislink's original bake resolves lit=0 to the active redstone_torch tile
-    // and lit=1 to redstone_torch_off; preserve that Bedrock mapping exactly.
-    const unlit=name.includes('unlit')||modelBool(modelState(block,'unlit_bit'))||(lit!==undefined&&!modelBool(lit));
-    return `redstone/torch/${unlit?'on':'off'}`;
+  if(placement.wall){
+    if(placement.soul)return `torch/soul_wall/${placement.face}`;
+    return `torch/wall/${placement.face}`;
   }
-  if(name.includes('soul'))return 'torch/soul';
-  if(name.includes('copper'))return 'torch/copper';
+  if(placement.soul)return 'torch/soul';
+  if(placement.copper)return 'torch/copper';
   return 'torch/normal';
 }
 function addExtractedSignText(group,block,placement){
   if(typeof readSignFaceData!=='function'||typeof createSignPixelTextGeometry!=='function')return;
-  const name=blockRenderName(block),wall=placement.wall,hanging=placement.hanging,wallHanging=placement.wallHanging;
+  const wall=placement.wall,hanging=placement.hanging,wallHanging=placement.wallHanging;
   const boardW=wallHanging?.84:wall?.96:hanging?.84:.96;
   const boardH=wallHanging?.58:wall?.46:hanging?.58:.40;
   const centerY=wall&&!wallHanging?0:(hanging||wallHanging)?-.1875:.28125;
-  const sideMounted=wall||wallHanging;
-  const frontNormal=sideMounted?[-1,0,0]:[0,0,1];
-  const frontPos=wall&&!wallHanging?[-.502,centerY,0]:wallHanging?[-.064,centerY,0]:[0,centerY,.064];
+                                                                        
+                                                                           
+  const frontNormal=wall?[1,0,0]:[0,0,1];
+  const frontPos=wall&&!wallHanging?[-.372,centerY,0]:wallHanging?[.127,centerY,0]:[0,centerY,.064];
   const backNormal=frontNormal.map(value=>-value);
-  const backPos=wall&&!wallHanging?[-.373,centerY,0]:wallHanging?[.064,centerY,0]:[0,centerY,-.064];
+  const backPos=wall&&!wallHanging?[-.503,centerY,0]:wallHanging?[-.127,centerY,0]:[0,centerY,-.064];
   const addFace=(face,position,normal,back=false)=>{
     const data=readSignFaceData(block,face);if(!data?.text)return;
     const geometry=createSignPixelTextGeometry(data.text,boardW*.86,boardH*.72,.0038);if(!geometry)return;
@@ -383,22 +393,22 @@ function buildExtractedSpecialBlockModel(group,block,kind){
   if(kind==='sign'){
     const placement=modelResolveSignPlacement(block);key=modelExtractedSignKey(block);
     if(placement.wall){
-      const normal=placement.normal||modelFacingNormal(state('facing_direction','minecraft:facing_direction')??2,'north');
-      group.rotation.y=modelExtractedWallYaw(normal);
-      // The extracted wall-hanging mesh has its mounting plane 0.375 blocks
-      // inside the cell. Move it toward the supporting wall so the rear plane
-      // exactly meets the neighbouring block boundary.
-      if(placement.wallHanging)group.position.add(new threeLib.THREE.Vector3(normal[0]*.375,normal[1]*.375,normal[2]*.375));
+      const support=placement.supportNormal||[-placement.normal[0],-placement.normal[1],-placement.normal[2]];
+      group.rotation.y=modelExtractedWallYaw(support);
+                                                                          
+                                                                                   
+                                                                                 
+      if(placement.wallHanging)group.position.add(new threeLib.THREE.Vector3(support[0]*.375,support[1]*.375,support[2]*.375));
     }else group.rotation.y=placement.yaw;
   }else if(kind==='lever'){
     key=modelExtractedLeverKey(block);
   }else if(kind==='button'){
     key=modelExtractedButtonKey(block);
   }else if(kind==='torch'){
-    key=modelExtractedTorchKey(block);
-    if(name.includes('wall_torch')||name==='wall_torch'||name==='redstone_wall_torch'||name==='soul_wall_torch'){
-      const normal=directionNormal(state('torch_facing_direction','facing_direction','minecraft:facing_direction')??2,[0,0,-1]);group.rotation.y=modelExtractedWallYaw(normal);
-    }
+    const placement=modelResolveTorchPlacement(block);key=modelExtractedTorchKey(block);
+                                                                       
+                                                                        
+    if(placement.wall)group.rotation.y=modelExtractedWallYaw(placement.mountNormal);
   }else if(kind==='redstone_device'){
     const device=modelResolveRedstoneDeviceState(block),direction=modelExtractedDeviceDirection(block);
     const delay=Math.max(0,Math.min(3,device.delay||0));
@@ -444,7 +454,7 @@ function getBlockRenderDefinition(b){
   const renderName=short==='grass_block'?'grass':short;
   let def=BEDROCK_RENDER_DEFINITIONS[renderName]||null;
   const state=(key)=>{const node=b?.statesNode?.value?.[key];return node&&Object.prototype.hasOwnProperty.call(node,'value')?node.value:undefined;};
-  // Bedrock furnace uses a separate face definition while lit.
+                                                               
   if(short==='furnace'&&(state('lit')===1||state('lit')===true)&&BEDROCK_RENDER_DEFINITIONS.lit_furnace)def=BEDROCK_RENDER_DEFINITIONS.lit_furnace;
   return def;
 }
@@ -535,7 +545,7 @@ async function initThree(){
   if(!lib?.THREE||!lib?.OrbitControls){const detail=`THREE=${!!lib?.THREE}, OrbitControls=${!!lib?.OrbitControls}`;throw new Error(`Three.js 引擎脚本未正确注册（${detail}）。请确认内嵌引擎代码完整；这与 WebGL 是否可用是两个不同问题。`); }
   threeLib=lib;const {THREE,OrbitControls}=lib;
   textureLoader=new THREE.TextureLoader();
-  await ensureLegacyAtlasMap();
+  await ensureBlockflowAtlasMap();
   const wrap=document.getElementById('viewport');const w=Math.max(1,wrap.clientWidth),h=Math.max(1,wrap.clientHeight);
   scene=new THREE.Scene();scene.background=new THREE.Color(0x101824);
   camera=new THREE.PerspectiveCamera(48,w/h,.1,10000);camera.position.set(22,18,24);
@@ -710,11 +720,6 @@ function modelFacingNormal(value,defaultValue='south'){
 }
 function modelTextureAlias(b,faceIndex=2){const ds=getBlockFaceDescriptors(b);return ds?.[faceIndex]?.alias||ds?.find(x=>x.alias)?.alias||blockRenderName(b);}
 function modelSetPanelNormal(mesh,normal){mesh.quaternion.setFromUnitVectors(new threeLib.THREE.Vector3(0,0,1),new threeLib.THREE.Vector3(normal[0],normal[1],normal[2]));return mesh;}
-function modelAddPlane(group,b,alias,width,height,position,normal=[0,0,1],opts={}){
-  const {THREE}=threeLib;const mat=modelMat(alias,b,{transparent:true,alphaTest:.025,depthWrite:false,...opts});
-  const mesh=addTrackedMesh(group,new THREE.PlaneGeometry(width,height),mat,position);
-  modelSetPanelNormal(mesh,normal);return mesh;
-}
 function modelAddBox(group,b,size,pos,alias=null,opts={}){
   const mats=alias?modelMatArray(alias,b,opts):buildBlockMaterials(b);
   return addShapeBox(group,b,size,pos,[0,0,0],mats);
@@ -723,7 +728,7 @@ function modelAddFaceTexturedBox(group,b,size,pos,faceAlias,edgeColor=0x4c3829,o
   const {THREE}=threeLib;
   const face=modelMat(faceAlias,b,{transparent:false,...opts});
   const edge=modelColorMat(edgeColor),top=modelColorMat(Math.min(0xffffff,edgeColor+0x17110b));
-  // BoxGeometry material order: +X, -X, +Y, -Y, +Z, -Z.
+                                                        
   return addTrackedMesh(group,new THREE.BoxGeometry(size[0],size[1],size[2]),[edge,edge,top,edge,face,face],pos);
 }
 function modelAddMetalRivet(group,x,y,z,scale=1){
@@ -882,23 +887,23 @@ function modelResolveButtonPlacement(block){
 }
 function modelResolveSignPlacement(block){
   const name=blockRenderName(block),state=(...keys)=>modelState(block,...keys);
-  const wall=name.endsWith('_wall_sign')||name==='wall_sign'||name.includes('_wall_hanging_sign');
-  const hanging=!wall&&(name.endsWith('_hanging_sign')||name.includes('hanging_sign'));
+  const hangingId=name.endsWith('_hanging_sign')||name==='hanging_sign';
+  const wallHanging=hangingId&&modelBool(state('hanging'));
+  const hanging=hangingId&&!wallHanging;
+  const wall=name.endsWith('_wall_sign')||name==='wall_sign'||wallHanging||name.includes('_wall_hanging_sign');
   const ground=state('ground_sign_direction');
   const facing=state('minecraft:cardinal_direction','cardinal_direction','facing_direction');
   const yaw=ground!==undefined?modelFacingYawFrom16(ground):
     (typeof facing==='string'&&['north','south','east','west'].includes(facing.toLowerCase())?modelCardinalYaw(facing):modelFacingYawFrom16(facing??0));
-  return {
-    wall,hanging,wallHanging:wall&&name.includes('_wall_hanging_sign'),
-    normal:wall?modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north'):null,
-    yaw,attached:modelBool(state('attached_bit'))
-  };
+  const normal=wall?modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north'):null;
+  const supportNormal=normal?normal.map(value=>-value):null;
+  return {wall,hanging,wallHanging,normal,supportNormal,yaw,attached:modelBool(state('attached_bit'))};
 }
 function modelBuildButton(group,block,placement=modelResolveButtonPlacement(block)){
   const {THREE}=threeLib,normal=placement.normal,pressed=placement.pressed,woodButton=placement.wooden;
   const mount=new THREE.Group();mount.userData.blockRef=block;
-  // The mount is anchored on the actual block face; local depth is measured
-  // outward from that face for all six Bedrock facing_direction values.
+                                                                            
+                                                                        
   mount.position.set(normal[0]*.485,normal[1]*.485,normal[2]*.485);
   mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),new THREE.Vector3(...normal));group.add(mount);
   const frame=modelColorMat(woodButton?0x4f3929:0x474d52),rim=modelColorMat(woodButton?0x795638:0x727a80);
@@ -917,8 +922,8 @@ function addDetailedLeverModel(group,block){
   const {THREE}=threeLib,{mountNormal,hingeAxis,powered}=modelResolveLeverPlacement(block);
   const mount=new THREE.Group();mount.userData.blockRef=block;
   mount.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...mountNormal));
-  // Bring the mounting plate close to the block surface for floor, ceiling,
-  // and wall installations without changing the lever's local hinge geometry.
+                                                                            
+                                                                              
   mount.position.set(mountNormal[0]*.03,mountNormal[1]*.03,mountNormal[2]*.03);group.add(mount);
   const stone=modelMat('stone',block),darkMetal=modelColorMat(0x303941),steel=modelColorMat(0xaeb8c0),steelLight=modelColorMat(0xd4dadd),wood=modelColorMat(0x68472f),woodLight=modelColorMat(0x9a704c),woodDark=modelColorMat(0x3e291f);
   addTrackedMesh(mount,new THREE.BoxGeometry(.34,.055,.34),[darkMetal,darkMetal,stone,darkMetal,steel,steel],[0,.438,0]);
@@ -942,8 +947,8 @@ function addGeometricTorchHead(group,block,{redstone=false,lit=true,soul=false,c
   const {THREE}=threeLib;
   const shaftColor=redstone?0x49312e:copper?0x99613d:0x735034;
   const shaftMat=modelColorMat(shaftColor),collarMat=modelColorMat(copper?0xc1844d:0x494d51),darkMat=modelColorMat(0x30282a);
-  // Build the silhouette with actual solids. The atlas is not used as a flat
-  // substitute for the torch or its flame.
+                                                                             
+                                           
   addTrackedMesh(group,new THREE.CylinderGeometry(.026,.043,.315,9,2),shaftMat,[0,-.018,0]);
   addTrackedMesh(group,new THREE.CylinderGeometry(.041,.041,.018,10),collarMat,[0,.125,0]);
   addTrackedMesh(group,new THREE.CylinderGeometry(.032,.037,.012,10),darkMat,[0,.141,0]);
@@ -999,22 +1004,6 @@ function modelCropTextureMaterial(alias,b,repeatY,offsetY,opts={}){
   const material=new THREE.MeshBasicMaterial({map,color:parseTint(candidate.c),side:THREE.DoubleSide,
     transparent:opts.transparent??(alphaMode!=='opaque'),alphaTest:opts.alphaTest??(alphaMode==='opaque'?0:.04),depthWrite:opts.depthWrite??(alphaMode==='opaque')});
   specialMaterialCache.set(key,material);return material;
-}
-function modelChestPartMaterials(b,part,doubleChest){
-  const materials=buildBlockMaterials(b).slice(),descriptors=getBlockFaceDescriptors(b);
-  const frontAlias=descriptors[4]?.alias||'chest_inventory_front';
-  const sideAlias=descriptors[5]?.alias||'chest_inventory_side';
-  // The front texture contains both the lid and lower body. Crop it into two UV regions
-  // so the hinged lid and shell do not each repeat the entire chest-front graphic.
-  if(part==='lid'){
-    materials[4]=modelCropTextureMaterial(frontAlias,b,.3125,.6875,{transparent:false});
-    materials[5]=modelMat(sideAlias,b);
-    materials[2]=modelMat(descriptors[2]?.alias||'chest_inventory_top',b);
-  }else{
-    materials[4]=doubleChest?modelMat(sideAlias,b):modelCropTextureMaterial(frontAlias,b,.6875,0,{transparent:false});
-    materials[5]=modelMat(sideAlias,b);
-  }
-  return materials;
 }
 function modelRedstoneConnectable(b){
   if(!b)return false;
@@ -1096,15 +1085,15 @@ function renderAdvancedShape(group,b,kind){
       for(const y of [-1,1])modelAddBox(host,b,[boardW+.012,.018,.012],[0,centerY+y*(boardH/2-.009),0],alias);
       for(const x of [-1,1])modelAddBox(host,b,[.014,boardH,.012],[x*(boardW/2-.007),centerY,0],alias);
       modelAddBox(host,b,[boardW-.035,.009,.008],[0,centerY-boardH*.30,boardDepth*.48],alias);
-      // Subtle edge grain and dark end-grain pins are geometry, not a face sprite.
+                                                                                   
       for(const x of [-1,1])addTrackedMesh(host,new THREE.CylinderGeometry(.006,.006,.018,6),edge,[x*(boardW/2-.025),centerY,boardDepth*.50]);
       return {trim,edge};
     };
     const finishBoard=(host,centerY,frontOffset=0)=>{
-      // Solid wooden panel with textured broad faces and darker end grain.
+                                                                           
       modelAddFaceTexturedBox(host,b,[boardW,boardH,boardDepth],[0,centerY,0],alias,0x513a2a);
       addBoardTrim(host,centerY);
-      // Fine plank seams are separate shallow geometry, not a sign sprite.
+                                                                           
       for(const x of [-.245,-.082,.082,.245]){
         if(Math.abs(x)>=boardW*.43)continue;
         const seam=modelColorMat(0x4a3023,{transparent:true,opacity:.30,depthWrite:false});
@@ -1179,20 +1168,20 @@ function renderAdvancedShape(group,b,kind){
     const side=modelMat(sideAlias,b),top=modelMat(topAlias,b);
     const bodyFront=doubleChest?side:modelCropTextureMaterial(frontAlias,b,.6875,0,{transparent:false});
     const lidFront=modelCropTextureMaterial(frontAlias,b,.3125,.6875,{transparent:false});
-    // Hollow chest shell: a floor plus four textured walls. The top stays open beneath the hinged lid.
+                                                                                                       
     const floorMats=[side,side,dark,top,side,side];
     addShapeBox(group,b,[width,.075,depth],[0,-.4625,0],[0,0,0],floorMats);
-    // Front wall (+Z): use the lower crop containing the latch for a single chest.
+                                                                                   
     const frontMats=[side,side,dark,dark,bodyFront,dark];
     addShapeBox(group,b,[width,bodyH,wall],[0,-.1875,depth/2-wall/2],[0,0,0],frontMats);
-    // Back wall (-Z) and side walls have dark inner faces and vanilla outer faces.
+                                                                                   
     const backMats=[side,side,dark,dark,dark,side];
     addShapeBox(group,b,[width,bodyH,wall],[0,-.1875,-depth/2+wall/2],[0,0,0],backMats);
     const leftMats=[dark,side,dark,dark,side,side],rightMats=[side,dark,dark,dark,side,side];
     addShapeBox(group,b,[wall,bodyH,depth-2*wall],[-width/2+wall/2,-.1875,0],[0,0,0],leftMats);
     addShapeBox(group,b,[wall,bodyH,depth-2*wall],[width/2-wall/2,-.1875,0],[0,0,0],rightMats);
 
-    // Independent lid assembly, pivoting around the rear edge on opening.
+                                                                          
     const lidPivot=new THREE.Group();lidPivot.userData.blockRef=b;lidPivot.position.set(0,.125,-depth/2);group.add(lidPivot);
     const lidTopMats=[side,side,top,side,side,side];
     addShapeBox(lidPivot,b,[width,.055,depth],[0,.285,depth/2],[0,0,0],lidTopMats);
@@ -1206,7 +1195,7 @@ function renderAdvancedShape(group,b,kind){
     const hingeMat=modelColorMat(n.includes('ender_chest')?0x454b55:n.includes('copper_chest')?0x9a653d:0x76542f);
     for(const x of [-width*.31,width*.31])addShapeBox(lidPivot,b,[.065,.045,.045],[x,.015,.035],[0,0,0],Array(6).fill(hingeMat));
     if(doubleChest&&pair.sign===1){
-      // One physical latch at the middle seam of a double chest.
+                                                                 
       const gold=modelColorMat(n.includes('copper_chest')?0xb87336:0xc0a05b),darkLock=modelColorMat(0x3e3328);
       addShapeBox(group,b,[.07,.13,.035],[.445,-.045,.445],[0,0,0],Array(6).fill(gold));
       addShapeBox(group,b,[.032,.068,.018],[.445,-.050,.469],[0,0,0],Array(6).fill(darkLock));
@@ -1394,9 +1383,9 @@ function renderAdvancedShape(group,b,kind){
 function makeSpecialBlockObject(b,attachToScene=true){
   const {THREE}=threeLib,kind=shapeKindForBlock(b);if(!kind)return null;
   const group=new THREE.Group();group.userData.blockRef=b;group.position.set(b.x+.5,b.y+.5+(b.layer?1.08:0),b.z+.5);
-  // The invisible picking hitbox belongs only to the interactive scene.
-  // The native baker compiles visible source meshes and must never receive or
-  // dispose the shared picking geometry.
+                                                                        
+                                                                              
+                                         
   if(attachToScene){
     if(!specialHitboxGeometry)specialHitboxGeometry=new THREE.BoxGeometry(1,1,1);
     if(!specialHitboxMaterial)specialHitboxMaterial=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,colorWrite:false,depthWrite:false,side:THREE.DoubleSide});
@@ -1418,7 +1407,7 @@ function makeSpecialBlockObject(b,attachToScene=true){
     const center=startPoint.map((v,i)=>v+axisN[i]*.22);
     const torchBody=new THREE.Group();torchBody.userData.blockRef=b;torchBody.position.set(...center);
     torchBody.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...axisN));group.add(torchBody);
-    // Torch shaft, metal collar, cap and flame are all real 3D geometry; no atlas flame sprite.
+                                                                                                
     addGeometricTorchHead(torchBody,b,{redstone,lit:!unlit,soul,copper});
   }else if(kind==='button'){
     const facing=state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction')??2;
@@ -1488,8 +1477,8 @@ function makeSpecialBlockObject(b,attachToScene=true){
     modelAddRedstoneRail(group,b,-.005,railColor);
     const stoneEdge=modelColorMat(0x77736c),brass=modelColorMat(0x9b8260),dark=modelColorMat(0x4a4641);
     if(isComparator){
-      // Two rear input torches, one stateful output torch and a physical
-      // subtract/compare selector. This is a distinct BlockFlow construction.
+                                                                         
+                                                                              
       modelAddRedstoneTorchCarrier(group,b,-.235,-.205,true,'comparator');
       modelAddRedstoneTorchCarrier(group,b,.235,-.205,true,'comparator');
       modelAddRedstoneTorchCarrier(group,b,0,.235,powered,'comparator');
@@ -1500,7 +1489,7 @@ function makeSpecialBlockObject(b,attachToScene=true){
       selector.rotation.z=subtract?-.12:.12;
       addTrackedMesh(group,new THREE.BoxGeometry(.055,.009,.055),modelColorMat(powered?0xe94c38:0x60312d,{toneMapped:false}),[0,-.315,.35]);
     }else{
-      // Delay changes the moving carrier's position along the ceramic track.
+                                                                             
       const firstZ=-.255,secondZ=.10+delay*.075;
       addTrackedMesh(group,new THREE.BoxGeometry(.12,.026,.56),[dark,dark,stoneEdge,dark,dark,dark],[0,-.315,-.015]);
       for(const x of [-.095,.095])addTrackedMesh(group,new THREE.BoxGeometry(.024,.034,.56),[dark,dark,brass,dark,dark,dark],[x,-.305,-.015]);
@@ -1508,7 +1497,7 @@ function makeSpecialBlockObject(b,attachToScene=true){
       modelAddRedstoneTorchCarrier(group,b,0,secondZ,powered,'repeater');
       addTrackedMesh(group,new THREE.BoxGeometry(.105,.025,.10),[dark,dark,brass,dark,dark,dark],[0,-.304,secondZ]);
       addTrackedMesh(group,new THREE.BoxGeometry(.045,.009,.045),modelColorMat(powered?0xe94c38:0x60312d,{toneMapped:false}),[0,-.315,.39]);
-      // Delay index is also legible as four tiny etched marks on the body.
+                                                                           
       const mark=modelColorMat(0x4a3d35);
       for(let i=0;i<4;i++)addTrackedMesh(group,new THREE.BoxGeometry(.012,.006,.028),i===delay?brass:mark,[-.30+i*.20,-.355,-.34]);
     }
@@ -1667,8 +1656,8 @@ function removeEditPreview(layer){
   scene?.remove(group);group.traverse(node=>{node.geometry?.dispose?.();});editPreviewGroups.delete(layer);
 }
 function renderFastEditPreview(layer){
-  // Keep the current chunk visible while its replacement is computed off-thread.
-  // Avoid rebuilding a whole layer of InstancedMesh objects on the main thread.
+                                                                                 
+                                                                                
   requestSceneRender();
 }
 function queueDirtyBlockChunks(layer,block){

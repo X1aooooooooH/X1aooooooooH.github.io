@@ -1,5 +1,5 @@
 
-/* BlockFlow shared broken-chain recognizer. Derived from the tested Structure Editor core. */
+                                                                                              
 (function (global) {
   'use strict';
 function normalizeCommandText(value){const text=String(value??'').trimStart();if(!text.trim())return '';return text.startsWith('/')?text:'/'+text;}
@@ -14,10 +14,10 @@ function identifyCommandChain(start,getAt){
   const dirOf=b=>dirs[Number(b?.facing)]||dirs[2];
   const opposite=v=>[-v[0],-v[1],-v[2]];
   const at=(b,v)=>getAt(b.x+v[0],b.y+v[1],b.z+v[2],b.layer);
-  // Exact incoming arrows are preferred. If a chain node is itself mis-faced,
-  // the physical predecessor may still occupy the cell opposite its own
-  // facing. Accept that one-cell chain predecessor as a broken-link bridge;
-  // never bridge through arbitrary neighbors or impulse/repeating blocks.
+                                                                              
+                                                                        
+                                                                            
+                                                                          
   const incoming=b=>{
     const out=[],seen=new Set();
     for(const d of Object.values(dirs)){
@@ -32,8 +32,8 @@ function identifyCommandChain(start,getAt){
     }
     return out;
   };
-  // global safety guard: cap pathological malformed graphs without imposing
-  // the old execute/testfor semantic limits on valid command chains.
+                                                                            
+                                                                     
   const reverseSeen=new Map([[key(start),start]]),queue=[start],reverseEdges=[],reverseBoundaries=[];let roots=[];
   while(queue.length&&reverseSeen.size<10000){
     const cur=queue.shift();
@@ -58,7 +58,7 @@ function identifyCommandChain(start,getAt){
   let source=roots.find(isSourceBlock)||rootCandidates[0]||roots[0]||null;
   if(!source)source=[...reverseSeen.values()].at(-1)||start;
   const sourceKind=classifyChainCommand(source.cmd);
-  // A self-closed loop must be recognized before ordinary forward traversal.
+                                                                             
   const cycleNodes=[],cycleSeen=new Map();let cycleCursor=source,cycleStart=-1;
   for(let guard=0;guard<10000&&cycleCursor?.command;guard++){
     if(cycleCursor!==source&&isSourceBlock(cycleCursor))break;
@@ -81,19 +81,19 @@ function identifyCommandChain(start,getAt){
     const directionChanged=!!travelDirection&&forward.some((v,i)=>v!==travelDirection[i]);
     const nextPointsBackToCurrent=!!next?.command&&dirOf(next).every((v,i)=>v===-forward[i]);
     const nextHasForwardCommand=!!next?.command&&!!at(next,dirOf(next))?.command;
-    // If a mis-faced chain node points at a different command block while the
-    // established straight run continues immediately behind it, the pointed
-    // block is the broken target. Keep walking the established run instead of
-    // accidentally jumping into an unrelated branch. A target that points
-    // back to the current node is retained for the self-closed/back-reference
-    // rules. Normal corners still work when no straight continuation exists.
+                                                                              
+                                                                            
+                                                                              
+                                                                          
+                                                                              
+                                                                             
     if(directionChanged&&next?.command&&!isSourceBlock(next)&&!nextPointsBackToCurrent&&!nextHasForwardCommand&&expectedNext?.command&&isChain(expectedNext)&&!seen.has(key(expectedNext))){
       boundaries.push({type:'wrong-facing-target-ignored',block:next,from:current});
       const last=chain[chain.length-1];if(last&&last.block===current)last.status='broken-facing-continuation';
       movement=travelDirection;next=expectedNext;usedBrokenFacing=true;
     }
-    // Empty and auxiliary facing targets can also be bypassed only when the
-    // exact next cell on the established run contains a chain command block.
+                                                                            
+                                                                             
     if(!next||!next.command){
       if(travelDirection&&directionChanged&&expectedNext?.command&&isChain(expectedNext)&&!seen.has(key(expectedNext))){
         if(!usedBrokenFacing){
@@ -119,16 +119,16 @@ function identifyCommandChain(start,getAt){
       push(next,String(next.cmd||'').trim()?(turn?'turning':'normal'):'empty-command');
       current=next;travelDirection=movement;continue;
     }
-    // The newly reached node may itself be the broken-facing node. Keep it;
-    // the command it points at is the invalid target. Its predecessor's run
-    // direction can carry the chain onward on the next iteration.
+                                                                            
+                                                                            
+                                                                  
     push(next,'wrong-facing');
     if(target&&!target.command)boundaries.push({type:'auxiliary-block',block:target,from:next});
     else if(target)boundaries.push({type:'wrong-facing-target-ignored',block:target,from:next});
     else boundaries.push({type:'wrong-facing-empty-space',x:next.x+nd[0],y:next.y+nd[1],z:next.z+nd[2],layer:next.layer,from:next});
     current=next;travelDirection=movement;
-    // Do not stop here: the next iteration may continue on the existing run
-    // while excluding the bad block in the direction of the incorrect facing.
+                                                                            
+                                                                              
     stopReason=usedBrokenFacing?'broken-facing-continued':'wrong-facing-node';
   }
   if(reverseEdges.some(e=>e.branches))stopReason=stopReason==='end'?'multiple-predecessors':stopReason;
