@@ -1,6 +1,6 @@
 # BlockFlow
 
-**版本：v2.12.1** · Minecraft Bedrock 命令链编辑器与结构编辑器
+**版本：v2.12.2** · Minecraft Bedrock 命令链编辑器与结构编辑器
 
 BlockFlow 是一套面向 Minecraft Bedrock Edition 的浏览器工具，包含命令链编辑器和结构编辑器。项目采用静态网页部署方式，可托管在 GitHub Pages。结构解析、命令编辑、方块编辑、三维场景构建和文件导出均在浏览器本地完成，不需要单独部署后端服务。
 

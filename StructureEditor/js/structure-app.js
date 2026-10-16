@@ -214,7 +214,7 @@ function clearSceneObjects(){
 async function ensureBlockflowAtlasMap(){
   if(blockflowAtlasMap)return blockflowAtlasMap;
   if(!blockflowAtlasMapPromise){
-    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.12.1',{cache:'force-cache'}).then(response=>{
+    blockflowAtlasMapPromise=fetch('../assets/data/blockflow-atlas-map.json?v=2.12.2',{cache:'force-cache'}).then(response=>{
       if(!response.ok)throw new Error('方块图集索引加载失败：'+response.status);
       return response.json();
     }).then(data=>{blockflowAtlasMap=data;return data;}).catch(error=>{blockflowAtlasMapPromise=null;throw error;});
@@ -226,7 +226,7 @@ function ensureBlockAtlasLoaded(){
   if(!textureLoader||!threeLib)return Promise.reject(new Error('纹理加载器尚未初始化'));
   const {THREE}=threeLib;
   bakedAtlasPromise=new Promise((resolve,reject)=>{
-    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.12.1',loaded=>{
+    const texture=textureLoader.load('../assets/textures/structure/block-atlas.png?v=2.12.2',loaded=>{
       requestSceneRender();resolve(loaded);
     },undefined,error=>{bakedAtlas=null;bakedAtlasPromise=null;reject(error||new Error('方块图集加载失败'));});
     bakedAtlas=texture;
@@ -239,12 +239,12 @@ async function ensureExtractedVoxelModels(){
   if(extractedVoxelModels&&extractedVoxelMaterials)return extractedVoxelModels;
   if(!extractedVoxelModelsPromise){
     extractedVoxelModelsPromise=(async()=>{
-      const response=await fetch('../assets/data/blockflow-special-models.json?v=2.12.1',{cache:'force-cache'});
+      const response=await fetch('../assets/data/blockflow-special-models.json?v=2.12.2',{cache:'force-cache'});
       if(!response.ok)throw new Error('专用方块模型数据加载失败：'+response.status);
       const data=await response.json();
       if(data?.schema!=='BlockFlow.SpecialVoxelModels'||!data.models)throw new Error('专用方块模型数据格式无效');
       if(!textureLoader||!threeLib)throw new Error('专用模型纹理加载器尚未初始化');
-      const texture=await new Promise((resolve,reject)=>textureLoader.load('../assets/textures/structure/blockflow-special-atlas.png?v=2.12.1',resolve,undefined,reject));
+      const texture=await new Promise((resolve,reject)=>textureLoader.load('../assets/textures/structure/blockflow-special-atlas.png?v=2.12.2',resolve,undefined,reject));
       const {THREE}=threeLib;
       texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.generateMipmaps=false;texture.colorSpace=THREE.SRGBColorSpace;texture.needsUpdate=true;
       extractedVoxelAtlas=texture;
@@ -494,6 +494,7 @@ function getBlockFaceDescriptors(b){
     const conditionalSide=isChain?'command_block_chain_conditional_side':isRepeating?'command_block_repeating_conditional_side':'command_block_conditional_side';
     const F=facingVector[Number.isInteger(b.facing)?b.facing:2]||[0,0,-1];
     for(const n of FACE_NORMALS){
+      if(Math.abs(n[1])>.5){aliases.push(conditionalSide);continue;}
       const dot=n[0]*F[0]+n[1]*F[1]+n[2]*F[2];
       if(dot>.5)aliases.push(front);
       else if(dot<-.5)aliases.push(back);
@@ -894,7 +895,9 @@ function modelResolveSignPlacement(block){
   const ground=state('ground_sign_direction');
   const facing=state('minecraft:cardinal_direction','cardinal_direction','facing_direction');
   const yaw=ground!==undefined?modelFacingYawFrom16(ground):
-    (typeof facing==='string'&&['north','south','east','west'].includes(facing.toLowerCase())?modelCardinalYaw(facing):modelFacingYawFrom16(facing??0));
+    (typeof facing==='string'&&['north','south','east','west'].includes(facing.toLowerCase())
+      ?modelCardinalYaw(facing)
+      :facing!==undefined?modelCardinalYawState(facing,'south'):0);
   const normal=wall?modelFacingNormal(state('facing_direction','minecraft:facing_direction','minecraft:cardinal_direction','cardinal_direction')??2,'north'):null;
   const supportNormal=normal?normal.map(value=>-value):null;
   return {wall,hanging,wallHanging,normal,supportNormal,yaw,attached:modelBool(state('attached_bit'))};
@@ -1028,12 +1031,12 @@ function modelRedstoneDirectionMode(b,dir){
 }
 function modelRedstoneDeviceYaw(b){
   const cardinal=modelState(b,'minecraft:cardinal_direction','cardinal_direction','facing');
-  if(cardinal!==undefined)return modelCardinalYaw(cardinal,'south');
+  if(cardinal!==undefined)return modelCardinalYaw(cardinal,'south')+Math.PI/2;
   const facing=modelState(b,'facing_direction','minecraft:facing_direction');
-  if(facing!==undefined&&Number(facing)>=2)return modelCardinalYawState(facing,'south');
+  if(facing!==undefined&&Number(facing)>=2)return modelCardinalYawState(facing,'south')+Math.PI/2;
   const legacy=modelState(b,'direction','weirdo_direction');
-  if(legacy!==undefined)return ({0:0,1:-Math.PI/2,2:Math.PI,3:Math.PI/2})[modelNumber(legacy,0)]||0;
-  return 0;
+  if(legacy!==undefined)return ({0:Math.PI/2,1:0,2:-Math.PI/2,3:Math.PI})[modelNumber(legacy,0)]??Math.PI/2;
+  return Math.PI/2;
 }
 function modelAddMiniRedstoneTorch(group,b,x,z,on,scale=1,variant='redstone'){
   const {THREE}=threeLib,base=modelColorMat(0x4c4a48),shaft=modelColorMat(0x56362f),collar=modelColorMat(0x777b7d);

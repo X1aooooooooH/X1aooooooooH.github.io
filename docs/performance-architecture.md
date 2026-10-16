@@ -1,4 +1,4 @@
-# BlockFlow v2.12.1 渲染性能架构
+# BlockFlow v2.12.2 渲染性能架构
 
 ## 数据流
 
