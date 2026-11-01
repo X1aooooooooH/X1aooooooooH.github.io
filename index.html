@@ -909,9 +909,10 @@ button:disabled{opacity:.35;cursor:not-allowed}
   <div class="feature-card export-format-card">
     <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择">×</button></div>
     <div class="export-format-options">
-      <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>网易版老/execute语法的导入格式</span></button>
-      <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>format_version=2 · 需 Bedrock 26.50+</span></button>
-      <button id="exportBothBtn" class="chain-import-btn" type="button"><b>同时导出</b></button>
+      <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>网易版老/execute语法专用，可以正常使用</span></button>
+      <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>国际版通用格式</span></button>
+      <button id="exportNetEaseBtn" class="chain-import-btn" type="button"><b>导出网易版格式</b><span>网易专用，新版导入失败再选</span></button>
+      <button id="exportBothBtn" class="chain-import-btn" type="button"><b>同时导出旧版 + 新版 + 网易版</b></button>
     </div>
     <div class="feature-actions"><button id="exportFormatCancel" class="feature-btn" type="button">取消</button></div>
   </div>
@@ -1186,7 +1187,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <h2 id="导出结构文件">导出结构文件</h2>
 <p>编辑完成后，点击顶部 <strong>“导出命令链”</strong>，在弹窗中选择“导出老版本格式”“导出新版本格式”或“两者都导出”。旧版文件名追加 <code>-old</code>，新版文件名追加 <code>-new</code>。导出后建议：</p>
 <ol>
-<li>确认下载的 <code>.mcstructure</code> 文件已保存到正确位置；旧版使用 <code>format_version=1</code> 和双层 <code>List&lt;Int&gt;</code>，新版使用 <code>format_version=2</code> 和 <code>IntArray</code> 索引数组（需要 Minecraft Bedrock 26.50 或更新版本）。新版默认采用未压缩的内部 <code>Compound</code> 结构，以兼容支持 v2 的游戏版本；Zlib 压缩是 26.60 才加入的可选封装。</li>
+<li>确认下载的 <code>.mcstructure</code> 文件已保存到正确位置；旧版使用 <code>format_version=1</code> 和双层 <code>List&lt;Int&gt;</code>，新版使用 <code>format_version=2</code> 和 Zlib 压缩结构。</li>
 <li>保留原始结构文件，避免覆盖唯一备份。</li>
 <li>检查命令顺序、方块类型、条件、朝向、断链头和循环关系。</li>
 <li>在目标 Minecraft 基岩版环境中，先使用备份副本验证导出结果。</li>
@@ -1684,25 +1685,19 @@ async function parseMcstructure(buf){
   const root=new Reader(buf).root();
   if(root.type!==TAG.COMPOUND)throw new Error('根标签不是 Compound');
   const rv=root.value;
-  // format_version=2 can store the inner structure as a normal Compound.
-  // Newer game builds may instead put serialized structure NBT in a ByteArray:
-  // compression=0 means raw NBT bytes; compression=1 means Zlib-compressed NBT.
+  // Bedrock .mcstructure stores the inner structure NBT as a Zlib-compressed
+  // ByteArray in the outer root. Older/editor-generated files may store a
+  // Compound directly, so retain that layout as a backwards-compatible path.
   const structureNode=rv.structure;
   if(structureNode?.type===TAG.BYTE_ARRAY){
     const compression=rv.compression?.value;
-    let innerBytes;
-    if(compression===1){
-      innerBytes=await inflateMcstructurePayload(structureNode.value);
-    }else if(compression===0){
-      innerBytes=structureNode.value;
-    }else{
-      throw new Error(`不支持的 mcstructure 压缩类型：${compression??'缺失'}（支持 compression=0 或 1）`);
-    }
+    if(compression!==1)throw new Error(`不支持的 mcstructure 压缩类型：${compression??'缺失'}（当前支持 Zlib，compression=1）`);
+    const innerBytes=await inflateMcstructurePayload(structureNode.value);
     const innerRoot=new Reader(innerBytes.buffer.slice(innerBytes.byteOffset,innerBytes.byteOffset+innerBytes.byteLength)).root();
-    if(innerRoot.type!==TAG.COMPOUND)throw new Error('structure ByteArray 解码后的根标签不是 Compound');
+    if(innerRoot.type!==TAG.COMPOUND)throw new Error('解压后的 structure 根标签不是 Compound');
     rv.structure=innerRoot;
   }else if(structureNode?.type!==TAG.COMPOUND){
-    throw new Error('structure 必须是 Compound 或带 compression=0/1 的 ByteArray');
+    throw new Error('structure 必须是压缩的 ByteArray 或兼容的 Compound');
   }
   if(!rv.size)throw new Error('缺少 size');
   const si=rv.size.value.items;
@@ -2335,9 +2330,7 @@ function buildOutput(formatVersion=2){
   const base=app.originalRoot?cloneNBT(app.originalRoot):T.comp({});
   const rootValue=base.value||{};
   // v1 stores two List<Int> layers in the outer structure compound.
-  // v2 stores block_indices as IntArray layers. Keep the inner structure as a
-  // normal Compound: v2 arrived before the later optional root-level Zlib
-  // wrapper, so uncompressed v2 works across a wider range of v2-capable builds.
+  // v2 stores two IntArray layers inside a zlib-compressed structure byte array.
   rootValue.format_version=T.int(formatVersion);
   delete rootValue.compression;
   rootValue.size=T.list(TAG.INT,[T.int(spanX),T.int(maxY),T.int(maxZ)]);
@@ -2353,6 +2346,115 @@ function buildOutput(formatVersion=2){
   const origin=Array.isArray(app.sourceOrigin)&&app.sourceOrigin.length>=3?app.sourceOrigin:[0,0,0];
   rootValue.structure_world_origin=T.list(TAG.INT,[T.int(origin[0]||0),T.int(origin[1]||0),T.int(origin[2]||0)]);
   return T.comp(rootValue);
+}
+
+// 网易版导出：以导入文件为模板，优先保留其根标签、palette 条目、
+// 命令方块实体字段集合及字段类型；只更新编辑器实际改动的方块数据。
+function setNBTValueLike(comp,key,value,fallbackTag){
+  const old=comp[key];
+  if(old&&typeof old==='object'&&'type' in old){
+    if(old.type===TAG.BYTE||old.type===TAG.SHORT||old.type===TAG.INT||old.type===TAG.LONG||
+       old.type===TAG.FLOAT||old.type===TAG.DOUBLE||old.type===TAG.STRING){
+      old.value=value;
+      return;
+    }
+  }
+  comp[key]=fallbackTag();
+}
+function buildNetEaseBed(cmd,cond,wx,wy,wz,auto,template,blockType){
+  const node=template?cloneNBT(template):buildBed(cmd,cond,wx,wy,wz,auto);
+  const v=node?.value;
+  if(!v)return buildBed(cmd,cond,wx,wy,wz,auto);
+  const put=(key,value,tag)=>setNBTValueLike(v,key,value,tag);
+  put('Command',String(cmd??''),()=>T.str(String(cmd??'')));
+  put('CustomName','',()=>T.str(''));
+  const commandMode=blockType==='command'?0:(blockType==='repeating'?1:2);
+  put('LPCommandMode',commandMode,()=>T.int(commandMode));
+  put('LPCondionalMode',cond?1:0,()=>T.byte(cond?1:0));
+  put('LPRedstoneMode',0,()=>T.byte(0));
+  put('ExecuteOnFirstTick',0,()=>T.byte(0));
+  put('LastExecution',0n,()=>T.long(0n));
+  put('LastOutput','',()=>T.str(''));
+  put('SuccessCount',0,()=>T.int(0));
+  put('TickDelay',0,()=>T.int(0));
+  put('TrackOutput',1,()=>T.byte(1));
+  put('auto',auto===0?0:1,()=>T.byte(auto===0?0:1));
+  put('conditionMet',0,()=>T.byte(0));
+  put('conditionalMode',cond?1:0,()=>T.byte(cond?1:0));
+  put('powered',0,()=>T.byte(0));
+  put('x',wx,()=>T.int(wx)); put('y',wy,()=>T.int(wy)); put('z',wz,()=>T.int(wz));
+  if(!v.LastOutputParams)v.LastOutputParams=T.list(TAG.STRING,[]);
+  else if(v.LastOutputParams.type===TAG.LIST&&v.LastOutputParams.value?.elementType===TAG.STRING)v.LastOutputParams.value.items=[];
+  if(!v.id)v.id=T.str('CommandBlock');
+  if(!v.BlockEntityVersion)v.BlockEntityVersion=T.int(0);
+  return node;
+}
+function buildNetEaseOutput(){
+  const root=buildOutput(1);
+  const rv=root.value;
+  const src=app.originalRoot?.value;
+  const srcStructure=src?.structure?.type===TAG.COMPOUND?src.structure.value:null;
+  const outStructure=rv.structure.value;
+  // Keep the source's block palette and its ordering wherever possible.
+  const sourcePalette=srcStructure?.palette?.value?.default?.value?.block_palette;
+  const paletteItems=sourcePalette?.value?.items;
+  if(Array.isArray(paletteItems)&&paletteItems.length){
+    const palette=paletteItems.map(cloneNBT);
+    const keyOf=(entry)=>{
+      const v=entry?.value||{},states=v.states?.value||{};
+      const cond=states.conditional_bit?.value??0,face=states.facing_direction?.value??2;
+      return `${v.name?.value||''}|${cond}|${face}`;
+    };
+    const byKey=new Map(palette.map((entry,i)=>[keyOf(entry),i]));
+    const templateByName=new Map(palette.map(entry=>[entry.value?.name?.value,entry]));
+    const airIdx=palette.findIndex(entry=>entry.value?.name?.value==='minecraft:air');
+    const addState=(name,cond,face)=>{
+      const key=`${name}|${cond}|${face}`;
+      if(byKey.has(key))return byKey.get(key);
+      const template=templateByName.get(name)||templateByName.get('minecraft:command_block')||palette[0];
+      const entry=cloneNBT(template);
+      entry.value.name=T.str(name);
+      if(!entry.value.states||entry.value.states.type!==TAG.COMPOUND)entry.value.states=T.comp({});
+      entry.value.states.value.conditional_bit=T.byte(cond?1:0);
+      entry.value.states.value.facing_direction=T.int(face);
+      const idx=palette.length;palette.push(entry);byKey.set(key,idx);
+      return idx;
+    };
+    const newVolume=rv.size.value.items.reduce((n,t)=>n*t.value,1);
+    const main=new Array(newVolume).fill(airIdx>=0?airIdx:palette.length-1);
+    const blocks=buildExportLayout(app.chains).blocks;
+    const minX=blocks.reduce((m,b)=>Math.min(m,b.x),Infinity);
+    const sx=rv.size.value.items[0].value, sy=rv.size.value.items[1].value, sz=rv.size.value.items[2].value;
+    const bpd={};
+    const origin=Array.isArray(app.sourceOrigin)&&app.sourceOrigin.length>=3?app.sourceOrigin:[0,0,0];
+    const sourceBpd=srcStructure?.palette?.value?.default?.value?.block_position_data?.value||{};
+    const sourceEntities=Object.values(sourceBpd).map(item=>item?.value?.block_entity_data).filter(Boolean);
+    const entityTemplate=sourceEntities[0]||null;
+    const typeNames={command:'minecraft:command_block',chain:'minecraft:chain_command_block',repeating:'minecraft:repeating_command_block'};
+    for(const b of blocks){
+      const lx=b.x-minX, lin=lx*(sy*sz)+b.y*sz+b.z;
+      if(lx<0||lx>=sx||b.y<0||b.y>=sy||b.z<0||b.z>=sz||lin<0||lin>=newVolume)continue;
+      const name=typeNames[b.blockType]||typeNames.chain;
+      main[lin]=addState(name,b.cond?1:0,Number.isInteger(Number(b.facing))?Number(b.facing):2);
+      const template=sourceBpd[String(lin)]?.value?.block_entity_data||entityTemplate;
+      bpd[String(lin)]=T.comp({block_entity_data:buildNetEaseBed(
+        b.cmd,b.cond?1:0,(origin[0]||0)+lx,(origin[1]||0)+b.y,(origin[2]||0)+b.z,b.auto,template
+      )});
+    }
+    outStructure.block_indices=T.list(TAG.LIST,[
+      T.list(TAG.INT,main.map(T.int)),
+      T.list(TAG.INT,new Array(newVolume).fill(-1).map(T.int))
+    ]);
+    const sourcePaletteNode=cloneNBT(srcStructure.palette);
+    const defaultValue=sourcePaletteNode.value.default.value;
+    defaultValue.block_palette=T.list(TAG.COMPOUND,palette);
+    defaultValue.block_position_data=T.comp(bpd);
+    outStructure.palette=sourcePaletteNode;
+  }
+  rv.format_version=T.int(1);
+  delete rv.compression;
+  if(src?.structure_world_origin)rv.structure_world_origin=cloneNBT(src.structure_world_origin);
+  return root;
 }
 
 let three=null;
@@ -4749,14 +4851,16 @@ document.getElementById('undoBtn').onclick=undo;
 document.getElementById('redoBtn').onclick=redo;
 document.getElementById('exitChainBtn').onclick=()=>{exitChainMode();setViewPreset('default');};
 async function serializeOutputForFormat(formatVersion){
-  // format_version=2 does not require Zlib compression. Compression support
-  // was added after the v2 IntArray layout, so always emit the inner structure
-  // as a regular Compound for maximum compatibility with v2-capable clients.
-  // buildOutput() also removes any inherited root-level compression tag.
-  const root=buildOutput(formatVersion);
-  if(!root?.value?.structure||root.value.structure.type!==TAG.COMPOUND){
-    throw new Error('导出结构缺少有效的内部 Compound');
-  }
+  const root=formatVersion===3?buildNetEaseOutput():buildOutput(formatVersion);
+  if(formatVersion===1||formatVersion===3)return new Writer().serialize(root);
+  const innerStructure=root.value.structure;
+  if(!innerStructure||innerStructure.type!==TAG.COMPOUND)throw new Error('导出结构缺少有效的内部 Compound');
+  const innerBytes=new Writer().serialize(innerStructure);
+  if(typeof CompressionStream!=='function')throw new Error('当前浏览器不支持 mcstructure 的 Zlib 压缩，请使用最新版 Chrome、Edge 或 Firefox');
+  const compressedStream=new Blob([innerBytes]).stream().pipeThrough(new CompressionStream('deflate'));
+  const compressedBytes=new Uint8Array(await new Response(compressedStream).arrayBuffer());
+  root.value.compression=T.int(1);
+  root.value.structure={type:TAG.BYTE_ARRAY,value:compressedBytes};
   return new Writer().serialize(root);
 }
 function openExportFormatModal(){
@@ -4769,13 +4873,11 @@ function openExportFormatModal(){
 }
 async function exportCommandChains(choice){
   closeFeatureModal('exportFormatModal');
-  const formats=choice==='both'?[1,2]:[choice==='old'?1:2];
-  const labels=formats.map(v=>v===1?'旧版':'新版');
-  const names=formats.map(v=>`${app.fileName}${rand6()}-${v===1?'old':'new'}.mcstructure`);
-  const compatibilityNote=formats.includes(2)
-    ?'\n\n新版格式要求 Minecraft Bedrock 26.50 或更新版本。导出使用 format_version=2 和 IntArray 索引数组，并采用未压缩的内部结构 Compound；这样不依赖 26.60 才加入的 Zlib 压缩封装。低于 26.50 的版本请选择旧版格式。'
-    :'\n\n旧版格式使用 format_version=1 和双层 List<Int> 索引数组，适用于不支持结构 v2 的较早版本。';
-  const exportNotice=`导出说明：将生成${labels.join('、')}格式文件。导出文件只会保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。为满足结构尺寸限制，导出时每层最多放置 32 条链，超出的链会放到更高的 Y 层（层与层之间留 4 格）。3D 编辑视图不受影响。${compatibilityNote}\n\n文件名：\n${names.join('\n')}\n\n确定继续导出吗？`;
+  const formats=choice==='both'?[1,2,3]:[choice==='old'?1:(choice==='netease'?3:2)];
+  const labels=formats.map(v=>v===1?'旧版':(v===2?'新版':'网易版'));
+  const suffix=v=>v===1?'old':(v===2?'new':'netease');
+  const names=formats.map(v=>`${app.fileName}${rand6()}-${suffix(v)}.mcstructure`);
+  const exportNotice=`导出说明：将生成${labels.join('、')}格式文件。导出文件只会保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。为满足结构尺寸限制，导出时每层最多放置 32 条链，超出的链会放到更高的 Y 层（层与层之间留 4 格）。3D 编辑视图不受影响。\n\n文件名：\n${names.join('\n')}\n\n确定继续导出吗？`;
   if(!confirm(exportNotice))return;
   setCurrentAction('导出命令链结构');
   logInfo(`开始构建${labels.join('、')}格式导出结构`,'导出命令链结构');
@@ -4933,6 +5035,7 @@ document.getElementById('infoClose').onclick=()=>deselect();
   document.getElementById('exportFormatCancel').onclick=()=>closeFeatureModal('exportFormatModal');
   document.getElementById('exportOldBtn').onclick=()=>exportCommandChains('old');
   document.getElementById('exportNewBtn').onclick=()=>exportCommandChains('new');
+  document.getElementById('exportNetEaseBtn').onclick=()=>exportCommandChains('netease');
   document.getElementById('exportBothBtn').onclick=()=>exportCommandChains('both');
   document.getElementById('exportFormatModal').addEventListener('click',e=>{if(e.target.id==='exportFormatModal')closeFeatureModal('exportFormatModal');});
   document.getElementById('replaceClose').onclick=()=>closeFeatureModal('replaceModal');
