@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="textures/favicon.ico" type="image/x-icon">
-<title>结构命令编辑器</title>
+<title>BlockFlow</title>
 <meta name="blockflow-build" content="mobile-three-zone-dock-readme-2026-10-24-r2">
 <style id="app-styles">@font-face{font-family:"LXGW WenKai Local";src:url("textures/LXGWWenKai-Light.ttf") format("truetype");font-style:normal;font-weight:300;font-display:swap}
 /* ============================================================
@@ -738,20 +738,19 @@ button:disabled{opacity:.35;cursor:not-allowed}
       <div class="upload-top">
         <div class="brand">
           <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
-          <div class="brand-copy"><b>BlockFlow</b><span>基岩版命令链编辑器</span></div>
+          <div class="brand-copy"><b>BlockFlow</b><span>MCBE命令链编辑器</span></div>
         </div>
       </div>
       <div class="upload-copy">
         <h1>打开结构文件</h1>
         <p>导入 .mcstructure 后开始编辑命令链。</p>
       </div>
-      <div class="upload-scope-note"><strong>适用范围</strong><span>本工具主要用于已经成型、具有明确连接关系的命令链结构。若结构中存在大量彼此独立的单个命令方块，自动整理和重新排列时可能使命令链布局过长，超过结构文件的尺寸上限，因此不适用于此类结构。</span></div>
+      <div class="upload-scope-note"><strong>注意事项</strong><span>支持多种断链形式<br>导入后会自动格式化所有的指令<br>不适用于结构中存在大量彼此独立的单个命令方块的情况</span></div>
       <label id="dropzone" class="drop-card">
         <input id="fileInput" type="file" accept=".mcstructure">
         <strong>选择 .mcstructure 文件</strong>
         <small>点击选择，或把文件拖到这里</small>
       </label>
-      <div class="upload-note">文件仅在浏览器本地处理，不会上传到服务器。</div>
     </div>
   </div>
 </div>
@@ -764,7 +763,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
       <div class="bar-main-row">
         <button id="backBtn" class="icon-btn bar-brand" type="button" aria-label="返回文件导入">
         <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
-        <span class="brand-copy"><b>结构命令编辑器</b></span>
+        <span class="brand-copy"><b>BlockFlow</b></span>
       </button>
         <div class="bar-file">
         <div class="bar-file-name"><span class="bar-label">当前文件</span><b id="tbarFile">未加载结构</b></div>
@@ -797,7 +796,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
         <button id="diagnoseBtn" class="icon-btn bar-utility-btn" title="运行日志" type="button">日志</button>
         <button id="replaceBtn" class="icon-btn bar-utility-btn" title="批量替换" type="button">替换</button>
         <button id="themeBtn" class="icon-btn" title="主题" aria-label="切换主题" type="button">◐</button>
-        <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构；不会保留原文件中的普通方块和实体">导出命令链</button>
+        <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构">导出</button>
       </div>
     </header>
 
@@ -851,7 +850,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
         <div class="chain-add-title chain-add-title-manual">手动新增</div>
         <div class="chain-add-options">
           <button type="button" data-add-chain-type="impulse"><b>脉冲链</b><span>创建 1 个命令方块</span></button>
-          <button type="button" data-add-chain-type="snake"><b>断链</b><span>创建 3 个命令方块，并自动写入转向指令</span></button>
+          <button type="button" data-add-chain-type="snake"><b>断链</b><span>创建 3 个命令方块</span></button>
           <button type="button" data-add-chain-type="repeat"><b>循环链</b><span>创建 1 个重复命令方块</span></button>
         </div>
         <input id="importMcstructureInput" type="file" accept=".mcstructure" hidden>
@@ -908,18 +907,18 @@ button:disabled{opacity:.35;cursor:not-allowed}
 </div>
 <div id="exportFormatModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="exportFormatTitle" aria-hidden="true">
   <div class="feature-card export-format-card">
-    <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b><span>可以单独导出一种格式，也可以同时导出两种</span></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择">×</button></div>
+    <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择">×</button></div>
     <div class="export-format-options">
-      <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>format_version = 1 · 双层 List&lt;Int&gt; · 文件名追加 -old</span></button>
-      <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>format_version = 2 · Zlib 压缩结构 · 文件名追加 -new</span></button>
-      <button id="exportBothBtn" class="chain-import-btn" type="button"><b>两者都导出</b><span>分别生成 -old 和 -new 两个 .mcstructure 文件</span></button>
+      <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>网易版老/execute语法的导入格式</span></button>
+      <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>format_version=2 · 需 Bedrock 26.50+</span></button>
+      <button id="exportBothBtn" class="chain-import-btn" type="button"><b>同时导出</b></button>
     </div>
     <div class="feature-actions"><button id="exportFormatCancel" class="feature-btn" type="button">取消</button></div>
   </div>
 </div>
 <div id="replaceModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="replaceTitle" aria-hidden="true">
   <div class="feature-card replace-card">
-    <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>按命令内容批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换">×</button></div>
+    <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换">×</button></div>
     <label class="feature-input-label"><span>查找</span><input id="replaceFind" type="text" autocomplete="off"></label>
     <label class="feature-input-label"><span>替换为</span><input id="replaceWith" type="text" autocomplete="off"></label>
     <div class="replace-scope"><label><input type="radio" name="replaceScope" value="all" checked> 全部链</label><label><input type="radio" name="replaceScope" value="current"> 当前链</label></div>
@@ -1187,7 +1186,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
 <h2 id="导出结构文件">导出结构文件</h2>
 <p>编辑完成后，点击顶部 <strong>“导出命令链”</strong>，在弹窗中选择“导出老版本格式”“导出新版本格式”或“两者都导出”。旧版文件名追加 <code>-old</code>，新版文件名追加 <code>-new</code>。导出后建议：</p>
 <ol>
-<li>确认下载的 <code>.mcstructure</code> 文件已保存到正确位置；旧版使用 <code>format_version=1</code> 和双层 <code>List&lt;Int&gt;</code>，新版使用 <code>format_version=2</code> 和 Zlib 压缩结构。</li>
+<li>确认下载的 <code>.mcstructure</code> 文件已保存到正确位置；旧版使用 <code>format_version=1</code> 和双层 <code>List&lt;Int&gt;</code>，新版使用 <code>format_version=2</code> 和 <code>IntArray</code> 索引数组（需要 Minecraft Bedrock 26.50 或更新版本）。新版默认采用未压缩的内部 <code>Compound</code> 结构，以兼容支持 v2 的游戏版本；Zlib 压缩是 26.60 才加入的可选封装。</li>
 <li>保留原始结构文件，避免覆盖唯一备份。</li>
 <li>检查命令顺序、方块类型、条件、朝向、断链头和循环关系。</li>
 <li>在目标 Minecraft 基岩版环境中，先使用备份副本验证导出结果。</li>
@@ -1685,19 +1684,25 @@ async function parseMcstructure(buf){
   const root=new Reader(buf).root();
   if(root.type!==TAG.COMPOUND)throw new Error('根标签不是 Compound');
   const rv=root.value;
-  // Bedrock .mcstructure stores the inner structure NBT as a Zlib-compressed
-  // ByteArray in the outer root. Older/editor-generated files may store a
-  // Compound directly, so retain that layout as a backwards-compatible path.
+  // format_version=2 can store the inner structure as a normal Compound.
+  // Newer game builds may instead put serialized structure NBT in a ByteArray:
+  // compression=0 means raw NBT bytes; compression=1 means Zlib-compressed NBT.
   const structureNode=rv.structure;
   if(structureNode?.type===TAG.BYTE_ARRAY){
     const compression=rv.compression?.value;
-    if(compression!==1)throw new Error(`不支持的 mcstructure 压缩类型：${compression??'缺失'}（当前支持 Zlib，compression=1）`);
-    const innerBytes=await inflateMcstructurePayload(structureNode.value);
+    let innerBytes;
+    if(compression===1){
+      innerBytes=await inflateMcstructurePayload(structureNode.value);
+    }else if(compression===0){
+      innerBytes=structureNode.value;
+    }else{
+      throw new Error(`不支持的 mcstructure 压缩类型：${compression??'缺失'}（支持 compression=0 或 1）`);
+    }
     const innerRoot=new Reader(innerBytes.buffer.slice(innerBytes.byteOffset,innerBytes.byteOffset+innerBytes.byteLength)).root();
-    if(innerRoot.type!==TAG.COMPOUND)throw new Error('解压后的 structure 根标签不是 Compound');
+    if(innerRoot.type!==TAG.COMPOUND)throw new Error('structure ByteArray 解码后的根标签不是 Compound');
     rv.structure=innerRoot;
   }else if(structureNode?.type!==TAG.COMPOUND){
-    throw new Error('structure 必须是压缩的 ByteArray 或兼容的 Compound');
+    throw new Error('structure 必须是 Compound 或带 compression=0/1 的 ByteArray');
   }
   if(!rv.size)throw new Error('缺少 size');
   const si=rv.size.value.items;
@@ -2330,7 +2335,9 @@ function buildOutput(formatVersion=2){
   const base=app.originalRoot?cloneNBT(app.originalRoot):T.comp({});
   const rootValue=base.value||{};
   // v1 stores two List<Int> layers in the outer structure compound.
-  // v2 stores two IntArray layers inside a zlib-compressed structure byte array.
+  // v2 stores block_indices as IntArray layers. Keep the inner structure as a
+  // normal Compound: v2 arrived before the later optional root-level Zlib
+  // wrapper, so uncompressed v2 works across a wider range of v2-capable builds.
   rootValue.format_version=T.int(formatVersion);
   delete rootValue.compression;
   rootValue.size=T.list(TAG.INT,[T.int(spanX),T.int(maxY),T.int(maxZ)]);
@@ -4742,16 +4749,14 @@ document.getElementById('undoBtn').onclick=undo;
 document.getElementById('redoBtn').onclick=redo;
 document.getElementById('exitChainBtn').onclick=()=>{exitChainMode();setViewPreset('default');};
 async function serializeOutputForFormat(formatVersion){
+  // format_version=2 does not require Zlib compression. Compression support
+  // was added after the v2 IntArray layout, so always emit the inner structure
+  // as a regular Compound for maximum compatibility with v2-capable clients.
+  // buildOutput() also removes any inherited root-level compression tag.
   const root=buildOutput(formatVersion);
-  if(formatVersion===1)return new Writer().serialize(root);
-  const innerStructure=root.value.structure;
-  if(!innerStructure||innerStructure.type!==TAG.COMPOUND)throw new Error('导出结构缺少有效的内部 Compound');
-  const innerBytes=new Writer().serialize(innerStructure);
-  if(typeof CompressionStream!=='function')throw new Error('当前浏览器不支持 mcstructure 的 Zlib 压缩，请使用最新版 Chrome、Edge 或 Firefox');
-  const compressedStream=new Blob([innerBytes]).stream().pipeThrough(new CompressionStream('deflate'));
-  const compressedBytes=new Uint8Array(await new Response(compressedStream).arrayBuffer());
-  root.value.compression=T.int(1);
-  root.value.structure={type:TAG.BYTE_ARRAY,value:compressedBytes};
+  if(!root?.value?.structure||root.value.structure.type!==TAG.COMPOUND){
+    throw new Error('导出结构缺少有效的内部 Compound');
+  }
   return new Writer().serialize(root);
 }
 function openExportFormatModal(){
@@ -4767,7 +4772,10 @@ async function exportCommandChains(choice){
   const formats=choice==='both'?[1,2]:[choice==='old'?1:2];
   const labels=formats.map(v=>v===1?'旧版':'新版');
   const names=formats.map(v=>`${app.fileName}${rand6()}-${v===1?'old':'new'}.mcstructure`);
-  const exportNotice=`导出说明：将生成${labels.join('、')}格式文件。导出文件只会保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。为满足结构尺寸限制，导出时每层最多放置 32 条链，超出的链会放到更高的 Y 层（层与层之间留 4 格）。3D 编辑视图不受影响。\n\n文件名：\n${names.join('\n')}\n\n确定继续导出吗？`;
+  const compatibilityNote=formats.includes(2)
+    ?'\n\n新版格式要求 Minecraft Bedrock 26.50 或更新版本。导出使用 format_version=2 和 IntArray 索引数组，并采用未压缩的内部结构 Compound；这样不依赖 26.60 才加入的 Zlib 压缩封装。低于 26.50 的版本请选择旧版格式。'
+    :'\n\n旧版格式使用 format_version=1 和双层 List<Int> 索引数组，适用于不支持结构 v2 的较早版本。';
+  const exportNotice=`导出说明：将生成${labels.join('、')}格式文件。导出文件只会保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。为满足结构尺寸限制，导出时每层最多放置 32 条链，超出的链会放到更高的 Y 层（层与层之间留 4 格）。3D 编辑视图不受影响。${compatibilityNote}\n\n文件名：\n${names.join('\n')}\n\n确定继续导出吗？`;
   if(!confirm(exportNotice))return;
   setCurrentAction('导出命令链结构');
   logInfo(`开始构建${labels.join('、')}格式导出结构`,'导出命令链结构');
