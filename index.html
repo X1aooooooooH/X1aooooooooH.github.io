@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="textures/favicon.ico" type="image/x-icon">
 <title>BlockFlow</title>
-<meta name="blockflow-build" content="mobile-three-zone-dock-readme-2026-10-24-r2">
+<meta name="blockflow-build" content="readme-sibling-fetch-import-button-2026-11-10">
 <style id="app-styles">@font-face{font-family:"LXGW WenKai Local";src:url("textures/LXGWWenKai-Light.ttf") format("truetype");font-style:normal;font-weight:300;font-display:swap}
 /* ============================================================
    1. 主题变量与全局重置
@@ -65,6 +65,10 @@ button:disabled{opacity:.35;cursor:not-allowed}
 .drop-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:132px;padding:28px 22px;text-align:center;border:1px dashed rgba(125,142,165,.42);border-radius:13px;background:rgba(8,12,17,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 34px rgba(0,0,0,.18);transition:background .18s,border-color .18s,transform .18s}
 .drop-card:hover,.drop-card.drag{background:rgba(34,42,54,.62);border-color:rgba(142,162,255,.78);transform:translateY(-1px)}
 .drop-card input{display:none}
+.readme-launch-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin-top:12px;padding:10px 14px;border:1px solid rgba(130,148,172,.32);border-radius:10px;background:rgba(130,148,172,.12);color:#e4ebf5;font:650 13px/1.3 var(--font-ui);transition:background .15s,border-color .15s}
+.readme-launch-btn:hover{background:rgba(130,148,172,.2);border-color:rgba(142,162,255,.65)}
+[data-theme="light"] .readme-launch-btn{background:#edf2f8;border-color:#cbd5e1;color:#34445a}
+[data-theme="light"] .readme-launch-btn:hover{background:#e3eaf3;border-color:#9aadd0}
 .drop-card strong{font-size:14px;color:#eef2f7}
 .drop-card small{margin-top:7px;font-size:11px;color:#8996a7}
 .upload-scope-note{display:flex;align-items:flex-start;gap:8px;margin:-7px 0 16px;padding:10px 12px;border:1px solid rgba(130,148,172,.24);border-radius:10px;background:rgba(120,139,166,.08);color:#aeb9c8;font-size:11.5px;line-height:1.65;text-align:left}
@@ -227,8 +231,8 @@ button:disabled{opacity:.35;cursor:not-allowed}
 .inspector-field-head{display:flex;align-items:center;gap:7px;padding:9px 13px 8px;border-bottom:1px solid rgba(105,118,138,.22);font-size:13.2px;letter-spacing:.10em;color:#a2adbd;font-weight:600;user-select:none}
 .inspector-field-head::before{content:"";width:4px;height:4px;border-radius:50%;background:rgba(129,150,200,.72);box-shadow:0 0 6px rgba(129,150,200,.55)}
 .inspector-field.is-note .inspector-field-head::before{background:rgba(103,216,176,.72);box-shadow:0 0 6px rgba(103,216,176,.5)}
-.inspector-field textarea{display:block;width:100%;height:112px;min-height:0;padding:11px 13px 12px;border:0;background:transparent;color:#eef2f7;font:12.5px/1.7 var(--font-ui);resize:none;overflow:hidden;outline:none;transition:height .08s ease}
-.inspector-field.is-note textarea{height:74px}
+.inspector-field textarea{display:block;width:100%;height:112px;min-height:0;max-height: min(34vh,280px);padding:11px 13px 12px;border:0;background:transparent;color:#eef2f7;font:12.5px/1.7 var(--font-ui);resize:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;outline:none}
+.inspector-field.is-note textarea{height:74px;max-height:min(26vh,220px)}
 .inspector-field textarea::placeholder{color:#6c788a}
 .inspector-select-row[hidden],.inspector-field[hidden],.edit-grid[hidden]{display:none}
 .edit-grid{display:flex;flex-direction:column;gap:8px;padding:10px}
@@ -451,6 +455,9 @@ button:disabled{opacity:.35;cursor:not-allowed}
 .feature-actions{display:flex;justify-content:flex-end;gap:8px;padding:16px 18px}
 .export-format-options{display:flex;flex-direction:column;gap:9px;padding:16px 18px 4px}
 .export-format-card{width:min(520px,calc(100vw - 32px))}
+.prompt-card{width:min(560px,calc(100vw - 32px))}
+.prompt-modal-message{padding:18px 20px;color:#c2ccda;font-size:13.5px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;max-height:min(58vh,520px);overflow:auto}
+[data-theme="light"] .prompt-modal-message{color:#4e5d70}
 
 .feature-btn{height:38px;padding:0 15px;border:1px solid rgba(91,104,122,.5);border-radius:9px;background:rgba(24,30,39,.86);color:#dfe7f1;font-size:14.4px}
 .feature-btn:hover{background:rgba(39,47,59,.96)}
@@ -727,6 +734,35 @@ button:disabled{opacity:.35;cursor:not-allowed}
   .usage-help-icon{width:23px;height:23px}
 }
 
+/* README 弹窗：固定弹窗高度，正文独立滚动，并将阅读列居中 */
+.usage-card{
+  width:min(920px,calc(100vw - 28px));
+  height:min(90vh,900px);
+  max-height:90vh;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.usage-card>.feature-head{flex:0 0 auto}
+.usage-readme-body{
+  display:block;
+  flex:1 1 0;
+  min-height:0;
+  width:100%;
+  max-width:840px;
+  margin:0 auto;
+  padding:24px clamp(20px,4vw,42px) 40px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  box-sizing:border-box;
+  text-align:left;
+}
+.usage-readme-body>*{max-width:100%}
+.usage-readme-body pre,.usage-readme-body .readme-table-wrap{max-width:100%;overflow:auto}
 </style>
 
 
@@ -751,6 +787,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
         <strong>选择 .mcstructure 文件</strong>
         <small>点击选择，或把文件拖到这里</small>
       </label>
+      <button id="uploadReadmeBtn" class="readme-launch-btn" type="button">阅读 README 使用说明</button>
     </div>
   </div>
 </div>
@@ -850,7 +887,6 @@ button:disabled{opacity:.35;cursor:not-allowed}
         <div class="chain-add-title chain-add-title-manual">手动新增</div>
         <div class="chain-add-options">
           <button type="button" data-add-chain-type="impulse"><b>脉冲链</b><span>创建 1 个命令方块</span></button>
-          <button type="button" data-add-chain-type="snake"><b>断链</b><span>创建 3 个命令方块</span></button>
           <button type="button" data-add-chain-type="repeat"><b>循环链</b><span>创建 1 个重复命令方块</span></button>
         </div>
         <input id="importMcstructureInput" type="file" accept=".mcstructure" hidden>
@@ -917,6 +953,13 @@ button:disabled{opacity:.35;cursor:not-allowed}
     <div class="feature-actions"><button id="exportFormatCancel" class="feature-btn" type="button">取消</button></div>
   </div>
 </div>
+<div id="promptModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="promptModalTitle" aria-hidden="true">
+  <div class="feature-card prompt-card">
+    <div class="feature-head"><div><b id="promptModalTitle">提示</b></div><button id="promptModalClose" class="feature-close" type="button" aria-label="关闭提示">×</button></div>
+    <div id="promptModalMessage" class="prompt-modal-message"></div>
+    <div class="feature-actions"><button id="promptModalCancel" class="feature-btn" type="button">取消</button><button id="promptModalConfirm" class="feature-btn primary" type="button">继续</button></div>
+  </div>
+</div>
 <div id="replaceModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="replaceTitle" aria-hidden="true">
   <div class="feature-card replace-card">
     <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换">×</button></div>
@@ -934,318 +977,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
       <div><b id="usageHelpTitle">使用说明</b><span>完整 README 文档 · 与发行包内 README.md 内容同步</span></div>
       <button id="usageHelpClose" class="feature-close" type="button" aria-label="关闭使用说明">×</button>
     </div>
-    <article id="usageReadmeBody" class="usage-readme-body">
-<h1 id="blockflow">BlockFlow</h1>
-<p><strong>BlockFlow 是一个面向 Minecraft 基岩版（Bedrock Edition）的 3D 命令方块链编辑器。</strong><br />
-它可以读取并识别 <code>.mcstructure</code> 结构中的命令方块链，在 3D 场景中检查朝向、编辑命令与链属性，并将编辑结果导出为新的 <code>.mcstructure</code> 文件。</p>
-<p>作者：<strong><a href="https://github.com/X1aooooooooH">X1aooooooooH</a></strong></p>
-<blockquote>
-<p><strong>在线使用（推荐）：</strong> BlockFlow 将完整部署到 GitHub Pages。正式发布后，访问 <a href="https://X1aooooooooH.github.io/">https://X1aooooooooH.github.io/</a> 即可使用，无需下载项目文件或安装开发环境。日常使用以在线版本为主。</p>
-<p><strong>离线使用（备用）：</strong> 也可以下载完整项目并在本地运行。请完整保留 <code>index.html</code>、<code>vendor/</code>、<code>textures/</code> 等文件及其相对目录结构；不要只单独保存 HTML 文件。部分浏览器对 <code>file://</code> 本地页面的文件访问或本地存储有额外限制，如遇到加载或恢复问题，建议改用 GitHub Pages 在线版本。</p>
-</blockquote>
-<h2 id="目录">目录</h2>
-<ul>
-<li><a href="#%E5%8A%9F%E8%83%BD%E7%89%B9%E7%82%B9">功能特点</a></li>
-<li><a href="#%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4%E4%B8%8E%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6">适用范围与使用限制</a></li>
-<li><a href="#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B">快速开始</a></li>
-<li><a href="#%E5%AF%BC%E5%85%A5%E6%96%87%E4%BB%B6">导入文件</a></li>
-<li><a href="#%E6%96%AD%E9%93%BE%E5%A4%B4%E4%B8%8E%E5%91%BD%E4%BB%A4%E9%93%BE%E8%AF%86%E5%88%AB%E8%A7%84%E5%88%99">断链头与命令链识别规则</a></li>
-<li><a href="#3d-%E5%9C%BA%E6%99%AF%E6%93%8D%E4%BD%9C">3D 场景操作</a></li>
-<li><a href="#%E7%BC%96%E8%BE%91%E5%8D%95%E4%B8%AA%E5%91%BD%E4%BB%A4%E6%96%B9%E5%9D%97">编辑单个命令方块</a></li>
-<li><a href="#%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4%E9%93%BE">管理命令链</a></li>
-<li><a href="#%E6%96%87%E6%9C%AC%E6%A8%A1%E5%BC%8F">文本模式</a></li>
-<li><a href="#%E6%90%9C%E7%B4%A2%E4%B8%8E%E6%89%B9%E9%87%8F%E6%9B%BF%E6%8D%A2">搜索与批量替换</a></li>
-<li><a href="#%E6%92%A4%E9%94%80%E9%87%8D%E5%81%9A%E4%B8%8E%E8%87%AA%E5%8A%A8%E4%BF%9D%E5%AD%98">撤销、重做与自动保存</a></li>
-<li><a href="#%E5%AF%BC%E5%87%BA%E7%BB%93%E6%9E%84%E6%96%87%E4%BB%B6">导出结构文件</a></li>
-<li><a href="#%E5%9C%A8%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E4%B8%8E%E9%9A%90%E7%A7%81">在线部署、离线运行与隐私</a></li>
-<li><a href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98">常见问题</a></li>
-<li><a href="#%E5%8F%8D%E9%A6%88%E4%B8%8E%E8%81%94%E7%B3%BB">反馈与联系</a></li>
-</ul>
-<h2 id="功能特点">功能特点</h2>
-<ul>
-<li><strong>3D 可视化：</strong> 查看命令方块的位置、朝向和链条布局。</li>
-<li><strong>链管理：</strong> 浏览、排序、复制、删除已有命令链，或创建新链。</li>
-<li><strong>多种编辑方式：</strong> 在 3D 视图中编辑单个方块，也可以在文本模式中逐行修改整条链。</li>
-<li><strong>文件导入：</strong> 支持 Minecraft 基岩版 <code>.mcstructure</code> 结构文件和每行一条命令的 <code>.txt</code> 文本。</li>
-<li><strong>属性编辑：</strong> 修改方块类型、条件、执行方式、命令、注释和标记等信息。</li>
-<li><strong>辅助工具：</strong> 搜索、批量替换、撤销/重做、自动保存、主题切换和运行日志。</li>
-<li><strong>在线与离线：</strong> GitHub Pages 在线版本为主要使用方式；完整项目也包含本地 Three.js 和字体资源，可作为离线备用方案。</li>
-</ul>
-<h2 id="适用范围与使用限制">适用范围与使用限制</h2>
-<p><strong>BlockFlow 主要用于编辑已经成型、具有明确连接关系的命令链结构。</strong> 如果一个结构中包含大量彼此独立、无法组成有效命令链的单个命令方块，编辑器在识别、格式化和重新排列这些方块时，可能使命令链布局过长，超过结构文件的尺寸上限。因此，这类以零散单个命令方块为主的结构不适合使用 BlockFlow 处理。</p>
-<p>建议在导入前确认结构中的命令方块已经按预期组织成链。对于链数量特别多或包含大量独立节点的文件，请先拆分或整理结构，再导入编辑。</p>
-<p>另外，当前导出功能只保存 BlockFlow 识别并编辑的命令链方块，不保留原结构中的普通方块、实体和其他非命令方块内容。请勿将导出文件当作原始完整建筑结构的无损副本。</p>
-<h2 id="快速开始">快速开始</h2>
-<h3 id="1-打开在线编辑器推荐">1. 打开在线编辑器（推荐）</h3>
-<p>项目发布到 GitHub Pages 后，使用较新的 <strong>Microsoft Edge</strong> 或 <strong>Google Chrome</strong> 访问：</p>
-<p><strong><a href="https://X1aooooooooH.github.io/">https://X1aooooooooH.github.io/</a></strong></p>
-<p>等待页面加载完成即可开始使用。在线版本由 GitHub Pages 提供，无需安装 Node.js、npm 或其他开发工具。</p>
-<h3 id="2-导入结构文件">2. 导入结构文件</h3>
-<p>在开始页面选择 <code>.mcstructure</code> 文件。文件由当前浏览器读取并在本地解析，不会由 BlockFlow 上传到项目服务器。导入后可在 3D 场景中检查命令链。</p>
-<p>也可以在链管理面板中导入每行一条命令的 <code>.txt</code> 文件。</p>
-<h3 id="3-编辑并导出">3. 编辑并导出</h3>
-<p>编辑命令、链顺序或方块属性后，点击顶部的 <strong>“导出命令链”</strong>，保存新的 <code>.mcstructure</code> 文件。建议将新文件保存到独立位置，并保留原始文件作为备份。</p>
-<h3 id="4-离线备用方式">4. 离线备用方式</h3>
-<p>下载并完整解压项目，确保 <code>index.html</code> 与 <code>vendor/</code>、<code>textures/</code> 等目录保持原有相对位置，然后打开根目录中的 <code>index.html</code>。如果浏览器限制本地文件或本地存储访问，请改用在线版本；离线方式不应作为主要使用入口。</p>
-<h2 id="导入文件">导入文件</h2>
-<h3 id="导入-mcstructure">导入 <code>.mcstructure</code></h3>
-<p><code>.mcstructure</code> 是主要的导入格式，适用于 Minecraft <strong>基岩版（Bedrock Edition）</strong>。可从开始页面选择文件；如果已经进入编辑器，也可以从 <strong>“管理链”</strong> 面板再次导入结构。</p>
-<p>导入后，BlockFlow 会尝试解析结构中的命令方块、方块朝向和命令链连接关系，并将识别到的链显示在 3D 场景和链管理面板中。</p>
-<p>导入完成后建议检查：</p>
-<ol>
-<li>命令链数量是否符合预期。</li>
-<li>每条链的命令顺序是否正确。</li>
-<li>3D 场景中的方块朝向是否符合原结构。</li>
-<li>断链头是否被正确识别。</li>
-<li>是否存在空命令方块、孤立方块或无法明确归属的方块。</li>
-</ol>
-<p>结构文件中可能包含编辑器不识别的内容。请留意页面提示和运行日志，并在导出前检查结果。</p>
-<h3 id="导入-txt-命令文本">导入 <code>.txt</code> 命令文本</h3>
-<p>在 <strong>“管理链” → “导入 TXT 指令”</strong> 中选择文本文件。建议使用 UTF-8 编码，并保持<strong>每行一条命令</strong>。</p>
-<p>TXT 适合快速导入命令列表，但纯文本本身不包含完整的方块位置、朝向、条件和红石设置。导入器会根据命令内容尝试判断链类型和特殊断链格式，因此导入后请检查命令顺序、链类型、朝向和循环关系。</p>
-<p><strong>空行注意事项：</strong> 文本行与物理命令方块并非严格的一一对应关系。3D 结构中可能保留空命令方块，但文本模式不会为这些空方块生成对应空命令行。请勿单纯根据文本行数推断 3D 场景中的物理方块总数。</p>
-<h2 id="断链头与命令链识别规则">断链头与命令链识别规则</h2>
-<p>本节说明 BlockFlow 如何识别特殊的<strong>断链头</strong>，以及导入后应该如何检查。这部分规则尤其重要：断链结构依赖命令内容和方块朝向共同表达，不能只看命令文本或只看方块排列。识别命令时，开头的 <code>/</code> 是可选的；例如 <code>setblock</code> 与 <code>/setblock</code>、<code>execute</code> 与 <code>/execute</code>、<code>testfor</code> 与 <code>/testfor</code> 均按同一命令类型处理。</p>
-<h3 id="1-什么是断链头">1. 什么是断链头？</h3>
-<p>断链头是链条中用于表达特殊断链关系的命令方块。它通常具有以下特征：</p>
-<ul>
-<li>它本身是一个命令方块；</li>
-<li>它包含非空命令；</li>
-<li>它的朝向与这条链中其余命令方块的常规朝向不同；</li>
-<li>这个朝向异常是结构表达的一部分，而不一定代表用户摆错了方块。</li>
-</ul>
-<p><strong>断链头不是普通的空方块，也不应该靠一个非命令方块来充当。</strong> 当前约定的统一断链格式会使用命令方块表达断链头；导入器识别到特殊断链结构后，会尝试将命令整理为统一的断链头格式。</p>
-<h3 id="2-为什么要检查朝向">2. 为什么要检查朝向？</h3>
-<p>普通链条通常沿着约定的连接方向延伸，方块朝向可以帮助编辑器判断哪个方块属于哪条链，以及命令的先后关系。</p>
-<p>断链结构会故意让一个命令方块的朝向与其余方块不同。BlockFlow 在识别时，会结合链条连接关系和朝向差异寻找这个特殊方块，而不是简单地把所有朝向不同的方块都删除或忽略。</p>
-<p>尤其要注意以下例外：</p>
-<ul>
-<li>如果朝向异常的命令方块指向的是<strong>它前一个命令方块</strong>，不能仅凭朝向差异就把它判为应忽略的错误分支。</li>
-<li>如果某个方向异常的方块所指向的方块并非其前一个节点，导入器需要结合整条链的连接关系判断它是否为断链头，不能只依据单个方块做决定。</li>
-<li>对于彼此独立的多条链，某一条链上的异常朝向记录不能影响另一条链的识别。</li>
-</ul>
-<p>如果导入结果与原结构不符，请在 3D 视图中检查断链头及其指向，并查看运行日志。</p>
-<h3 id="3-断链头的命令数量约定">3. 断链头的命令数量约定</h3>
-<p>在当前约定的断链格式中，第一条命令作为断链头，后续命令数量取决于断链头的命令类型：</p>
-<table>
-<thead>
-<tr>
-  <th>断链头命令类型</th>
-  <th style="text-align:right">断链头之后应有的命令数量</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td><code>/execute</code></td>
-  <td style="text-align:right">30 条</td>
-</tr>
-<tr>
-  <td><code>/testfor</code></td>
-  <td style="text-align:right">29 条</td>
-</tr>
-</tbody>
-</table>
-<p>这里的数量指<strong>从第二条命令开始计算的后续命令数</strong>，不包含第一条断链头命令本身。</p>
-<p>因此，检查导入结果时：</p>
-<ul>
-<li>如果第一条命令是 <code>/execute</code>，请核对断链头之后是否有 30 条命令。</li>
-<li>如果第一条命令是 <code>/testfor</code>，请核对断链头之后是否有 29 条命令。</li>
-<li>不要把断链头本身重复计入上述数量。</li>
-<li>编辑命令后，命令内容可能改变链条的识别方式；修改后请重新检查链类型、命令数量与 3D 朝向。</li>
-</ul>
-<p>这些数量是 BlockFlow 当前断链约定的一部分，并不代表 Minecraft 游戏对所有命令链都存在这样的通用限制。</p>
-<h3 id="4-导入时如何处理断链头">4. 导入时如何处理断链头？</h3>
-<p>建议按照以下流程操作：</p>
-<ol>
-<li><strong>导入原始 <code>.mcstructure</code>。</strong> 尽量使用从目标 Minecraft 基岩版环境直接导出的原始结构文件。</li>
-<li><strong>确认链条识别结果。</strong> 查看链管理面板中的链数量，并在 3D 视图中定位朝向不同的命令方块。</li>
-<li><strong>核对断链头。</strong> 确认它是非空命令方块，并检查它的朝向以及指向的方块。</li>
-<li><strong>核对后续命令数量。</strong> <code>execute</code>（可带或不带开头 <code>/</code>）断链头后应为 30 条；<code>testfor</code>（可带或不带开头 <code>/</code>）断链头后应为 29 条。</li>
-<li><strong>检查统一格式。</strong> 导入器识别特殊断链结构后，会尝试将命令格式化为统一断链头形式。导入后仍应检查命令文本和 3D 结构，不要只根据链名判断。</li>
-<li><strong>导出到新文件。</strong> 不要覆盖唯一的原始结构文件；先在目标游戏环境中验证导出结果。</li>
-</ol>
-<h3 id="5-创建或修改断链">5. 创建或修改断链</h3>
-<p>通过 <strong>“管理链” → “断链”</strong> 创建断链时，编辑器会生成一组命令方块，并自动写入用于转向的命令。</p>
-<p>如果你通过文本模式或 3D 属性面板修改了命令，链条可能被重新识别为其他类型，也可能符合断链头的识别条件。修改后应检查：</p>
-<ul>
-<li>第一条命令是否确实是预期的断链头；</li>
-<li>后续命令数量是否符合对应约定；</li>
-<li>断链头是否是非空命令方块；</li>
-<li>朝向是否符合预期；</li>
-<li>是否意外改变了其他链的连接关系。</li>
-</ul>
-<p>如果需要稳定地导入特殊断链，优先使用 BlockFlow 生成的格式，或以已知正确的结构为模板；不要只手动改变一个方块的朝向就假设整条链一定会被识别为断链。</p>
-<h3 id="6-空命令方块与断链头的区别">6. 空命令方块与断链头的区别</h3>
-<p>空命令方块与断链头是两种不同情况：</p>
-<ul>
-<li><strong>空命令方块：</strong> 方块存在，但命令文本为空。除特殊断链识别规则外，空命令方块不应仅因为命令为空就从 3D 结构中消失。</li>
-<li><strong>断链头：</strong> 命令方块存在，命令非空，并通过特殊朝向和链连接关系表达断链语义。</li>
-</ul>
-<p>因此，3D 场景中显示的物理方块数量可能多于文本模式中的命令行数。文本模式不会为普通空命令方块单独创建空命令行；请同时使用 3D 视图与文本模式检查结构。</p>
-<h2 id="3d-场景操作">3D 场景操作</h2>
-<table>
-<thead>
-<tr>
-  <th>操作</th>
-  <th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>鼠标左键拖动</td>
-  <td>旋转 3D 视角</td>
-</tr>
-<tr>
-  <td>鼠标滚轮</td>
-  <td>缩放视角</td>
-</tr>
-<tr>
-  <td><code>W</code> / <code>A</code> / <code>S</code> / <code>D</code></td>
-  <td>在场景中移动视角</td>
-</tr>
-<tr>
-  <td><code>Space</code></td>
-  <td>向上移动视角</td>
-</tr>
-<tr>
-  <td><code>Shift</code></td>
-  <td>向下移动视角</td>
-</tr>
-<tr>
-  <td>移动端方向键</td>
-  <td>在当前屏幕平面内平移摄像机；按住可连续移动</td>
-</tr>
-<tr>
-  <td>点击命令方块</td>
-  <td>选中方块并查看属性</td>
-</tr>
-<tr>
-  <td>顶部“前 / 侧 / 顶”</td>
-  <td>切换标准观察方向；移动端会按可用屏幕区域自动调整镜头距离，尽量完整显示当前范围内的命令方块</td>
-</tr>
-</tbody>
-</table>
-<p>移动端底部控制台分为三个区域：左侧用于管理链（总览时显示“管理链”，进入单链后显示“文本模式”和“删除本链”），中央是摄像机平移方向键，右侧的“使用说明”按钮会打开完整 README 文档。方向键沿当前屏幕平面移动摄像机和观察目标，不会旋转视角或改变镜头距离；按住方向键可以连续平移。</p>
-<p>链条较长或方块重叠时，可以切换“前 / 侧 / 顶”观察方向，再选择需要编辑的方块。遇到断链头或自闭环时，建议从多个角度检查朝向。</p>
-<h2 id="编辑单个命令方块">编辑单个命令方块</h2>
-<p>选中命令方块后，可以在属性面板中查看或修改：</p>
-<ul>
-<li><strong>方块类型：</strong> 脉冲、链式或循环。</li>
-<li><strong>条件：</strong> 无条件或有条件。</li>
-<li><strong>执行方式：</strong> 根据界面选项设置为保持开启或红石触发。</li>
-<li><strong>命令：</strong> 编辑命令文本。</li>
-<li><strong>注释：</strong> 添加便于识别的说明。</li>
-<li><strong>标记：</strong> 标记需要重点关注的方块。</li>
-</ul>
-<p>属性修改后，请确认命令、类型、条件、执行方式和朝向符合预期。BlockFlow 用于编辑和导出结构，不会替你执行命令，也不会自动保证命令在目标游戏版本中有效。</p>
-<h3 id="插入与删除">插入与删除</h3>
-<p>在选中方块的属性面板中，可以使用 <strong>“后插”</strong> 在当前位置之后插入方块，或使用 <strong>“删除”</strong> 移除当前方块。操作后请检查整条链的命令顺序、朝向和连接关系，尤其注意断链头与自闭环。</p>
-<h2 id="管理命令链">管理命令链</h2>
-<p>点击顶部的 <strong>“管理链”</strong> 打开命令链管理面板。这里可以查看现有链、调整顺序、复制或删除链，也可以导入命令或创建新链。</p>
-<h3 id="调整顺序">调整顺序</h3>
-<p>按照面板提示拖动链条条目即可调整顺序。调整会影响导出结构中的排列位置；完成后建议重新检查链条位置与连接关系。</p>
-<h3 id="新增命令链">新增命令链</h3>
-<p>编辑器提供以下新增方式：</p>
-<ul>
-<li><strong>脉冲链：</strong> 创建脉冲命令方块。</li>
-<li><strong>断链：</strong> 创建一组命令方块，并自动写入用于转向的命令。</li>
-<li><strong>循环链：</strong> 创建重复命令方块。</li>
-</ul>
-<p>创建后可继续编辑命令和属性。若手动修改了命令或朝向，请再次确认链条是否仍符合预期类型。</p>
-<h2 id="文本模式">文本模式</h2>
-<p>点击顶部 <strong>“文本模式”</strong>，可以按行查看和编辑当前命令链。此模式适合快速修改多条命令、粘贴命令列表或调整命令顺序。</p>
-<ul>
-<li>每个非空命令行对应一条命令；3D 中的空命令方块不会因此自动生成空命令行。</li>
-<li>编辑器支持自动换行和 Minecraft 命令语法高亮。</li>
-<li>点击行号可以切换对应命令的条件状态。</li>
-<li>点击 <strong>“应用修改”</strong> 才会将文本修改应用到命令链；点击“取消”会放弃本次文本编辑。</li>
-<li>在文本编辑框中按 <code>Ctrl + Enter</code>（macOS 上为 <code>Command + Enter</code>）可以应用修改。</li>
-</ul>
-<p>批量粘贴或重排文本后，请检查命令顺序、条件标记与断链头命令数量。不要把文本行数直接当作 3D 场景中的物理方块数量。</p>
-<h2 id="搜索与批量替换">搜索与批量替换</h2>
-<h3 id="搜索">搜索</h3>
-<p>使用顶部搜索框查找命令或相关内容。搜索结果可帮助你定位需要检查的命令方块；大型结构建议结合搜索与属性面板编辑。</p>
-<h3 id="批量替换">批量替换</h3>
-<p>点击顶部 <strong>“替换”</strong> 打开批量替换面板：</p>
-<ol>
-<li>在“查找”中输入要匹配的文本。</li>
-<li>在“替换为”中输入替换后的文本。</li>
-<li>选择作用范围：<strong>全部链</strong> 或 <strong>当前链</strong>。</li>
-<li>查看匹配数量，确认无误后再点击 <strong>“执行替换”</strong>。</li>
-</ol>
-<p>批量替换会影响所选范围内匹配的命令内容。执行前请确认查找文本足够具体；若结果不符合预期，可以使用撤销功能恢复。替换断链头命令后，还应重新核对断链头类型与后续命令数量。</p>
-<h2 id="撤销重做与自动保存">撤销、重做与自动保存</h2>
-<ul>
-<li>顶部的撤销、重做按钮用于回退或恢复最近的编辑操作。</li>
-<li>支持常用快捷键：<code>Ctrl + Z</code> 撤销，<code>Ctrl + Y</code> 或 <code>Ctrl + Shift + Z</code> 重做。</li>
-<li>导入结构后，编辑器会在当前浏览器中建立可恢复的工作快照；后续每次有效编辑后，会自动更新保存内容（通常在操作完成后的短暂间隔内写入）。</li>
-<li>自动保存内容保存在当前浏览器的本地存储中，不会上传到 GitHub Pages。下次使用同一浏览器、同一站点数据时，如果检测到上次未结束的编辑，页面会显示恢复提示。</li>
-<li>自动保存不跨设备或浏览器配置文件同步。清理站点数据、使用隐私浏览模式，或浏览器限制本地存储，都可能导致恢复内容不可用。</li>
-<li>页面切换到后台或即将关闭时，编辑器还会尝试立即写入尚未完成的自动保存任务。</li>
-</ul>
-<p><strong>自动保存不能代替导出文件。</strong> 重要修改完成后，请使用“导出命令链”保存独立的 <code>.mcstructure</code> 备份。自动保存用于恢复编辑会话，不是 Minecraft 结构文件备份。</p>
-<h2 id="导出结构文件">导出结构文件</h2>
-<p>编辑完成后，点击顶部 <strong>“导出命令链”</strong>，在弹窗中选择“导出老版本格式”“导出新版本格式”或“两者都导出”。旧版文件名追加 <code>-old</code>，新版文件名追加 <code>-new</code>。导出后建议：</p>
-<ol>
-<li>确认下载的 <code>.mcstructure</code> 文件已保存到正确位置；旧版使用 <code>format_version=1</code> 和双层 <code>List&lt;Int&gt;</code>，新版使用 <code>format_version=2</code> 和 Zlib 压缩结构。</li>
-<li>保留原始结构文件，避免覆盖唯一备份。</li>
-<li>检查命令顺序、方块类型、条件、朝向、断链头和循环关系。</li>
-<li>在目标 Minecraft 基岩版环境中，先使用备份副本验证导出结果。</li>
-</ol>
-<blockquote>
-<p><strong>重要限制：</strong> 导出文件用于保存 BlockFlow 识别并编辑的命令链方块。原结构中的普通方块、实体及其他非命令方块内容不会保留在导出结果中。因此，导出文件不是原始完整建筑结构的无损副本。</p>
-</blockquote>
-<p>对于自闭环等特殊结构，导出前请确认相关方块的位置和朝向仍然符合预期。BlockFlow 不会执行命令，也无法保证命令在特定 Minecraft 版本、世界设置或实验性功能环境中一定有效。最终效果需要在游戏内验证。</p>
-<h2 id="在线部署离线运行与隐私">在线部署、离线运行与隐私</h2>
-<h3 id="在线使用主要方式">在线使用（主要方式）</h3>
-<p>BlockFlow 的主要使用入口是 GitHub Pages：<strong><a href="https://X1aooooooooH.github.io/">https://X1aooooooooH.github.io/</a></strong>。项目完整发布后，网页及其运行所需的静态资源会从该站点加载。使用者只需打开链接，无需下载源码或安装开发环境。请使用完整站点链接，不要只保存 <code>index.html</code> 后当作在线版本使用。</p>
-<p><strong>发布目录要求：</strong> 将发行包中 <code>BlockFlow-CommandEditor/</code> 目录内的文件和文件夹（包括 <code>index.html</code>、<code>vendor/</code>、<code>textures/</code>、<code>README.md</code> 和许可证文件）放到 <code>X1aooooooooH.github.io</code> 仓库的<strong>根目录</strong>，不要把整个 <code>BlockFlow-CommandEditor/</code> 文件夹再嵌套一层。GitHub Pages 从仓库根目录发布时，才能通过上述网址直接打开编辑器首页。</p>
-<h3 id="离线使用备用方式">离线使用（备用方式）</h3>
-<p>项目同时提供本地运行所需资源，目录结构如下：</p>
-<pre><code class="language-text">BlockFlow-CommandEditor/
-├── index.html
-├── vendor/
-│   └── three-offline.js
-├── textures/
-│   ├── LXGWWenKai-Light.ttf
-│   └── favicon.ico
-└── THREE-LICENSE.txt
-</code></pre>
-<p>下载完整项目并解压，保留文件和目录的相对位置。可以尝试直接打开根目录的 <code>index.html</code>；如果浏览器的 <code>file://</code> 安全策略影响资源读取或本地存储，请改用本地静态服务器运行，或直接使用 GitHub Pages 在线版本。不要只复制 <code>index.html</code>，否则 Three.js 脚本和字体等资源会缺失。</p>
-<h3 id="文件与隐私">文件与隐私</h3>
-<p>导入的 <code>.mcstructure</code> 和 <code>.txt</code> 文件由浏览器在本地读取与处理；编辑器不会把这些文件上传到 GitHub Pages。自动保存数据也只存放在当前浏览器的本地存储中。需要注意：如果你主动通过其他渠道分享结构文件、日志或截图，仍应先检查其中是否包含不希望公开的内容。</p>
-<h2 id="常见问题">常见问题</h2>
-<h3 id="打开在线页面后无法正常显示">打开在线页面后无法正常显示</h3>
-<p>请使用较新的 Microsoft Edge 或 Google Chrome，并确认浏览器支持 WebGL。可以尝试刷新页面、关闭后重新打开，或更新浏览器和显卡驱动。受管理或限制较多的浏览器环境可能限制部分功能。</p>
-<h3 id="离线打开-indexhtml-后页面无法正常显示">离线打开 <code>index.html</code> 后页面无法正常显示</h3>
-<p>请确认使用的是完整项目目录，而不是单独复制的 HTML 文件。检查 <code>vendor/three-offline.js</code> 和 <code>textures/LXGWWenKai-Light.ttf</code> 是否仍在原位置。如果浏览器限制 <code>file://</code> 页面读取本地资源，请使用本地静态服务器或 GitHub Pages 在线版本。</p>
-<h3 id="3d-场景没有显示方块或贴图">3D 场景没有显示方块或贴图</h3>
-<p>请确认浏览器支持 WebGL，并检查浏览器控制台和运行日志。在线使用时请确认页面及同域资源加载完成；离线使用时请确认资源目录结构完整。</p>
-<h3 id="导入后没有识别出预期命令链">导入后没有识别出预期命令链</h3>
-<p>请确认输入的是 Minecraft 基岩版 <code>.mcstructure</code> 文件，而不是其他版本或其他格式。若使用 TXT 导入，请保证文本编码合理且每行一条命令。自动识别需要根据方块连接、朝向和命令内容推断链结构；请检查断链头和运行日志，并在必要时手动调整。</p>
-<h3 id="断链头后面的命令数量不正确">断链头后面的命令数量不正确</h3>
-<p>先确认第一条命令属于哪种断链头：<code>execute</code> 或 <code>/execute</code> 后应有 30 条命令，<code>testfor</code> 或 <code>/testfor</code> 后应有 29 条命令。这里不包括第一条断链头命令。再检查是否把空命令方块误当成文本行，以及朝向异常的方块是否确实属于断链头。</p>
-<h3 id="3d-方块数量比文本行数多">3D 方块数量比文本行数多</h3>
-<p>这是可能出现的情况。3D 场景保留物理空命令方块，而文本模式不为这些空方块生成对应空行。检查结构时请同时参考 3D 场景和文本模式。</p>
-<h3 id="重新打开后没有出现恢复提示">重新打开后没有出现恢复提示</h3>
-<p>自动恢复依赖同一浏览器配置文件中的本地存储。请尝试使用同一浏览器、同一站点地址，并避免清理站点数据。隐私浏览模式或浏览器存储限制可能导致无法恢复。即使恢复提示正常出现，也建议定期导出 <code>.mcstructure</code> 作为独立备份。</p>
-<h3 id="导出的文件中缺少原建筑的普通方块或实体">导出的文件中缺少原建筑的普通方块或实体</h3>
-<p>这是当前导出功能的设计限制：导出结果用于保存编辑器识别并编辑的命令链方块，不保留原结构中的普通方块和实体。请保留原始结构文件；需要保留完整建筑时，不要仅用导出文件替换原件。</p>
-<h3 id="导出的结构在游戏中无法导入或行为不符合预期">导出的结构在游戏中无法导入或行为不符合预期</h3>
-<p>请保留原始文件和导出文件，确认游戏版本与结构格式匹配，并尝试在目标基岩版环境中重新验证。若仍有问题，可通过 GitHub 提交反馈，并说明操作系统、浏览器、游戏版本、复现步骤和相关运行日志。分享前请检查日志或结构文件中是否包含不希望公开的内容。</p>
-<h2 id="反馈与联系">反馈与联系</h2>
-<p>如遇到问题或有功能建议，可以访问作者的 GitHub 主页：</p>
-<p><strong><a href="https://github.com/X1aooooooooH">https://github.com/X1aooooooooH</a></strong></p>
-<p>提交反馈时，建议附上：</p>
-<ul>
-<li>操作系统和浏览器版本；</li>
-<li>输入文件类型（<code>.mcstructure</code> 或 <code>.txt</code>）；</li>
-<li>具体操作步骤和预期结果；</li>
-<li>实际发生的情况，以及页面运行日志中的相关信息。</li>
-</ul>
-<p>请勿公开分享密码、令牌或其他私人信息。</p>
-
-    </article>
+    <article id="usageReadmeBody" class="usage-readme-body" aria-live="polite">正在从同目录读取 README.md……</article>
   </div>
 </div>
 
@@ -1378,7 +1110,7 @@ const app={
   camera:null,
   theme:'dark',
   forceView:false,
-  chainCamera:null,
+  overviewCamera:null,
   singleChain:false,
   originalRoot:null,
   originalSize:null,
@@ -1462,6 +1194,7 @@ function blockTypeFromName(name){
   return'other';
 }
 function blockKey(x,y,z){return`${x},${y},${z}`;}
+function isAirPlaceholderBlock(b){return !!b?.isAirPlaceholder;}
 function getOffsetPosition(b,facing,step=1){
   const F=FACING_VEC[facing];
   if(!F)return null;
@@ -1508,125 +1241,176 @@ function detectSelfClosedCycles(blockMap,maxCycleSize=4){
   }
   return{cycles,keys:new Set(cycles.flat()),oversized};
 }
-const BROKEN_CHAIN_SETBLOCK_1='/setblock ~~~-1 chain_command_block ["conditional_bit"=false,"facing_direction"=2]';
-const BROKEN_CHAIN_SETBLOCK_2='/setblock ~~~ chain_command_block ["conditional_bit"=false,"facing_direction"=1]';
-// Minecraft command text may include the leading slash or omit it. Match the
-// command token rather than requiring one exact serialized spelling.
+// Minecraft command text may include the leading slash or omit it.
 function startsCommand(cmd,name){return new RegExp('^\\s*\\/?'+name+'\\b','i').test(String(cmd??'').trim());}
-function isExecuteRunSetblock(cmd){return /^\s*\/?execute\b[\s\S]*?\brun\s+\/?setblock\b/i.test(String(cmd??'').trim());}
 function isTestforCommand(cmd){return startsCommand(cmd,'testfor');}
-function isDirectSetblockCommand(cmd){return startsCommand(cmd,'setblock');}
-function isChainPlacementSetblock(cmd){
+function hasRelativeCoordinateSyntax(cmd){
+  const s=String(cmd??'');
+  // Bedrock structures in the wild use both spaced coordinates (~ ~ ~-1)
+  // and compact project notation (~~~-1). Accept either form.
+  return /(?:^|[\s,])~(?:-?\d+(?:\.\d+)?)?(?=$|[\s,])/.test(s)||/(?:^|[\s,])(?:~(?:-?\d+(?:\.\d+)?)?){3}(?=$|[\s,])/.test(s);
+}
+function getRelativeCommandOperation(cmd){
   const s=String(cmd??'').trim();
-  const hasChainBlock=/\bchain_command_block\b/i.test(s);
-  return hasChainBlock&&(isDirectSetblockCommand(s)||isExecuteRunSetblock(s));
+  const execute=s.match(/^\/?execute\b[\s\S]*?\brun\s+\/?(setblock|fill|clone|structure)\b/i);
+  if(execute)return execute[1].toLowerCase();
+  const direct=s.match(/^\/?(setblock|fill|clone|structure)\b/i);
+  return direct?direct[1].toLowerCase():null;
+}
+function isSupportedRelativeCommand(cmd){
+  return !!getRelativeCommandOperation(cmd)&&hasRelativeCoordinateSyntax(cmd);
+}
+function isExecuteRunRelativeCommand(cmd){
+  return /^\s*\/?execute\b/i.test(String(cmd??'').trim())&&isSupportedRelativeCommand(cmd);
 }
 function isSetblockMarker(cmd,position){
   const s=String(cmd??'').trim();
-  if(!isDirectSetblockCommand(s)||! /\bchain_command_block\b/i.test(s))return false;
+  if(!startsCommand(s,'setblock')||! /\bchain_command_block\b/i.test(s))return false;
   const beforeBlock=s.replace(/^\s*\/?setblock\b/i,'').split(/\bchain_command_block\b/i)[0];
-  // Ignore spacing differences in relative coordinates while preserving the
-  // distinct -1 marker and origin marker used by the broken-chain template.
   const compact=beforeBlock.replace(/\s+/g,'');
   return position==='first'?compact==='~~~-1':compact==='~~~';
 }
 function isSetblockFirstMarker(cmd){return isSetblockMarker(cmd,'first');}
 function isSetblockSecondMarker(cmd){return isSetblockMarker(cmd,'second');}
-// Shared, side-effect-free broken-head recognizer. The import pre-scan and
-// trace pass use the same geometry, with slash-optional command matching.
+function isBrokenHeadMarkerBlock(b){
+  return !!b&&['command','repeating','chain'].includes(b.type||b.blockType)&&String(b.cmd||'').trim()!==''&&isSupportedRelativeCommand(b.cmd||'');
+}
+// Shared broken-head recognizer. The gap is a geometric slot, not a required
+// block type: it may be air, an ordinary block, water/lava, or any command block.
 function identifyBrokenHeadGeometry(root,getExact,isMarker){
-  if(!root||root.blockType==='chain'||typeof getExact!=='function'||typeof isMarker!=='function')return null;
+  if(!root||typeof getExact!=='function'||typeof isMarker!=='function')return null;
   const cmd=String(root.cmd||'').trim();
+  const isCommandRecord=b=>!!b&&['command','repeating','chain'].includes(b.type||b.blockType);
+  const make=(kind,direction,previous,gap,marker,rootDirection=direction)=>{
+    const gapPosition=previous?getOffsetPosition(previous,direction,1):null;
+    const placeholder=gapPosition?{
+      ...gapPosition,type:'placeholder',blockType:'chain',cmd:'',cond:0,auto:1,
+      facing:direction,isAirPlaceholder:true,marked:false,note:''
+    }:null;
+    return{
+      kind,direction,rootDirection,wrongFacingBlock:marker,previous,gap,placeholder,
+      // The physical gap is represented in the logical chain as an empty air
+      // slot, regardless of whether the source position contained air, a solid
+      // block, or an auxiliary command block.
+      blocks:[...(kind.startsWith('testfor')?[previous]:[]),...(placeholder?[placeholder]:[]),marker].filter(Boolean),
+      skipped:gap||null
+    };
+  };
+  const candidateDirections=[Number.isInteger(root.facing)?root.facing:2,...Object.keys(FACING_VEC).map(Number)]
+    .filter((value,index,array)=>FACING_VEC[value]&&array.indexOf(value)===index);
   if(isTestforCommand(cmd)){
-    const first=getExact(root,root.facing,1);
-    if(!isMarker(first))return null;
-    const direction=FACING_VEC[first.facing]?first.facing:root.facing;
-    const secondDirect=getExact(first,direction,1);
-    if(isMarker(secondDirect))return{
-      kind:'testfor-direct',direction,wrongFacingBlock:secondDirect,
-      previous:first,gap:null,blocks:[first,secondDirect],skipped:null
-    };
-    const secondGap=getExact(first,direction,2);
-    if(isMarker(secondGap))return{
-      kind:'testfor-gap',direction,wrongFacingBlock:secondGap,
-      previous:first,gap:secondDirect,blocks:[first,secondGap],skipped:secondDirect
-    };
+    for(const rootDirection of candidateDirections){
+      const first=getExact(root,rootDirection,1);
+      if(!isMarker(first))continue;
+      const directions=[rootDirection,first.facing].filter((value,index,array)=>Number.isInteger(value)&&FACING_VEC[value]&&array.indexOf(value)===index);
+      for(const direction of directions){
+        const secondDirect=getExact(first,direction,1);
+        const secondGap=getExact(first,direction,2);
+        // Prefer the explicit one-slot gap when both positions contain relative
+        // command text. This lets an impulse command block occupy the gap without
+        // being mistaken for the second marker solely because it has a command.
+        if(isMarker(secondGap))return make('testfor-gap',direction,first,secondDirect,secondGap,rootDirection);
+        if(isMarker(secondDirect))return make('testfor-direct',direction,first,null,secondDirect,rootDirection);
+      }
+    }
     return null;
   }
-  if(isExecuteRunSetblock(cmd)){
-    const direction=root.facing;
-    const first=getExact(root,direction,1);
-    if(isMarker(first))return{
-      kind:'execute-direct',direction,wrongFacingBlock:first,
-      previous:root,gap:null,blocks:[first],skipped:null
-    };
-    const second=getExact(root,direction,2);
-    if(isMarker(second))return{
-      kind:'execute-gap',direction,wrongFacingBlock:second,
-      previous:root,gap:first,blocks:[second],skipped:first
-    };
+  if(isExecuteRunRelativeCommand(cmd)){
+    for(const direction of candidateDirections){
+      const first=getExact(root,direction,1);
+      const second=getExact(root,direction,2);
+      if(isMarker(second))return make('execute-gap',direction,root,first,second,direction);
+      if(isMarker(first))return make('execute-direct',direction,root,null,first,direction);
+    }
   }
   return null;
-}
-function isBrokenHeadMarkerBlock(b){
-  return !!b&&b.type==='chain'&&String(b.cmd||'').trim()!==''&&isChainPlacementSetblock(b.cmd||'');
 }
 function findBrokenChainSetblockIndexes(items){
   const list=Array.isArray(items)?items:[];
   const found=[];
-  for(let i=0;i<Math.min(3,list.length);i++){
+  for(let i=0;i<list.length;i++){
     const value=typeof list[i]==='string'?String(list[i]||'').trim():String(list[i]?.cmd||'').trim();
-    if(isChainPlacementSetblock(value)){
+    if(isSupportedRelativeCommand(value)){
       found.push(i);
       if(found.length===2)break;
     }
   }
   return found;
 }
-function replaceBrokenChainSetblock(cmd,replacement){
-  const source=String(cmd??'').trim();
-  const executeRun=source.match(/^(\s*\/?execute\b[\s\S]*?\brun\s+)\/?setblock\b[\s\S]*$/i);
-  return executeRun?executeRun[1]+replacement:replacement;
-}
-// Execute heads fold their first marker into the execute command; testfor
-// heads use the next two command blocks as markers. The exact command text
-// after the keyword may vary, and the leading slash is optional.
 function getBrokenHeadKind(items){
   if(!Array.isArray(items)||items.length<2)return null;
+  if(items._brokenMatch==='execute'||items._brokenMatch==='testfor')return items._brokenMatch;
   const cmdAt=i=>String(typeof items[i]==='string'?items[i]:items[i]?.cmd||'').trim();
   const first=cmdAt(0);
   const indexes=findBrokenChainSetblockIndexes(items);
-  if(isExecuteRunSetblock(first)&&indexes[0]===0&&indexes[1]===1)return 'execute';
-  if(isTestforCommand(first)&&indexes[0]===1&&indexes[1]===2)return 'testfor';
+  if(isExecuteRunRelativeCommand(first)&&indexes[0]===0&&indexes.length>=2)return 'execute';
+  if(isTestforCommand(first)&&indexes[0]>=1&&indexes.length>=2)return 'testfor';
   return null;
 }
 function isBrokenChainPlaceholder(items){
   if(!Array.isArray(items)||items.length<3||String(typeof items[0]==='string'?items[0]:items[0]?.cmd||'').trim()!=='')return false;
-  return isSetblockFirstMarker(items[1]?.cmd??items[1])&&isSetblockSecondMarker(items[2]?.cmd??items[2]);
+  return isSupportedRelativeCommand(items[1]?.cmd??items[1])&&isSupportedRelativeCommand(items[2]?.cmd??items[2]);
 }
 function collapseExecuteBrokenPlaceholder(blocks){
-  // The blank broken-chain template starts with marker1 + marker2. When its
-  // root is changed to an execute/setblock head, marker1 is folded into the
-  // execute command and the old marker2 template block becomes redundant.
-  if(getBrokenHeadKind(blocks)!=='execute'||!Array.isArray(blocks)||blocks.length<3)return false;
-  if(isSetblockFirstMarker(blocks[1]?.cmd??blocks[1])&&isSetblockSecondMarker(blocks[2]?.cmd??blocks[2])){
-    blocks.splice(2,1);
-    return true;
-  }
+  // Do not delete a physical block while normalizing an execute-style template.
   return false;
+}
+function parseRelativeComponent(token){
+  const m=String(token).match(/^~(-?\d+(?:\.\d+)?)?$/);
+  return m?Number(m[1]||0):null;
+}
+function formatRelativeComponent(value){
+  const n=Math.abs(value)<1e-9?0:Number(value.toFixed(6));
+  return n===0?'~':'~'+String(n);
+}
+function rotateRelativeVector(x,y,z,facing){
+  switch(Number(facing)){
+    case 3:return[-x,y,-z];
+    case 4:return[-z,y,x];
+    case 5:return[z,y,-x];
+    case 0:return[x,-z,y];
+    case 1:return[x,z,-y];
+    case 2:default:return[x,y,z];
+  }
+}
+function rotateRelativeCoordinateTriples(cmd,facing){
+  let source=String(cmd??'');
+  if(!source||Number(facing)===2)return source;
+  const triple=/((?:~(?:-?\d+(?:\.\d+)?)?)\s+){2}(~(?:-?\d+(?:\.\d+)?)?)/g;
+  source=source.replace(triple,match=>{
+    const parts=match.trim().split(/\s+/);
+    if(parts.length!==3||parts.some(v=>parseRelativeComponent(v)===null))return match;
+    const [x,y,z]=parts.map(parseRelativeComponent);
+    return rotateRelativeVector(x,y,z,facing).map(formatRelativeComponent).join(match.includes('  ')?'  ':' ');
+  });
+  // Compact coordinate triples such as ~~~-1 are used by existing structures.
+  source=source.replace(/(^|[\s,])((?:~(?:-?\d+(?:\.\d+)?)?){3})(?=$|[\s,])/g,(whole,prefix,compact)=>{
+    const parts=compact.match(/~(?:-?\d+(?:\.\d+)?)?/g)||[];
+    if(parts.length!==3||parts.some(v=>parseRelativeComponent(v)===null))return whole;
+    const [x,y,z]=parts.map(parseRelativeComponent);
+    return prefix+rotateRelativeVector(x,y,z,facing).map(formatRelativeComponent).join('');
+  });
+  return source;
 }
 function normalizeBrokenChainBlocks(blocks,options={}){
   if(!Array.isArray(blocks))return false;
-  const kind=getBrokenHeadKind(blocks);
-  if(!kind)return false;
-  const indexes=findBrokenChainSetblockIndexes(blocks);
-  if(indexes.length<2)return false;
-  const [firstIndex,secondIndex]=indexes;
-  blocks[firstIndex].cmd=replaceBrokenChainSetblock(blocks[firstIndex].cmd,BROKEN_CHAIN_SETBLOCK_1);
-  blocks[secondIndex].cmd=replaceBrokenChainSetblock(blocks[secondIndex].cmd,BROKEN_CHAIN_SETBLOCK_2);
+  const kind=options.kind||getBrokenHeadKind(blocks);
+  if(!kind&&!options.forceCoordinates)return false;
+  const direction=Number.isInteger(options.direction)?options.direction:(Number.isInteger(blocks._brokenDirection)?blocks._brokenDirection:2);
+  const specialKeys=options.specialKeys instanceof Set?options.specialKeys:new Set(blocks._brokenSpecialKeys||[]);
+  const facingMap=options.facingMap||blocks._brokenFacingMap||{};
+  for(const b of blocks){
+    if(!b||typeof b.cmd!=='string')continue;
+    const key=blockKey(b.x,b.y,b.z);
+    const facing=Number.isInteger(facingMap[key])?facingMap[key]:(specialKeys.has(key)?direction:(Number.isInteger(b.facing)?b.facing:direction));
+    b.cmd=rotateRelativeCoordinateTriples(b.cmd,facing);
+  }
   if(options.applyCondition!==false){
-    blocks[firstIndex].cond=kind==='testfor'?1:0;
-    blocks[secondIndex].cond=0;
+    const indexes=findBrokenChainSetblockIndexes(blocks);
+    if(indexes.length>=2){
+      blocks[indexes[0]].cond=kind==='testfor'?1:0;
+      blocks[indexes[1]].cond=0;
+    }
   }
   return true;
 }
@@ -1821,7 +1605,8 @@ function traceChain(root,context,owner){
     const skippedEmpty=[];
     while(candidate){
       const k=blockKey(candidate.x,candidate.y,candidate.z);
-      if(discarded?.has(k)||blockedKeys?.has(k)||owner.has(k)||rootKeys?.has(k)||seen.has(k)){
+      const nestedBrokenRoot=rootKeys?.has(k)&&!!identifyBrokenHeadGeometry(candidate,getExact,isBrokenHeadMarkerBlock);
+      if(discarded?.has(k)||blockedKeys?.has(k)||owner.has(k)||(rootKeys?.has(k)&&!nestedBrokenRoot)||seen.has(k)){
         // Preserve a terminal empty physical block even when it cannot lead to
         // another non-empty command. The owner/blocked guards still win.
         if(skippedEmpty.length){
@@ -1874,89 +1659,65 @@ function traceChain(root,context,owner){
     }
     return claim(b,isEmptyChain(b));
   };
-  const discardWrongBranch=start=>{
-    if(!start)return 0;
-    let current=start,count=0;
-    const seen=new Set();
-    const keys=[];
-    while(current&&isCommandType(current.type)){
-      const k=blockKey(current.x,current.y,current.z);
-      if(seen.has(k)||owner.has(k)||discarded?.has(k)||rootKeys?.has(k))break;
-      seen.add(k);
-      keys.push(k);
-      count++;
-      current=getExact(current,current.facing,1);
-    }
-    if(keys.length)pendingWrongBranches.push({start,keys});
-    return count;
-  };
-  const isBrokenExecuteRoot=b=>isExecuteRunSetblock(b?.cmd||'');
-  const isTestforRoot=b=>isTestforCommand(b?.cmd||'');
-  const blockWrongBranchExact=(start,protectedKeys=new Set())=>{
-    if(!start)return;
-    let current=start;const seen=new Set();const keys=[];
-    while(current&&isCommandType(current.type)){
-      const k=blockKey(current.x,current.y,current.z);
-      // A wrong-facing branch must never walk backward into a command already
-      // known to be a predecessor of the broken head. This is especially
-      // important when the second marker points back at marker #1.
-      if(protectedKeys.has(k)||seen.has(k)||local.has(k)||owner.has(k)||discarded?.has(k)||rootKeys?.has(k))break;
-      seen.add(k);keys.push(k);
-      const next=getExact(current,current.facing,1);
-      const nextKey=next?blockKey(next.x,next.y,next.z):null;
-      if(nextKey&&protectedKeys.has(nextKey))break;
-      current=next;
-    }
-    if(blockedKeys)for(const k of keys)blockedKeys.add(k);
-    if(keys.length)pendingWrongBranches?.push({start,keys});
-  };
   const matchBrokenHeadExact=()=>{
     const pattern=identifyBrokenHeadGeometry(root,getExact,isBrokenHeadMarkerBlock);
     if(!pattern)return null;
-    if(pattern.kind==='testfor-gap'||pattern.kind==='execute-gap'){
-      const skipped=pattern.skipped;
-      const wrong=pattern.wrongFacingBlock;
-      const skippedKey=skipped?blockKey(skipped.x,skipped.y,skipped.z):null;
-      const pointsBackToSkipped=!!skipped&&isCommandType(skipped.type)&&(()=>{
-        const p=getOffsetPosition(wrong,wrong.facing,1);
-        return !!p&&blockKey(p.x,p.y,p.z)===skippedKey;
-      })();
-      if(skipped&&isCommandType(skipped.type)&&!pointsBackToSkipped){
-        const protectedKeys=pattern.kind==='testfor-gap'
-          ?new Set([
-            blockKey(root.x,root.y,root.z),
-            blockKey(pattern.blocks[0].x,pattern.blocks[0].y,pattern.blocks[0].z),
-            blockKey(wrong.x,wrong.y,wrong.z)
-          ])
-          :new Set([blockKey(root.x,root.y,root.z),blockKey(wrong.x,wrong.y,wrong.z)]);
-        // The gap itself may be deliberately excluded as part of this broken-head
-        // encoding, but traversal must stop before reaching the second marker.
-        // Otherwise the cleanup walk blocks a marker that matchBrokenHeadExact
-        // immediately needs to claim.
-        blockWrongBranchExact(skipped,protectedKeys);
-      }
-    }
+    // Gaps are never deleted or traversed as wrong branches. A command block
+    // occupying the gap is claimed into this chain by pattern.blocks; non-command
+    // blocks and air are simply skipped geometrically.
     return pattern;
   };
   const brokenHead=matchBrokenHeadExact();
-  const fallbackHead=!brokenHead&&( isTestforCommand(root.cmd||'')||isExecuteRunSetblock(root.cmd||'')||isChainPlacementSetblock(root.cmd||'') );
+  const fallbackHead=!brokenHead&&(isTestforCommand(root.cmd||'')||isExecuteRunRelativeCommand(root.cmd||''));
   if(brokenHead){
     if(!claim(root))return[];
-    for(const b of brokenHead.blocks)claim(b);
-    const headTail=ordered[ordered.length-1]||root;
-    const firstAfterHead=getLogical(headTail,brokenHead.direction,1);
-    let current=firstAfterHead;
-    if(current&&!claimLogical(current))current=null;
+    const facingMap={};
+    const wrongFacingKeys=[];
+    const addBrokenPattern=(pattern,patternRoot)=>{
+      const rootKey=blockKey(patternRoot.x,patternRoot.y,patternRoot.z);
+      facingMap[rootKey]=Number.isInteger(pattern.rootDirection)?pattern.rootDirection:pattern.direction;
+      for(const b of pattern.blocks){
+        claim(b);
+        facingMap[blockKey(b.x,b.y,b.z)]=pattern.direction;
+      }
+      if(pattern.gap&&['command','repeating','chain'].includes(pattern.gap.type||pattern.gap.blockType)){
+        const replacedGapKey=blockKey(pattern.gap.x,pattern.gap.y,pattern.gap.z);
+        owner.set(replacedGapKey,root);
+        discarded?.add(replacedGapKey);
+      }
+      const wrongKey=blockKey(pattern.wrongFacingBlock.x,pattern.wrongFacingBlock.y,pattern.wrongFacingBlock.z);
+      wrongFacingKeys.push(wrongKey);
+      const wrongCopy=orderedIndex.get(wrongKey);
+      if(wrongCopy)wrongCopy.brokenWrongFacing=true;
+      ordered._brokenGroups=(ordered._brokenGroups||[]).concat(pattern.kind);
+      if(!ordered._brokenMatch)ordered._brokenMatch=pattern.kind.startsWith('testfor')?'testfor':'execute';
+    };
+    addBrokenPattern(brokenHead,root);
+    let current=ordered[ordered.length-1]||root;
+    let currentDirection=brokenHead.direction;
     let guard=0;
     while(current&&guard++<10000){
-      const next=getLogical(current,current.facing,1);
-      if(!next||next.type!=='chain')break;
+      const next=getLogical(current,currentDirection,1);
+      if(!next)break;
       const nk=blockKey(next.x,next.y,next.z);
-      if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk)||!claimLogical(next))break;
-      current=next;
+      if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk))break;
+      const nestedPattern=identifyBrokenHeadGeometry(next,getExact,isBrokenHeadMarkerBlock);
+      if(nestedPattern){
+        if(!claim(next))break;
+        addBrokenPattern(nestedPattern,next);
+        current=ordered[ordered.length-1]||next;
+        currentDirection=nestedPattern.direction;
+        continue;
+      }
+      if(next.type!=='chain'||!claimLogical(next))break;
+      current=ordered[ordered.length-1]||next;
+      currentDirection=next.facing;
     }
     ordered._brokenMatched=true;
-    ordered._brokenMatch=brokenHead.kind;
+    ordered._brokenDirection=brokenHead.direction;
+    ordered._brokenFacingMap=facingMap;
+    ordered._brokenWrongFacingKeys=wrongFacingKeys;
+    ordered._brokenSpecialKeys=Object.keys(facingMap);
     return ordered;
   }
 
@@ -1976,64 +1737,17 @@ function traceChain(root,context,owner){
   }
 
   if(!claim(root))return[];
-  let mainIndex=0;
   let current=ordered[0];
-
-  const directRootNext=getLogical(root,root.facing,1);
-  if(!directRootNext){
-    for(const facing of Object.keys(FACING_VEC).map(Number)){
-      const candidate=getLogical(root,facing,1);
-      if(!candidate||candidate.type!=='chain'||!isSetblockFirstMarker(candidate.cmd))continue;
-      const candidateNext=getLogical(candidate,candidate.facing,1);
-      if(candidateNext&&candidateNext.type==='chain'&&isSetblockSecondMarker(candidateNext.cmd)){
-        const ck=blockKey(candidate.x,candidate.y,candidate.z);
-        if(!owner.has(ck)&&!discarded?.has(ck)){
-          claimLogical(candidate);
-          current=ordered[ordered.length-1]||current;
-          mainIndex=1;
-        }
-        break;
-      }
-    }
-  }
-
   const mainSeen=new Set();
-  while(true){
+  while(current){
     const currentKey=blockKey(current.x,current.y,current.z);
     if(mainSeen.has(currentKey))break;
     mainSeen.add(currentKey);
-
-    const special=(mainIndex===0||mainIndex===1)&&isChainPlacementSetblock(current.cmd);
-    if(special){
-      const skipped=getExact(current,current.facing,1);
-      if(skipped){
-        if(skipped.type==='chain'&&String(skipped.cmd||'').trim()!==''&&(isSetblockFirstMarker(skipped.cmd)||isSetblockSecondMarker(skipped.cmd))){
-          if(!local.has(blockKey(skipped.x,skipped.y,skipped.z))&&!owner.has(blockKey(skipped.x,skipped.y,skipped.z)))claim(skipped);
-          const branch=getLogical(skipped,skipped.facing,1);
-          if(branch&&isCommandType(branch.type)&&!local.has(blockKey(branch.x,branch.y,branch.z)))discardWrongBranch(branch);
-        }else if(!isEmptyChain(skipped)&&isCommandType(skipped.type)){
-          const branch=getLogical(skipped,skipped.facing,1);
-          if(branch&&isCommandType(branch.type))discardWrongBranch(skipped);
-        }
-      }
-      const next=getLogical(current,current.facing,2);
-      if(next&&next.type==='chain'){
-        if(owner.has(blockKey(next.x,next.y,next.z))||discarded?.has(blockKey(next.x,next.y,next.z)))break;
-        if(!claim(next))break;
-        current=ordered[ordered.length-1]||next;
-        mainIndex++;
-        continue;
-      }
-      break;
-    }
-
     const next=getLogical(current,current.facing,1);
     if(!next||next.type!=='chain')break;
     const nk=blockKey(next.x,next.y,next.z);
-    if(owner.has(nk)||discarded?.has(nk))break;
-    if(!claimLogical(next))break;
+    if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk)||!claimLogical(next))break;
     current=orderedIndex.get(nk)||next;
-    mainIndex++;
   }
   return ordered;
 }
@@ -2048,14 +1762,14 @@ function detectChainType(ordered){
 }
 function relayoutBlocks(ordered,chainType,xCol){
   if(!ordered||ordered.length===0)return[];
-  const headKind=chainType==='snake'?getBrokenHeadKind(ordered):null;
+  const headKind=chainType==='snake'?(getBrokenHeadKind(ordered)||ordered._brokenMatch||null):null;
   const placeholder=chainType==='snake'&&!headKind&&isBrokenChainPlaceholder(ordered);
   // Keep the first physical row at the full 32-block depth. The broken-head
   // signature controls rows two and onward: /execute uses 30 blocks per row,
   // /testfor uses 29. This distinction must survive imports and live edits.
   const firstCapacity=STD_Z;
   const otherCapacity=chainType==='snake'
-    ?(headKind==='execute'?30:29)
+    ?((ordered._brokenGroups||[]).includes('testfor-gap')||(ordered._brokenGroups||[]).includes('testfor-direct')||headKind==='testfor'?29:30)
     :31;
   const firstBlockType=chainType==='impulse'?'command':chainType==='repeat'?'repeating':(ordered[0].blockType==='command'||ordered[0].blockType==='repeating'?ordered[0].blockType:'repeating');
   const positions=new Array(ordered.length);
@@ -2095,15 +1809,24 @@ function relayoutBlocks(ordered,chainType,xCol){
       facing=layerIdx%2===0?3:2;
     }
     const src=ordered[i];
-    blocks.push({x:xCol,y:pos.y,z:pos.z,facing,blockType:i===0?firstBlockType:'chain',cmd:String(src.cmd||''),cond:src.cond?1:0,auto:src.auto!==0?1:0,marked:!!src.marked,note:src.note||''});
+    blocks.push({x:xCol,y:pos.y,z:pos.z,facing:src.brokenWrongFacing?1:facing,blockType:i===0?firstBlockType:'chain',cmd:String(src.cmd||''),cond:src.cond?1:0,auto:src.auto!==0?1:0,brokenWrongFacing:!!src.brokenWrongFacing,isAirPlaceholder:!!src.isAirPlaceholder,marked:!!src.marked,note:src.note||''});
   }
   // Exactly one marker is intentionally misoriented. Keep this in the actual
   // block state as well as in the canonical marker command, otherwise a later
   // export/import round-trip silently turns the broken head into a normal chain.
   if(chainType==='snake'&&(headKind||placeholder)){
-    const markerIndexes=findBrokenChainSetblockIndexes(ordered);
-    const wrongFacingIndex=markerIndexes[1];
-    if(Number.isInteger(wrongFacingIndex)&&blocks[wrongFacingIndex])blocks[wrongFacingIndex].facing=1;
+    const wrongKeys=new Set(ordered._brokenWrongFacingKeys||[]);
+    const hasExplicitMarkerFlags=ordered.some(b=>!!b?.brokenWrongFacing);
+    if(wrongKeys.size||hasExplicitMarkerFlags){
+      for(let i=0;i<ordered.length;i++){
+        const key=blockKey(ordered[i].x,ordered[i].y,ordered[i].z);
+        if((wrongKeys.has(key)||ordered[i].brokenWrongFacing)&&blocks[i])blocks[i].facing=1;
+      }
+    }else{
+      const markerIndexes=findBrokenChainSetblockIndexes(ordered);
+      const wrongFacingIndex=markerIndexes[1];
+      if(Number.isInteger(wrongFacingIndex)&&blocks[wrongFacingIndex])blocks[wrongFacingIndex].facing=1;
+    }
   }
   return blocks;
 }
@@ -2161,33 +1884,48 @@ function processCommands(commands,context={}){
       rootType:(root.blockType==='command'||root.blockType==='repeating')?0:1
     });
   }
+  // If one broken head is physically downstream of another, process the
+  // upstream head first so the complete multi-head chain claims both groups.
+  const rootMetaByKey=new Map(roots.map(root=>[blockKey(root.x,root.y,root.z),rootMeta.get(root)]));
+  const nestedBrokenRootKeys=new Set();
+  for(const parent of roots){
+    const pattern=rootMeta.get(parent)?.brokenPattern;
+    if(!pattern)continue;
+    let current=pattern.blocks[pattern.blocks.length-1]||parent;
+    let direction=pattern.direction;
+    const seen=new Set();
+    for(let guard=0;guard<blockMap.size&&guard<10000;guard++){
+      const next=getExactFromMap(current,direction,1);
+      if(!next)break;
+      const nk=blockKey(next.x,next.y,next.z);
+      if(seen.has(nk)||next===parent)break;
+      seen.add(nk);
+      const nested=rootMetaByKey.get(nk)?.brokenPattern;
+      if(nested){
+        nestedBrokenRootKeys.add(nk);
+        current=nested.blocks[nested.blocks.length-1]||next;
+        direction=nested.direction;
+        continue;
+      }
+      if(next.type!=='chain')break;
+      current=next;
+      direction=next.facing;
+    }
+  }
   roots.sort((a,b)=>{
     const ma=rootMeta.get(a),mb=rootMeta.get(b);
-    return (ma.broken-mb.broken)||(ma.reachesCycle-mb.reachesCycle)||
+    const nestedA=nestedBrokenRootKeys.has(blockKey(a.x,a.y,a.z))?1:0;
+    const nestedB=nestedBrokenRootKeys.has(blockKey(b.x,b.y,b.z))?1:0;
+    return (ma.broken-mb.broken)||(nestedA-nestedB)||(ma.reachesCycle-mb.reachesCycle)||
       (ma.rootType-mb.rootType)||chainSort(a,b);
   });
-  for(const root of roots){
-    const pattern=rootMeta.get(root)?.brokenPattern||null;
-    if(!pattern)continue;
-    const source=pattern.wrongFacingBlock;
-    // If the block's facing still follows the intended broken-chain direction,
-    // it is not the mismatched-facing case described by the format.
-    if(!source||source.facing===pattern.direction)continue;
-    const target=getExactFromMap(source,source.facing,1);
-    if(!isCommandBlockRecord(target))continue;
-    const previousKeys=new Set([
-      blockKey(pattern.previous.x,pattern.previous.y,pattern.previous.z),
-      pattern.gap&&isCommandBlockRecord(pattern.gap)?blockKey(pattern.gap.x,pattern.gap.y,pattern.gap.z):null
-    ].filter(Boolean));
-    if(previousKeys.has(blockKey(target.x,target.y,target.z)))continue;
-    // One target is invalid. Do not cascade through its facing direction:
-    // that can swallow legitimate commands behind it or cross into another chain.
-    blockedKeys.add(blockKey(target.x,target.y,target.z));
-  }
+  // Broken-head recognition never deletes or blocks the command block that a
+  // misoriented marker happens to point at. Physical nodes are resolved later
+  // by normal chain ownership and the orphan-preservation pass.
   graphContext.blockedKeys=blockedKeys;
   const chains=[];
   for(const root of roots){
-    if(root.blockType==='chain')continue;
+    if(root.blockType==='chain'&&!rootMeta.get(root)?.brokenPattern)continue;
     const k=blockKey(root.x,root.y,root.z);
     if(owner.has(k)||discarded.has(k)||blockedKeys.has(k))continue;
     const branchStart=pendingWrongBranches.length;
@@ -2196,16 +1934,11 @@ function processCommands(commands,context={}){
     if(!ordered.length)continue;
     let type=detectChainType(ordered);
     const rootCmd=String(root.cmd||'').trim();
-    const rootLooksBroken=isTestforCommand(rootCmd)||isExecuteRunSetblock(rootCmd);
-    const brokenIndexes=findBrokenChainSetblockIndexes(ordered);
-    const canonicalPair=brokenIndexes.length>=2&&isSetblockFirstMarker(ordered[brokenIndexes[0]]?.cmd||'')&&isSetblockSecondMarker(ordered[brokenIndexes[1]]?.cmd||'');
     const brokenHeadKind=getBrokenHeadKind(ordered);
     const matchedBroken=!!ordered._brokenMatched;
-    // Trust the canonical command head even if the source block orientations
-    // were unusual enough to bypass the geometric fast-path matcher.
-    if(!matchedBroken&&!canonicalPair&&!brokenHeadKind&&(rootLooksBroken||brokenIndexes.length>0))type='repeat';
-    if(matchedBroken||brokenHeadKind)type='snake';
-    if(type==='snake')normalizeBrokenChainBlocks(ordered);
+    if(ordered._brokenCandidate&&!matchedBroken)type=root.blockType==='repeating'?'repeat':'impulse';
+    else if(matchedBroken||brokenHeadKind)type='snake';
+    if(type==='snake')normalizeBrokenChainBlocks(ordered,{kind:ordered._brokenMatch,direction:ordered._brokenDirection, specialKeys:new Set(ordered._brokenSpecialKeys||[]), facingMap:ordered._brokenFacingMap, applyCondition:false});
     const orderedKeys=new Set(ordered.map(b=>blockKey(b.x,b.y,b.z)));
     const closedCycles=selfClosedDetection.cycles.filter(cycle=>cycle.every(key=>orderedKeys.has(key)));
     const selfClosed=closedCycles.length>0;
@@ -2250,14 +1983,15 @@ function processCommands(commands,context={}){
     filtered.push({type:'repeat',selfClosed:true,selfClosedCycleKeys:cycle.slice(),preservePhysicalType:true,blocks:cycleBlocks});
     for(const k of cycle)represented.add(k);
   }
-  // Empty chain-command blocks are physical nodes, even if malformed orientation
-  // or a missing head prevents them from joining a recognized path. Keep only those
-  // not intentionally excluded as a broken-head target/wrong branch.
+  // Never lose an unclaimed physical command block. This includes empty chain
+  // blocks and non-empty orphan chain blocks whose orientation did not connect
+  // to a recognized root. Preserve their original block type and facing.
   for(const b of blockMap.values()){
-    if(b?.type!=='chain'||String(b.cmd??'').trim()!=='')continue;
+    if(!b||!['command','repeating','chain'].includes(b.type||b.blockType))continue;
     const k=blockKey(b.x,b.y,b.z);
     if(represented.has(k)||blockedKeys.has(k)||discarded.has(k)||pendingWrongKeys.has(k))continue;
-    filtered.push({type:'repeat',preservePhysicalType:true,blocks:[{...b,cmd:'',blockType:'chain',facing:Number.isInteger(b.facing)?b.facing:2}]});
+    const blockType=b.blockType||b.type;
+    filtered.push({type:'repeat',preservePhysicalType:true,blocks:[{...b,cmd:String(b.cmd??''),blockType,facing:Number.isInteger(b.facing)?b.facing:2}]});
     represented.add(k);
   }
   filtered.sort((a,b)=>chainSort(a.blocks[0],b.blocks[0]));
@@ -2287,10 +2021,9 @@ function buildBed(cmd,cond,wx,wy,wz,auto=1){
     conditionalMode:T.byte(cond),id:T.str('CommandBlock'),powered:T.byte(0),
     x:T.int(wx),y:T.int(wy),z:T.int(wz)});
 }
-function buildOutput(formatVersion=2){
-  const layout=buildExportLayout(app.chains);
+function buildOutput(formatVersion=2,layout=buildExportLayout(app.chains)){
   const allBlocks=layout.blocks;
-  if(allBlocks.length===0)throw new Error('没有命令方块');
+  if(!allBlocks.some(b=>!isAirPlaceholderBlock(b)))throw new Error('没有命令方块');
   // Export-only packing: app.chains is never mutated, so every chain remains
   // on the same Y level and continues extending along X in the 3D editor.
   const minX=allBlocks.reduce((min,b)=>Math.min(min,b.x),Infinity);
@@ -2315,6 +2048,7 @@ function buildOutput(formatVersion=2){
   const bpd={};
   const offsets={command:0,chain:12,repeating:24};
   for(const b of allBlocks){
+    if(isAirPlaceholderBlock(b))continue;
     const lx=b.x-minX;
     const lin=lx*(maxY*maxZ)+b.y*maxZ+b.z;
     if(!Number.isInteger(lin)||lin<0||lin>=volume)throw new Error(`命令方块坐标越界：${b.x}, ${b.y}, ${b.z}`);
@@ -2389,8 +2123,8 @@ function buildNetEaseBed(cmd,cond,wx,wy,wz,auto,template,blockType){
   if(!v.BlockEntityVersion)v.BlockEntityVersion=T.int(0);
   return node;
 }
-function buildNetEaseOutput(){
-  const root=buildOutput(1);
+function buildNetEaseOutput(layout=buildExportLayout(app.chains)){
+  const root=buildOutput(1,layout);
   const rv=root.value;
   const src=app.originalRoot?.value;
   const srcStructure=src?.structure?.type===TAG.COMPOUND?src.structure.value:null;
@@ -2407,7 +2141,11 @@ function buildNetEaseOutput(){
     };
     const byKey=new Map(palette.map((entry,i)=>[keyOf(entry),i]));
     const templateByName=new Map(palette.map(entry=>[entry.value?.name?.value,entry]));
-    const airIdx=palette.findIndex(entry=>entry.value?.name?.value==='minecraft:air');
+    let airIdx=palette.findIndex(entry=>entry.value?.name?.value==='minecraft:air');
+    if(airIdx<0){
+      airIdx=palette.length;
+      palette.push(T.comp({name:T.str('minecraft:air'),states:T.comp({}),version:T.int(18168865)}));
+    }
     const addState=(name,cond,face)=>{
       const key=`${name}|${cond}|${face}`;
       if(byKey.has(key))return byKey.get(key);
@@ -2422,7 +2160,7 @@ function buildNetEaseOutput(){
     };
     const newVolume=rv.size.value.items.reduce((n,t)=>n*t.value,1);
     const main=new Array(newVolume).fill(airIdx>=0?airIdx:palette.length-1);
-    const blocks=buildExportLayout(app.chains).blocks;
+    const blocks=layout.blocks;
     const minX=blocks.reduce((m,b)=>Math.min(m,b.x),Infinity);
     const sx=rv.size.value.items[0].value, sy=rv.size.value.items[1].value, sz=rv.size.value.items[2].value;
     const bpd={};
@@ -2432,6 +2170,7 @@ function buildNetEaseOutput(){
     const entityTemplate=sourceEntities[0]||null;
     const typeNames={command:'minecraft:command_block',chain:'minecraft:chain_command_block',repeating:'minecraft:repeating_command_block'};
     for(const b of blocks){
+      if(isAirPlaceholderBlock(b))continue;
       const lx=b.x-minX, lin=lx*(sy*sz)+b.y*sz+b.z;
       if(lx<0||lx>=sx||b.y<0||b.y>=sy||b.z<0||b.z>=sz||lin<0||lin>=newVolume)continue;
       const name=typeNames[b.blockType]||typeNames.chain;
@@ -2481,6 +2220,7 @@ const solidMaterialPool=new Set();
 let pickMeshes=[];
 const pickIndexMap=new Map();
 let blockBatchMeta=[];
+let placeholderBatchMeta=[];
 let edgeLineSegments=null;
 let edgeLineGeometry=null;
 let edgePositionsByChain=[];
@@ -2695,9 +2435,15 @@ function serializeTextEditorBlocks(blocks){
   return (Array.isArray(blocks)?blocks:[]).map(b=>String(b?.cmd??'').trim()).join('\n');
 }
 function cloneChainForTextEditor(chain){
-  const blocks=(chain?.blocks||[]).map(b=>({
+  let commandOffset=0;
+  const airPlaceholderOffsets=[];
+  for(const b of chain?.blocks||[]){
+    if(isAirPlaceholderBlock(b))airPlaceholderOffsets.push(commandOffset);
+    else commandOffset++;
+  }
+  const blocks=(chain?.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).map(b=>({
     x:b.x,y:b.y,z:b.z,facing:b.facing,cmd:String(b.cmd||''),cond:b.cond?1:0,
-    auto:b.auto!==0?1:0,blockType:b.blockType,marked:!!b.marked,note:b.note||''
+    auto:b.auto!==0?1:0,blockType:b.blockType,brokenWrongFacing:!!b.brokenWrongFacing,marked:!!b.marked,note:b.note||''
   }));
   const firstBlockType=blocks[0]?.blockType==='command'||blocks[0]?.blockType==='repeating'
     ?blocks[0].blockType
@@ -2708,6 +2454,7 @@ function cloneChainForTextEditor(chain){
     selfClosed:!!chain?.selfClosed,
     preservePhysicalType:!!chain?.preservePhysicalType,
     selfClosedCycleKeys:Array.isArray(chain?.selfClosedCycleKeys)?chain.selfClosedCycleKeys.slice():[],
+    airPlaceholderOffsets,
     blocks,
     text:serializeTextEditorBlocks(blocks),
     conditionLines:blocks.map(b=>!!b.cond)
@@ -2984,6 +2731,12 @@ function buildTextEditorChains(){
       note:old.note||''
     };
   });
+  // The virtual air slots are not editable command rows. Preserve their logical
+  // positions when text is edited, clamping offsets if the command count changes.
+  for(const offset of [...(textEditDraft.airPlaceholderOffsets||[])].sort((a,b)=>b-a)){
+    const at=Math.max(0,Math.min(blocks.length,Number(offset)||0));
+    blocks.splice(at,0,{cmd:'',cond:0,auto:1,facing:2,blockType:'chain',isAirPlaceholder:true,marked:false,note:''});
+  }
   return[{
     type:preserveCycleGeometry?(textEditDraft.type||'repeat'):type,
     selfClosed:preserveCycleGeometry,
@@ -3050,7 +2803,7 @@ function ensureStructureSize(chains,label='结构'){
   // The editor view intentionally keeps every chain on the same Y baseline and
   // permits the overall X span to grow. Only each individual chain's dimensions
   // and the shared editable Y/Z ranges are constrained here. Export performs
-  // the separate 32-chain-per-layer packing in buildExportLayout().
+  // export-time X-axis splitting in buildExportLayouts().
   const size=getStructureDimensions(chains);
   const offenders=[];
   let invalidCoordinate=null;
@@ -3093,79 +2846,59 @@ function ensureStructureSize(chains,label='结构'){
   return size;
 }
 
-const EXPORT_LAYER_CHAIN_LIMIT=32;
-const EXPORT_LAYER_GAP=4;
-function buildExportLayout(chains){
-  const nonEmpty=(Array.isArray(chains)?chains:[]).filter(c=>Array.isArray(c?.blocks)&&c.blocks.length>0);
-  if(!nonEmpty.length)return{blocks:[],spanX:0,sizeY:0,sizeZ:STD_Z,layerCount:0};
-  const blocks=[];
-  const occupied=new Set();
-  let yOffset=0;
-  let layerCount=0;
-  for(let start=0;start<nonEmpty.length;start+=EXPORT_LAYER_CHAIN_LIMIT){
-    const group=nonEmpty.slice(start,start+EXPORT_LAYER_CHAIN_LIMIT);
-    let layerMaxY=-1;
-    for(let j=0;j<group.length;j++){
-      const chain=group[j];
-      const source=chain.blocks;
-      const anchorX=Number(source[0]?.x);
-      if(!Number.isInteger(anchorX))throw new Error(`导出失败：第 ${start+j+1} 条链的起始 X 坐标无效`);
-      const normalized=source.map((b,k)=>{
-        const dx=Number(b.x)-anchorX,localY=Number(b.y),z=Number(b.z);
-        if(![dx,localY,z].every(Number.isInteger)||localY<0||z<0||z>=STD_Z){
-          throw new Error(`导出失败：第 ${start+j+1} 条链包含无效坐标 (${b.x}, ${b.y}, ${b.z})；Y 必须非负，Z 必须在 0 到 ${STD_Z-1} 之间`);
-        }
-        return{b,dx,localY,z,k};
-      });
-      // Detect repeated coordinates within a single chain rather than letting
-      // the later block silently overwrite the earlier one in the NBT array.
-      const ownKeys=new Set();
-      for(const item of normalized){
-        const key=blockKey(item.dx,item.localY,item.z);
-        if(ownKeys.has(key))throw new Error(`导出失败：第 ${start+j+1} 条链内部存在重复方块坐标`);
-        ownKeys.add(key);
-      }
-      const preferred=-2*j;
-      const candidateColumns=[preferred];
-      for(let d=1;d<=MAX_STRUCTURE_SIZE;d++)candidateColumns.push(preferred-d,preferred+d);
-      let chosen=null;
-      for(const exportColumn of candidateColumns){
-        const trial=normalized.map(({b,dx,localY,z})=>({...b,x:exportColumn+dx,y:localY+yOffset,z,exportChainIndex:start+j,exportLayer:layerCount}));
-        let collides=false;
-        for(const b of trial){if(occupied.has(blockKey(b.x,b.y,b.z))){collides=true;break;}}
-        if(collides)continue;
-        let minX=Infinity,maxX=-Infinity;
-        for(const b of blocks){minX=Math.min(minX,b.x);maxX=Math.max(maxX,b.x);}
-        for(const b of trial){minX=Math.min(minX,b.x);maxX=Math.max(maxX,b.x);}
-        if(maxX-minX+1>MAX_STRUCTURE_SIZE)continue;
-        chosen=trial;break;
-      }
-      if(!chosen)throw new Error(`导出失败：无法为第 ${start+j+1} 条链分配不重叠的 X 坐标（结构 X 尺寸上限 ${MAX_STRUCTURE_SIZE} 格）`);
-      for(const b of chosen){
-        blocks.push(b);
-        occupied.add(blockKey(b.x,b.y,b.z));
-        layerMaxY=Math.max(layerMaxY,b.y-yOffset);
-      }
-    }
-    const layerHeight=layerMaxY+1;
-    layerCount++;
-    if(start+EXPORT_LAYER_CHAIN_LIMIT<nonEmpty.length)yOffset+=layerHeight+EXPORT_LAYER_GAP;
-  }
+function buildExportLayouts(chains){
+  // Export follows the editor's completed layout exactly. relayoutBlocks() has
+  // already stacked long command chains through Y layers; do not repack blocks
+  // or turn a long chain into multiple pieces. Split only between whole chains
+  // when the combined X span of the completed overview exceeds 64 blocks.
+  const nonEmpty=(Array.isArray(chains)?chains:[]).filter(c=>Array.isArray(c?.blocks)&&c.blocks.some(b=>!isAirPlaceholderBlock(b)));
+  if(!nonEmpty.length)return[{blocks:[],spanX:0,sizeY:0,sizeZ:STD_Z,part:1,chainCount:0}];
+  const layouts=[];
+  let current=[];
   let minX=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
-  for(const b of blocks){minX=Math.min(minX,b.x);maxX=Math.max(maxX,b.x);maxY=Math.max(maxY,b.y);maxZ=Math.max(maxZ,b.z);}
-  const spanX=maxX-minX+1,sizeY=maxY+1,sizeZ=Math.max(STD_Z,maxZ+1);
-  if(spanX>MAX_STRUCTURE_SIZE){
-    throw new Error(`导出后 X 尺寸为 ${spanX}，超过 ${MAX_STRUCTURE_SIZE} 格。请检查每条命令链的 X 坐标布局。`);
+  const boundsOf=chain=>{
+    let lo=Infinity,hi=-Infinity,topY=-Infinity,topZ=-Infinity;
+    for(const b of chain.blocks){
+      const x=Number(b.x),y=Number(b.y),z=Number(b.z);
+      if(![x,y,z].every(Number.isInteger)||y<0||z<0||z>=STD_Z)
+        throw new Error(`导出失败：链中存在无效坐标 (${b.x}, ${b.y}, ${b.z})`);
+      lo=Math.min(lo,x);hi=Math.max(hi,x);topY=Math.max(topY,y);topZ=Math.max(topZ,z);
+    }
+    return{minX:lo,maxX:hi,maxY:topY,maxZ:topZ};
+  };
+  const finish=()=>{
+    if(!current.length)return;
+    const blocks=current.flatMap(chain=>chain.blocks.map(b=>({...b})));
+    const partMinX=Math.min(...blocks.map(b=>Number(b.x)));
+    const partMaxX=Math.max(...blocks.map(b=>Number(b.x)));
+    const partMaxY=Math.max(...blocks.map(b=>Number(b.y)));
+    const partMaxZ=Math.max(...blocks.map(b=>Number(b.z)));
+    const spanX=partMaxX-partMinX+1,sizeY=partMaxY+1,sizeZ=Math.max(STD_Z,partMaxZ+1);
+    if(spanX>MAX_STRUCTURE_SIZE)
+      throw new Error(`导出布局错误：完整链组的 X 尺寸为 ${spanX}，超过 ${MAX_STRUCTURE_SIZE} 格；未拆断任何命令链`);
+    if(sizeY>MAX_STRUCTURE_SIZE||sizeZ>MAX_STRUCTURE_SIZE)
+      throw new Error(`导出失败：结构尺寸 ${spanX}×${sizeY}×${sizeZ} 超过 ${MAX_STRUCTURE_SIZE} 格限制`);
+    // Shift the entire part as one rigid group so its minimum X is zero.
+    for(const block of blocks)block.x-=partMinX;
+    layouts.push({blocks,spanX,sizeY,sizeZ,part:layouts.length+1,chainCount:current.length});
+    current=[];minX=Infinity;maxX=-Infinity;maxY=-Infinity;maxZ=-Infinity;
+  };
+  for(let i=0;i<nonEmpty.length;i++){
+    const chain=nonEmpty[i],bounds=boundsOf(chain);
+    const nextMin=Math.min(minX,bounds.minX),nextMax=Math.max(maxX,bounds.maxX);
+    if(current.length&&nextMax-nextMin+1>MAX_STRUCTURE_SIZE)finish();
+    const ownSpan=bounds.maxX-bounds.minX+1;
+    if(ownSpan>MAX_STRUCTURE_SIZE)
+      throw new Error(`导出失败：第 ${i+1} 条链在已完成布局中的 X 宽度为 ${ownSpan} 格，无法在不改变链结构的情况下放入单个结构`);
+    current.push(chain);
+    minX=Math.min(minX,bounds.minX);maxX=Math.max(maxX,bounds.maxX);
+    maxY=Math.max(maxY,bounds.maxY);maxZ=Math.max(maxZ,bounds.maxZ);
   }
-  if(sizeY>MAX_STRUCTURE_SIZE){
-    throw new Error(`导出分层后 Y 尺寸为 ${sizeY}，超过 Minecraft 结构支持的 ${MAX_STRUCTURE_SIZE} 格。当前共 ${layerCount} 层，请减少命令链数量或每层链的高度。`);
-  }
-  if(sizeZ>MAX_STRUCTURE_SIZE){
-    throw new Error(`导出后 Z 尺寸为 ${sizeZ}，超过 ${MAX_STRUCTURE_SIZE} 格。`);
-  }
-  // Final invariant: each serialized block occupies a unique coordinate.
-  if(occupied.size!==blocks.length)throw new Error('导出失败：结构中存在重复方块坐标');
-  return{blocks,spanX,sizeY,sizeZ,layerCount};
+  finish();
+  return layouts;
+}
+function buildExportLayout(chains){
+  return buildExportLayouts(chains)[0];
 }
 // Keep whole chains' internal geometry intact while preventing exact 3D
 // coordinate collisions after reflow. Shifting X does not change a closed
@@ -3204,7 +2937,7 @@ function reflowChainsForSize(chains){
     // Re-detect a closed loop after every edit instead of trusting stale flags.
     // This lets a user break a loop by changing a node's block type, while
     // preserving a valid 2–4 chain-block cycle through reflow/undo/redo.
-    const localBlockMap=new Map((chain.blocks||[]).map(b=>[blockKey(Number(b.x),Number(b.y),Number(b.z)),{...b,type:b.blockType}]));
+    const localBlockMap=new Map((chain.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).map(b=>[blockKey(Number(b.x),Number(b.y),Number(b.z)),{...b,type:b.blockType}]));
     const localCycles=detectSelfClosedCycles(localBlockMap,4);
     const hasSelfClosedCycle=localCycles.cycles.length>0;
     if(hasSelfClosedCycle){
@@ -3234,8 +2967,8 @@ function reflowChainsForSize(chains){
     const headKind=getBrokenHeadKind(chain.blocks);
     const placeholder=chain.type==='snake'&&isBrokenChainPlaceholder(chain.blocks);
     if(headKind){
-      // Keep command text canonical while preserving the user's chosen
-      // conditional flags during an edit/reflow operation.
+      // Re-apply the Z-axis coordinate normalization while preserving the
+      // user's command verbs and chosen conditional flags.
       normalizeBrokenChainBlocks(chain.blocks,{applyCondition:false});
       chain.type='snake';
     }else if(placeholder){
@@ -3243,9 +2976,10 @@ function reflowChainsForSize(chains){
     }else{
       chain.type=chain.blocks[0]?.blockType==='command'?'impulse':'repeat';
     }
-    const src=chain.blocks.map(b=>({cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,blockType:b.blockType}));
+    const src=chain.blocks.map(b=>({cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,blockType:b.blockType,isAirPlaceholder:!!b.isAirPlaceholder,brokenWrongFacing:!!b.brokenWrongFacing}));
     const newBlocks=relayoutBlocks(src,chain.type,-2*i);
     for(let j=0;j<newBlocks.length;j++){
+      newBlocks[j].isAirPlaceholder=!!chain.blocks[j]?.isAirPlaceholder;
       newBlocks[j].marked=chain.blocks[j]?.marked||false;
       newBlocks[j].note=chain.blocks[j]?.note||'';
     }
@@ -3266,7 +3000,9 @@ function appendImportedChains(chains,label,options={}){
       auto:b.auto!==0?1:0,
       facing:keepGeometry?Number(b.facing):2,
       blockType:b.blockType==='repeating'?'repeating':(b.blockType==='command'?'command':'chain'),
+      isAirPlaceholder:!!b.isAirPlaceholder,
       selfClosedCycle:!!b.selfClosedCycle,
+      brokenWrongFacing:!!b.brokenWrongFacing,
       marked:!!b.marked,
       note:b.note||''
     }));
@@ -3311,16 +3047,12 @@ function addChainOfType(type){
   try{
     saveCamera();
     let blocks;
-    if(type==='snake'){
-      blocks=[
-        {cmd:'',cond:0,auto:1,facing:2,blockType:'repeating',marked:false,note:''},
-        {cmd:'/setblock ~~~-1 chain_command_block ["conditional_bit"=false,"facing_direction"=2]',cond:1,auto:1,facing:2,blockType:'chain',marked:false,note:''},
-        {cmd:'/setblock ~~~ chain_command_block ["conditional_bit"=false,"facing_direction"=1]',cond:0,auto:1,facing:1,blockType:'chain',marked:false,note:''}
-      ];
-    }else if(type==='repeat'){
+    if(type==='repeat'){
       blocks=[{cmd:'',cond:0,auto:1,facing:2,blockType:'repeating',marked:false,note:''}];
-    }else{
+    }else if(type==='impulse'){
       blocks=[{cmd:'',cond:0,auto:1,facing:2,blockType:'command',marked:false,note:''}];
+    }else{
+      throw new Error('不支持的新增链类型');
     }
     const newChain={type,blocks};
     const nextChains=app.chains.concat(newChain);
@@ -3338,8 +3070,8 @@ function addChainOfType(type){
     updateChainBar();
     renderChainManager();
     closeChainAddModal();
-    toast(type==='snake'?'已新增断链':type==='repeat'?'已新增循环链':'已新增脉冲链','ok');
-    logOk(type==='snake'?'新增断链完成':type==='repeat'?'新增循环链完成':'新增脉冲链完成','新增命令链');
+    toast(type==='repeat'?'已新增循环链':'已新增脉冲链','ok');
+    logOk(type==='repeat'?'新增循环链完成':'新增脉冲链完成','新增命令链');
   }catch(e){
     logError(e?.stack||e?.message||String(e),'新增命令链');
     toast(e.message,'err');
@@ -3358,9 +3090,10 @@ function renderChainManager(){
     const isIndependentEmpty=!!c.preservePhysicalType&&!c.selfClosed&&c.blocks?.length===1&&
       (firstBlock.blockType==='chain'||firstBlock.type==='chain')&&String(firstBlock.cmd??'').trim()==='';
     const title=isIndependentEmpty?'独立空命令方块':(c.selfClosed?'自闭链':`链 ${i+1}`);
+    const commandCount=(c.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).length;
     const subtitle=isIndependentEmpty
       ?`1 个空命令方块 · 朝向 ${Number.isInteger(firstBlock.facing)?firstBlock.facing:'未知'}`
-      :`${(c.blocks?.length??0)} 个命令方块${c.selfClosed?' · 保留闭环位置与朝向':''}`;
+      :`${commandCount} 个命令方块${c.selfClosed?' · 保留闭环位置与朝向':''}`;
     const preview=isIndependentEmpty?'（空命令 · 物理节点已保留）':(firstCmd||'（无命令）');
     return `<div class="chain-item${active}" draggable="true" data-chain-index="${i}"><span class="chain-drag" title="拖动排序">⠿</span><span class="chain-order">${i+1}</span><div class="chain-item-main"><div class="chain-item-title">${title}</div><div class="chain-item-sub">${subtitle}</div><div class="chain-item-command">${preview}</div></div><button type="button" class="chain-item-copy" data-copy-chain="${i}" title="复制这条链">复制</button><button type="button" class="chain-item-delete" data-delete-chain="${i}" title="删除这条链">删除</button></div>`;
   }).join('');
@@ -3371,6 +3104,7 @@ function renderChainManager(){
         app.selectedChain=ci;
         app.selectedBlock=-1;
         if(!app.singleChain){
+          if(app.mode==='overview')captureOverviewCamera();
           app.mode='chain';
           setBlockVisibility(ci);
           markRenderDirty();
@@ -3429,7 +3163,7 @@ function deleteChainAt(ci){
   app.mode=app.singleChain?'chain':'overview';
   app.selectedChain=app.singleChain?0:-1;
   app.camera=null;
-  app.chainCamera=null;
+  app.overviewCamera=null;
   toggleChainManager(false);
   if(app.chains.length===0){
     if(previewReady)renderAllBlocks();
@@ -3568,6 +3302,19 @@ function renderFrames(force=false){
 let chainPickBox=null,chainPickPoint=null;
 // In chain mode, test only the selected chain's unit block bounds. This avoids
 // calling InstancedMesh.raycast for every instance in every material batch.
+function rayHitsAirPlaceholderInChain(chainIndex){
+  const chain=app.chains[chainIndex];
+  if(!chain||!chain.blocks||!raycaster||!three)return false;
+  const {THREE}=three;
+  if(!chainPickBox){chainPickBox=new THREE.Box3();chainPickPoint=new THREE.Vector3();}
+  for(const b of chain.blocks){
+    if(!isAirPlaceholderBlock(b))continue;
+    chainPickBox.min.set(b.x,b.y,b.z);
+    chainPickBox.max.set(b.x+1,b.y+1,b.z+1);
+    if(raycaster.ray.intersectBox(chainPickBox,chainPickPoint))return true;
+  }
+  return false;
+}
 function pickBlockInChain(chainIndex){
   const chain=app.chains[chainIndex];
   if(!chain||!chain.blocks||!raycaster||!three)return null;
@@ -3577,6 +3324,7 @@ function pickBlockInChain(chainIndex){
   const origin=raycaster.ray.origin;
   for(let index=0;index<chain.blocks.length;index++){
     const b=chain.blocks[index];
+    if(isAirPlaceholderBlock(b))continue;
     chainPickBox.min.set(b.x,b.y,b.z);
     chainPickBox.max.set(b.x+1,b.y+1,b.z+1);
     const point=raycaster.ray.intersectBox(chainPickBox,chainPickPoint);
@@ -3617,7 +3365,10 @@ function setupPicking(){
         break;
       }
     }
-    if(!picked){if(app.mode==='chain')deselect();return;}
+    if(!picked){
+      if(app.mode==='chain'&&!rayHitsAirPlaceholderInChain(app.selectedChain))deselect();
+      return;
+    }
     if(app.mode==='overview'&&!app.singleChain)enterChainMode(picked.chain);
     else selectBlock(picked);
   });
@@ -3650,6 +3401,7 @@ function clearScene(){
     // materials are shared caches and must remain alive.
     blockGroup.traverse(o=>{
       if(o.isInstancedMesh&&typeof o.dispose==='function')o.dispose();
+      if(o.userData?.isAirPlaceholderVisual&&o.material)o.material.dispose();
     });
     scene.remove(blockGroup);
     blockGroup=null;
@@ -3658,6 +3410,7 @@ function clearScene(){
   pickMeshes.length=0;
   pickIndexMap.clear();
   blockBatchMeta.length=0;
+  placeholderBatchMeta.length=0;
   edgePositionsByChain.length=0;
   edgeLineSegments=null;
   if(edgeLineGeometry){edgeLineGeometry.dispose();edgeLineGeometry=null;}
@@ -3773,6 +3526,7 @@ function setBlockVisibility(chainIndex=-1){
     }
     mesh.instanceMatrix.needsUpdate=true;
   }
+  for(const item of placeholderBatchMeta)item.mesh.visible=visibleBlockChain<0||item.chain===visibleBlockChain;
   updateEdgeVisibility(visibleBlockChain);
   markRenderDirty();
 }
@@ -3811,14 +3565,26 @@ function renderAllBlocks(){
   const localEdgePos=edgeGeo.attributes.position.array;
   // Allocate one edge buffer per chain up front. Filling these directly avoids
   // creating one temporary Float32Array per block on every scene rebuild.
-  edgePositionsByChain=app.chains.map(chain=>new Float32Array((chain.blocks?.length||0)*localEdgePos.length));
+  edgePositionsByChain=app.chains.map(chain=>new Float32Array((chain.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).length*localEdgePos.length));
   const edgeWriteOffsets=Array.from({length:app.chains.length},()=>0);
   const totalEdgeFloats=edgePositionsByChain.reduce((n,a)=>n+a.length,0);
+  const matrixPlaceholder=new THREE.Matrix4();
 
   for(let ci=0;ci<app.chains.length;ci++){
     const chain=app.chains[ci];
+    const placeholderBlocks=[];
     for(let bi=0;bi<chain.blocks.length;bi++){
       const b=chain.blocks[bi];
+      if(isAirPlaceholderBlock(b)){
+        placeholderBlocks.push(b);
+        if(b.x<minX)minX=b.x;
+        if(b.x+1>maxX)maxX=b.x+1;
+        if(b.y<minY)minY=b.y;
+        if(b.y+1>maxY)maxY=b.y+1;
+        if(b.z<minZ)minZ=b.z;
+        if(b.z+1>maxZ)maxZ=b.z+1;
+        continue;
+      }
       const matKey=texturesAvailable
         ?`${b.blockType}_${b.cond?1:0}_${b.facing}_${b.marked?1:0}`
         :`${b.blockType}_${b.cond?1:0}_${b.marked?1:0}`;
@@ -3849,6 +3615,22 @@ function renderAllBlocks(){
       if(b.y+1>maxY)maxY=b.y+1;
       if(b.z<minZ)minZ=b.z;
       if(b.z+1>maxZ)maxZ=b.z+1;
+    }
+    if(placeholderBlocks.length){
+      const blankMat=new THREE.MeshBasicMaterial({color:0x94a3b8,wireframe:true,transparent:true,opacity:0.72,depthWrite:false,side:THREE.DoubleSide});
+      const blankMesh=new THREE.InstancedMesh(geo,blankMat,placeholderBlocks.length);
+      blankMesh.name=`air-placeholder-chain-${ci}`;
+      blankMesh.userData.isAirPlaceholderVisual=true;
+      if(THREE.DynamicDrawUsage!==undefined)blankMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      for(let pi=0;pi<placeholderBlocks.length;pi++){
+        const b=placeholderBlocks[pi];
+        matrixPlaceholder.makeTranslation(b.x+0.5,b.y+0.5,b.z+0.5);
+        blankMesh.setMatrixAt(pi,matrixPlaceholder);
+      }
+      blankMesh.instanceMatrix.needsUpdate=true;
+      blankMesh.computeBoundingSphere();
+      blockGroup.add(blankMesh);
+      placeholderBatchMeta.push({mesh:blankMesh,chain:ci});
     }
   }
 
@@ -3952,7 +3734,7 @@ function applyChainCamera(){
 function selectBlock(ud){
   const {THREE}=three;
   const chain=app.chains[ud.chain];if(!chain)return;
-  const b=chain.blocks[ud.index];if(!b)return;
+  const b=chain.blocks[ud.index];if(!b||isAirPlaceholderBlock(b))return;
   app.selectedChain=ud.chain;app.selectedBlock=ud.index;
   removeSelectionVisuals();
   const glowGeo=new THREE.BoxGeometry(1.14,1.14,1.14);
@@ -4016,20 +3798,27 @@ function deselect(){
   hideInfo();
 }
 
+function captureOverviewCamera(){
+  if(!camera||!controls)return app.overviewCamera;
+  // If the user switches modes during a preset animation, preserve the
+  // camera's actual on-screen position rather than an older snapshot.
+  if(cameraAnim){cameraAnim=null;controls.enabled=true;}
+  const snapshot={
+    px:camera.position.x,py:camera.position.y,pz:camera.position.z,
+    tx:controls.target.x,ty:controls.target.y,tz:controls.target.z,
+  };
+  app.overviewCamera={...snapshot};
+  app.camera={...snapshot};
+  return snapshot;
+}
 function enterChainMode(ci){
   if(ci<0||ci>=app.chains.length)return;
   if(app.singleChain)return;
+  if(app.mode==='overview')captureOverviewCamera();
   app.mode='chain';
   app.selectedChain=ci;
   app.selectedBlock=-1;
   hideInfo();
-
-  if(camera&&controls){
-    app.chainCamera={
-      px:camera.position.x,py:camera.position.y,pz:camera.position.z,
-      tx:controls.target.x,ty:controls.target.y,tz:controls.target.z,
-    };
-  }
 
   if(blockGroup){
     setBlockVisibility(ci);
@@ -4043,10 +3832,7 @@ function enterChainMode(ci){
 }
 function exitChainMode(){
   toggleChainManager(false);
-  if(app.mode==='overview'&&!app.singleChain){
-    setViewPreset('default');
-    return;
-  }
+  if(app.mode==='overview'&&!app.singleChain)return;
   app.mode='overview';
   app.selectedChain=-1;
   app.selectedBlock=-1;
@@ -4057,13 +3843,12 @@ function exitChainMode(){
     setBlockVisibility(-1);
     markRenderDirty();
   }
-  if(app.chainCamera){
+  if(app.overviewCamera){
     animateCameraTo(
-      [app.chainCamera.px,app.chainCamera.py,app.chainCamera.pz],
-      [app.chainCamera.tx,app.chainCamera.ty,app.chainCamera.tz],
+      [app.overviewCamera.px,app.overviewCamera.py,app.overviewCamera.pz],
+      [app.overviewCamera.tx,app.overviewCamera.ty,app.overviewCamera.tz],
       600
     );
-    app.chainCamera=null;
   }
 
   document.getElementById('exitChainBtn').style.display='none';
@@ -4075,12 +3860,15 @@ function cycleBlock(dir){
   if(app.chains.length===0)return;
   const ci=app.selectedChain>=0?app.selectedChain:0;
   const chain=app.chains[ci];if(!chain||chain.blocks.length===0)return;
-  let idx;
-  if(app.selectedChain===ci&&app.selectedBlock>=0)
-    idx=(app.selectedBlock+dir+chain.blocks.length)%chain.blocks.length;
-  else idx=dir>0?0:chain.blocks.length-1;
-  const rec=pickIndexMap.get(`${ci}:${idx}`);
-  if(rec)selectBlock(rec);
+  const length=chain.blocks.length;
+  let idx=app.selectedChain===ci&&app.selectedBlock>=0
+    ?app.selectedBlock:dir>0?-1:0;
+  for(let step=0;step<length;step++){
+    idx=(idx+dir+length)%length;
+    if(isAirPlaceholderBlock(chain.blocks[idx]))continue;
+    const rec=pickIndexMap.get(`${ci}:${idx}`);
+    if(rec){selectBlock(rec);return;}
+  }
 }
 
 function getMobileFitDistance(p,X,Y,Z){
@@ -4167,10 +3955,12 @@ function setViewPreset(p){
 }
 function saveCamera(){
   if(!camera||!controls||cameraAnim)return;
-  app.camera={
+  const snapshot={
     px:camera.position.x,py:camera.position.y,pz:camera.position.z,
     tx:controls.target.x,ty:controls.target.y,tz:controls.target.z,
   };
+  app.camera=snapshot;
+  if(app.mode==='overview')app.overviewCamera={...snapshot};
 }
 function resizeRenderer(){
   if(!previewReady||!renderer)return;
@@ -4185,20 +3975,6 @@ window.addEventListener('resize',resizeRenderer);
 window.addEventListener('pagehide',flushAutosave);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushAutosave();});
 window.addEventListener('beforeunload',e=>{flushAutosave();if(app.saved===false){e.preventDefault();e.returnValue='';}});
-
-function resizeInspectorTextarea(el,baseHeight){
-  if(!el)return;
-  el.style.height='auto';
-  const h=Math.max(baseHeight||0,el.scrollHeight);
-  el.style.height=h+'px';
-}
-
-function refreshInspectorTextareaHeights(){
-  resizeInspectorTextarea(document.getElementById('infoCmd'),112);
-  resizeInspectorTextarea(document.getElementById('infoNote'),74);
-}
-
-
 
 function showInfo(ci,bi,b){
   document.getElementById('infoIdx').textContent='#'+bi;
@@ -4219,7 +3995,6 @@ function showInfo(ci,bi,b){
   const noteEl=document.getElementById('infoNote');
   if(cmdEl&&document.activeElement!==cmdEl)cmdEl.value=b.cmd||'';
   if(noteEl&&document.activeElement!==noteEl)noteEl.value=b.note||'';
-  requestAnimationFrame(refreshInspectorTextareaHeights);
 }
 function hideInfo(){document.getElementById('infoPanel').classList.remove('on');}
 
@@ -4317,7 +4092,7 @@ function commitInspectorText(kind,value){
 
 function updateStats(){
   let total=0;
-  for(const c of app.chains) total+=c.blocks.length;
+  for(const c of app.chains) total+=(c.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).length;
   const fileEl=document.getElementById('tbarFile');
   const cmdEl=document.getElementById('tbarCommands');
   const chainEl=document.getElementById('tbarChains');
@@ -4329,7 +4104,7 @@ function updateStats(){
 function snapshot(){
   return app.chains.map(c=>({type:c.type,selfClosed:!!c.selfClosed,preservePhysicalType:!!c.preservePhysicalType,selfClosedCycleKeys:Array.isArray(c.selfClosedCycleKeys)?c.selfClosedCycleKeys.slice():[],blocks:c.blocks.map(b=>({
     x:b.x,y:b.y,z:b.z,cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,
-    facing:b.facing,blockType:b.blockType,selfClosedCycle:!!b.selfClosedCycle,
+    facing:b.facing,blockType:b.blockType,isAirPlaceholder:!!b.isAirPlaceholder,selfClosedCycle:!!b.selfClosedCycle,
     marked:!!b.marked,note:b.note||''}))}));
 }
 const AUTOSAVE_NBT_TYPE='__blockflow_autosave_nbt_type__';
@@ -4428,7 +4203,7 @@ async function restoreAutosave(){
         // silently leak into the live editor state after a restore.
         return{x,y,z,cmd:String(b.cmd??''),cond:b.cond?1:0,auto:b.auto!==0?1:0,
           facing:Number.isInteger(facing)&&facing>=0&&facing<=5?facing:2,
-          blockType,selfClosedCycle:!!b.selfClosedCycle,marked:!!b.marked,note:String(b.note??'')};
+          blockType,isAirPlaceholder:!!b.isAirPlaceholder,selfClosedCycle:!!b.selfClosedCycle,marked:!!b.marked,note:String(b.note??'')};
       });
       if(blocks.length===0)throw new Error(`自动保存中的第 ${ci+1} 条链没有命令方块`);
       const type=['impulse','repeat','snake'].includes(chain.type)?chain.type:
@@ -4475,7 +4250,7 @@ async function restoreAutosave(){
     scheduleAutosave();
     setTimeout(()=>setViewPreset('top'),30);
     toast('已恢复上次编辑内容','ok');
-    logOk(`恢复完成：${app.chains.length} 条链，共 ${app.chains.reduce((n,c)=>n+c.blocks.length,0)} 个命令方块`,'恢复自动保存');
+    logOk(`恢复完成：${app.chains.length} 条链，共 ${app.chains.reduce((n,c)=>n+c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length,0)} 个命令方块`,'恢复自动保存');
     return true;
   }catch(e){
     logError(e?.stack||e?.message||String(e),'恢复自动保存');
@@ -4591,6 +4366,71 @@ async function copyLogs(){
     toast('日志已复制','ok');
   }catch(e){toast('复制日志失败：'+e.message,'err');}
 }
+function markdownInline(source){
+  let value=escapeHtml(source);
+  const stash=[];
+  const hold=html=>{const key=`\u0000${stash.length}\u0000`;stash.push(html);return key;};
+  value=value.replace(/`([^`]+)`/g,(_,code)=>hold(`<code>${code}</code>`));
+  value=value.replace(/!?\[([^\]]+)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)/g,(_,label,url,title)=>{
+    const safeUrl=/^(https?:|mailto:|#|\.\/|\.\.\/)/i.test(url)?url:'#';
+    const titleAttr=title?` title="${title}"`:'';
+    return hold(`<a href="${safeUrl}"${titleAttr} target="${/^https?:/i.test(safeUrl)?'_blank':'_self'}" rel="noopener noreferrer">${label}</a>`);
+  });
+  value=value.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/__(.+?)__/g,'<strong>$1</strong>');
+  value=value.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>').replace(/~~(.+?)~~/g,'<del>$1</del>');
+  value=value.replace(/\u0000(\d+)\u0000/g,(_,i)=>stash[Number(i)]||'');
+  return value;
+}
+function markdownSlug(text){return text.trim().toLowerCase().replace(/[`*_~]/g,'').replace(/[^\p{L}\p{N}\s-]/gu,'').trim().replace(/\s+/g,'-');}
+function renderReadmeMarkdown(markdown){
+  const lines=String(markdown||'').replace(/\r\n?/g,'\n').split('\n');
+  const out=[];let i=0;let paragraph=[];let listType='';let inQuote=false;
+  const flushParagraph=()=>{if(paragraph.length){out.push(`<p>${paragraph.map(x=>markdownInline(x)).join('<br>')}</p>`);paragraph=[];}};
+  const closeList=()=>{if(listType){out.push(`</${listType}>`);listType='';}};
+  const closeQuote=()=>{if(inQuote){out.push('</blockquote>');inQuote=false;}};
+  const isTableRow=line=>/^\s*\|.*\|\s*$/.test(line);
+  while(i<lines.length){
+    const line=lines[i];
+    if(/^\s*```/.test(line)){
+      flushParagraph();closeList();closeQuote();const lang=line.trim().slice(3).trim();i++;const code=[];
+      while(i<lines.length&&!/^\s*```/.test(lines[i]))code.push(lines[i++]);if(i<lines.length)i++;
+      out.push(`<pre><code${lang?` class="language-${escapeHtml(lang)}"`:''}>${escapeHtml(code.join('\n'))}</code></pre>`);continue;
+    }
+    if(!line.trim()){flushParagraph();closeList();closeQuote();i++;continue;}
+    const heading=line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if(heading){flushParagraph();closeList();closeQuote();const level=heading[1].length;const title=heading[2];out.push(`<h${level} id="${escapeHtml(markdownSlug(title))}">${markdownInline(title)}</h${level}>`);i++;continue;}
+    if(/^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line)){flushParagraph();closeList();closeQuote();out.push('<hr>');i++;continue;}
+    if(isTableRow(line)&&i+1<lines.length&&/^\s*\|?\s*:?-{3,}/.test(lines[i+1])){
+      flushParagraph();closeList();closeQuote();const cells=row=>row.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const heads=cells(line);i+=2;let rows=[];while(i<lines.length&&isTableRow(lines[i]))rows.push(cells(lines[i++]));
+      out.push('<div class="readme-table-wrap"><table><thead><tr>'+heads.map(c=>`<th>${markdownInline(c)}</th>`).join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+heads.map((_,j)=>`<td>${markdownInline(row[j]||'')}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>');continue;
+    }
+    const quote=line.match(/^\s*>\s?(.*)$/);
+    if(quote){flushParagraph();closeList();if(!inQuote){out.push('<blockquote>');inQuote=true;}out.push(`<p>${markdownInline(quote[1])}</p>`);i++;continue;}else closeQuote();
+    const ul=line.match(/^\s*[-+*]\s+(.+)$/);const ol=line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if(ul||ol){flushParagraph();const nextType=ul?'ul':'ol';if(listType!==nextType){closeList();out.push(`<${nextType}>`);listType=nextType;}out.push(`<li>${markdownInline((ul||ol)[1])}</li>`);i++;continue;}else closeList();
+    paragraph.push(line.trim());i++;
+  }
+  flushParagraph();closeList();closeQuote();return out.join('\n');
+}
+let readmeLoadPromise=null;
+async function loadReadmeFromSibling(){
+  const body=document.getElementById('usageReadmeBody');if(!body)return;
+  body.textContent='正在读取同目录下的 README.md……';
+  try{
+    const readmeUrl=new URL('./README.md',document.baseURI);
+    const response=await fetch(readmeUrl.href,{cache:'no-store'});
+    if(!response.ok)throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    const markdown=await response.text();
+    if(!markdown.trim())throw new Error('README.md 内容为空');
+    body.innerHTML=renderReadmeMarkdown(markdown);
+  }catch(error){
+    const localFile=location.protocol==='file:';
+    body.innerHTML=localFile
+      ?'<h2>无法直接读取本地 README.md</h2><p>浏览器会限制网页通过 <code>file://</code> 自动读取同目录文件。请通过本地 HTTP 服务打开 BlockFlow，或使用在线版本；页面会自动从 <code>index.html</code> 同目录读取 <code>README.md</code>。</p><p><a href="./README.md" target="_blank" rel="noopener noreferrer">在新标签页直接打开同目录 README.md</a></p>'
+      :`<h2>README 读取失败</h2><p>${escapeHtml(error.message||String(error))}</p><p>请确认 <code>README.md</code> 与 <code>index.html</code> 位于同一目录，并且服务器已发布该文件，然后重新打开使用说明。</p>`;
+  }
+}
 function openUsageHelp(){
   const modal=document.getElementById('usageHelpModal');
   const body=document.getElementById('usageReadmeBody');
@@ -4599,6 +4439,7 @@ function openUsageHelp(){
   modal.classList.add('on');
   modal.setAttribute('aria-hidden','false');
   body.scrollTop=0;
+  readmeLoadPromise=loadReadmeFromSibling();
   setTimeout(()=>document.getElementById('usageHelpClose')?.focus(),0);
 }
 function openLogs(){
@@ -4651,6 +4492,7 @@ function renderSearchResults(){
     const chain=app.chains[ci];
     for(let bi=0;bi<chain.blocks.length;bi++){
       const b=chain.blocks[bi];
+      if(isAirPlaceholderBlock(b))continue;
       const cmd=String(b.cmd||''),note=String(b.note||'');
       if(cmd.toLowerCase().includes(q)||note.toLowerCase().includes(q)){hits.push({ci,bi,b});}
       if(hits.length>=80)break;
@@ -4690,7 +4532,7 @@ async function handleFile(file){
     const buf=await file.arrayBuffer();
     logInfo(`文件读取完成：${buf.byteLength} 字节`,'导入结构文件');
     await loadMcstructure(file,buf);
-    logOk(`导入完成：${app.chains.length} 条链，共 ${app.chains.reduce((n,c)=>n+c.blocks.length,0)} 个命令方块`,'导入结构文件');
+    logOk(`导入完成：${app.chains.length} 条链，共 ${app.chains.reduce((n,c)=>n+c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length,0)} 个命令方块`,'导入结构文件');
   }catch(e){
     logError(e?.stack||e?.message||String(e),'导入结构文件');
     toast('加载失败：'+e.message,'err');
@@ -4786,7 +4628,7 @@ async function loadMcstructure(file,buf){
     app.selectedChain=-1;
   }
   app.selectedBlock=-1;
-  app.camera=null;app.chainCamera=null;app.forceView=true;
+  app.camera=null;app.overviewCamera=null;app.forceView=true;
   app.history=[snapshot()];app.historyIndex=0;app.savedHistoryIndex=0;
   app.selectedBlock=-1;
   syncSavedState();
@@ -4796,8 +4638,8 @@ async function loadMcstructure(file,buf){
   syncSavedState();
   // Save the imported starting point as well, so an interrupted first session can be resumed.
   scheduleAutosave();
-  const tb=app.chains.reduce((s,c)=>s+c.blocks.length,0);
-  toast(`已加载 ${app.chains.length} 条链，共 ${tb} 个方块`,'ok');
+  const tb=app.chains.reduce((s,c)=>s+c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length,0);
+  toast(`已加载 ${app.chains.length} 条链，共 ${tb} 个命令方块`,'ok');
 }
 async function switchToEditor(){
   setCurrentAction('初始化三维场景');
@@ -4849,9 +4691,9 @@ fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileIn
 document.querySelectorAll('[data-preset]').forEach(b=>{b.onclick=()=>setViewPreset(b.dataset.preset);});
 document.getElementById('undoBtn').onclick=undo;
 document.getElementById('redoBtn').onclick=redo;
-document.getElementById('exitChainBtn').onclick=()=>{exitChainMode();setViewPreset('default');};
-async function serializeOutputForFormat(formatVersion){
-  const root=formatVersion===3?buildNetEaseOutput():buildOutput(formatVersion);
+document.getElementById('exitChainBtn').onclick=()=>exitChainMode();
+async function serializeOutputForFormat(formatVersion,layout){
+  const root=formatVersion===3?buildNetEaseOutput(layout):buildOutput(formatVersion,layout);
   if(formatVersion===1||formatVersion===3)return new Writer().serialize(root);
   const innerStructure=root.value.structure;
   if(!innerStructure||innerStructure.type!==TAG.COMPOUND)throw new Error('导出结构缺少有效的内部 Compound');
@@ -4863,6 +4705,30 @@ async function serializeOutputForFormat(formatVersion){
   root.value.structure={type:TAG.BYTE_ARRAY,value:compressedBytes};
   return new Writer().serialize(root);
 }
+function showPromptModal(message,{title='提示',confirmText='继续',cancelText='取消'}={}){
+  const modal=document.getElementById('promptModal');
+  if(!modal)return Promise.resolve(window.confirm(message));
+  document.getElementById('promptModalTitle').textContent=title;
+  document.getElementById('promptModalMessage').textContent=String(message??'');
+  document.getElementById('promptModalConfirm').textContent=confirmText;
+  document.getElementById('promptModalCancel').textContent=cancelText;
+  rememberModalFocus('promptModal');
+  modal.classList.add('on');modal.setAttribute('aria-hidden','false');
+  setTimeout(()=>document.getElementById('promptModalConfirm')?.focus(),0);
+  return new Promise(resolve=>{
+    let settled=false;
+    const finish=value=>{if(settled)return;settled=true;
+      confirmBtn.removeEventListener('click',onConfirm);cancelBtn.removeEventListener('click',onCancel);closeBtn.removeEventListener('click',onCancel);
+      closeFeatureModal('promptModal');resolve(value);
+    };
+    const confirmBtn=document.getElementById('promptModalConfirm');
+    const cancelBtn=document.getElementById('promptModalCancel');
+    const closeBtn=document.getElementById('promptModalClose');
+    const onConfirm=()=>finish(true),onCancel=()=>finish(false);
+    confirmBtn.addEventListener('click',onConfirm);cancelBtn.addEventListener('click',onCancel);closeBtn.addEventListener('click',onCancel);
+  });
+}
+
 function openExportFormatModal(){
   const modal=document.getElementById('exportFormatModal');
   if(!modal)return;
@@ -4876,19 +4742,33 @@ async function exportCommandChains(choice){
   const formats=choice==='both'?[1,2,3]:[choice==='old'?1:(choice==='netease'?3:2)];
   const labels=formats.map(v=>v===1?'旧版':(v===2?'新版':'网易版'));
   const suffix=v=>v===1?'old':(v===2?'new':'netease');
-  const names=formats.map(v=>`${app.fileName}${rand6()}-${suffix(v)}.mcstructure`);
-  const exportNotice=`导出说明：将生成${labels.join('、')}格式文件。导出文件只会保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。为满足结构尺寸限制，导出时每层最多放置 32 条链，超出的链会放到更高的 Y 层（层与层之间留 4 格）。3D 编辑视图不受影响。\n\n文件名：\n${names.join('\n')}\n\n确定继续导出吗？`;
-  if(!confirm(exportNotice))return;
+  let layouts;
+  try{
+    layouts=buildExportLayouts(app.chains);
+    if(!layouts.some(layout=>layout.blocks.some(b=>!isAirPlaceholderBlock(b))))throw new Error('没有命令方块');
+  }catch(e){toast('导出失败：'+e.message,'err');logError(e?.stack||e?.message||String(e),'导出命令链结构');return;}
+  const filesToCreate=[];
+  for(let fi=0;fi<formats.length;fi++){
+    const batchId=rand6();
+    for(let li=0;li<layouts.length;li++){
+      const partSuffix=layouts.length>1?`-part${li+1}`:'';
+      const name=`${app.fileName}${batchId}${partSuffix}-${suffix(formats[fi])}.mcstructure`;
+      filesToCreate.push({format:formats[fi],label:labels[fi],layout:layouts[li],name,part:li+1});
+    }
+  }
+  const dimensions=layouts.map(layout=>`第 ${layout.part} 个：${layout.spanX}×${layout.sizeY}×${layout.sizeZ}（${layout.chainCount} 条链）`).join('\n');
+  const exportNotice=`导出说明：将生成 ${layouts.length} 个独立结构，每个结构的 X/Y/Z 尺寸均不超过 ${MAX_STRUCTURE_SIZE} 格。每条命令链先按编辑器规则完整摆放，超过 32 格的长链继续按原规则堆叠到 Y 层；只有全部链摆放完成后，整体 X 尺寸超过 64 格时，才会在链与链之间拆分为多个结构，绝不会截断单条链。${formats.length>1?`\n\n导出格式：${labels.join('、')}。`:''}\n\n结构分组：\n${dimensions}\n\n文件列表：\n${filesToCreate.map(file=>file.name).join('\n')}\n\n导出文件只保留本编辑器识别并编辑的命令链方块，不包含原结构中的普通方块、实体及其他非命令方块。\n\n确定继续导出吗？`;
+  if(!await showPromptModal(exportNotice,{title:'导出确认',confirmText:'确认导出'}))return;
   setCurrentAction('导出命令链结构');
-  logInfo(`开始构建${labels.join('、')}格式导出结构`,'导出命令链结构');
+  logInfo(`开始构建${labels.join('、')}格式导出结构，共 ${layouts.length} 个分片`,'导出命令链结构');
   try{
     const files=[];
-    for(let i=0;i<formats.length;i++){
-      const bytes=await serializeOutputForFormat(formats[i]);
-      files.push({name:names[i],bytes});
+    for(const item of filesToCreate){
+      const bytes=await serializeOutputForFormat(item.format,item.layout);
+      files.push({name:item.name,bytes});
     }
     for(const file of files)download(new Blob([file.bytes],{type:'application/octet-stream'}),file.name);
-    toast(`已导出 ${files.length} 个文件`,'ok');
+    toast(`已导出 ${files.length} 个文件（${layouts.length} 个结构分片）`,'ok');
     logOk('导出完成：'+files.map(f=>f.name).join('；'),'导出命令链结构');
     app.savedHistoryIndex=app.historyIndex;
     syncSavedState();
@@ -4963,7 +4843,8 @@ document.getElementById('infoDel').onclick=()=>{
   if(ci<0||bi<0)return;
   const c=app.chains[ci];if(!c)return;
   let chainRemoved=false;
-  if(c.blocks.length<=1){
+  const realBlockCount=c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length;
+  if(realBlockCount<=1){
     app.chains.splice(ci,1);
     chainRemoved=true;
     deselect();
@@ -4974,7 +4855,7 @@ document.getElementById('infoDel').onclick=()=>{
       app.selectedChain=-1;
       app.selectedBlock=-1;
       app.camera=null;
-      app.chainCamera=null;
+      app.overviewCamera=null;
       document.getElementById('exitChainBtn').style.display='none';
       pushHistory();
       renderAllBlocks();
@@ -4992,7 +4873,7 @@ document.getElementById('infoDel').onclick=()=>{
       app.selectedChain=0;
       app.selectedBlock=-1;
       app.camera=null;
-      app.chainCamera=null;
+      app.overviewCamera=null;
       document.getElementById('exitChainBtn').style.display='none';
     }else{
       app.singleChain=false;
@@ -5024,6 +4905,7 @@ document.getElementById('infoClose').onclick=()=>deselect();
 
 (function setupFeatureBindings(){
   document.getElementById('usageHelpBtn').onclick=openUsageHelp;
+  document.getElementById('uploadReadmeBtn').onclick=openUsageHelp;
   document.getElementById('usageHelpClose').onclick=()=>closeFeatureModal('usageHelpModal');
   document.getElementById('usageHelpModal').addEventListener('click',e=>{if(e.target.id==='usageHelpModal')closeFeatureModal('usageHelpModal');});
   document.getElementById('diagnoseBtn').onclick=openLogs;
@@ -5038,6 +4920,7 @@ document.getElementById('infoClose').onclick=()=>deselect();
   document.getElementById('exportNetEaseBtn').onclick=()=>exportCommandChains('netease');
   document.getElementById('exportBothBtn').onclick=()=>exportCommandChains('both');
   document.getElementById('exportFormatModal').addEventListener('click',e=>{if(e.target.id==='exportFormatModal')closeFeatureModal('exportFormatModal');});
+  document.getElementById('promptModal').addEventListener('click',e=>{if(e.target.id==='promptModal')document.getElementById('promptModalCancel').click();});
   document.getElementById('replaceClose').onclick=()=>closeFeatureModal('replaceModal');
   document.getElementById('replaceCancel').onclick=()=>closeFeatureModal('replaceModal');
   document.getElementById('replaceApply').onclick=applyBatchReplace;
@@ -5053,7 +4936,7 @@ document.addEventListener('keydown',e=>{
     if(textEditor&&textEditor.classList.contains('on')){closeTextEditor();return;}
     const addModal=document.getElementById('chainAddModal');
     if(addModal&&addModal.classList.contains('on')){closeChainAddModal();return;}
-    for(const id of ['usageHelpModal','diagnosticModal','replaceModal','exportFormatModal']){const m=document.getElementById(id);if(m&&m.classList.contains('on')){closeFeatureModal(id);return;}}
+    for(const id of ['usageHelpModal','diagnosticModal','replaceModal','exportFormatModal','promptModal']){const m=document.getElementById(id);if(m&&m.classList.contains('on')){if(id==='promptModal')document.getElementById('promptModalCancel').click();else closeFeatureModal(id);return;}}
     if(app.mode==='chain'&&!app.singleChain)exitChainMode();
     return;
   }
@@ -5087,14 +4970,11 @@ window.addEventListener('load',()=>{
   const cmdEl=document.getElementById('infoCmd');
   const noteEl=document.getElementById('infoNote');
   if(cmdEl){
-    cmdEl.addEventListener('input',()=>resizeInspectorTextarea(cmdEl,112));
     cmdEl.addEventListener('change',()=>commitInspectorText('cmd',cmdEl.value));
   }
   if(noteEl){
-    noteEl.addEventListener('input',()=>resizeInspectorTextarea(noteEl,74));
     noteEl.addEventListener('change',()=>commitInspectorText('note',noteEl.value));
   }
-  requestAnimationFrame(refreshInspectorTextareaHeights);
 })();
 </script>
 </body>
