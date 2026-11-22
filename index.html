@@ -217,6 +217,9 @@ button:disabled{opacity:.35;cursor:not-allowed}
 .object-summary{display:flex;align-items:center;gap:8px;padding:12px 10px 6px}
 .object-summary b{font-size:14px;color:#eef2f7}
 .idx{font-family:var(--mono);font-size:12px;color:var(--accent)}
+#infoAuxBadge{display:none;margin-left:auto;padding:1px 6px;border:1px solid rgba(56,189,248,.45);border-radius:999px;font-size:11px;color:#7dd3fc;background:rgba(14,116,144,.16)}
+#infoAuxBadge.on{display:inline-block}
+#infoAuxBadge.on+#infoMarkBadge{margin-left:0}
 #infoMarkBadge{display:none;margin-left:auto;font-size:12px;color:var(--success)}
 #infoMarkBadge.on{display:inline-block;color:#e5bd68}
 .coord-line{margin:0 10px 10px;padding:9px 11px;border:1px solid rgba(91,104,122,.42);border-radius:10px;background:rgba(25,32,42,.72);color:#a9b6c8;font:11px var(--mono)}
@@ -920,7 +923,7 @@ button:disabled{opacity:.35;cursor:not-allowed}
       <div class="inspector-head"><b>对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭">×</button></div>
       <div id="emptyState" class="empty-state"><div class="empty-icon">◇</div><b>尚未选择对象</b><p>选择场景中的命令方块后，在这里查看坐标、条件与标记。</p></div>
       <div id="infoPanel" class="info">
-        <div class="object-summary"><span id="infoIdx" class="idx">#—</span><b id="infoType">命令方块</b><span id="infoMarkBadge">已标记</span></div>
+        <div class="object-summary"><span id="infoIdx" class="idx">#—</span><b id="infoType">命令方块</b><span id="infoAuxBadge">辅助方块</span><span id="infoMarkBadge">已标记</span></div>
         <div class="inspector-select-row">
           <label class="inspector-select-card"><span>方块类型</span><select id="infoBlockType"><option value="command">脉冲</option><option value="chain">链式</option><option value="repeating">循环</option></select></label>
           <label class="inspector-select-card"><span>条件</span><select id="infoCond"><option value="0">无条件</option><option value="1">有条件</option></select></label>
@@ -1203,7 +1206,7 @@ function getOffsetPosition(b,facing,step=1){
 // Detect intentional self-closed command-block loops. Only cycles of 2–4
 // chain-command blocks are treated as supported loops; larger loops are left
 // to the normal validation path because they are considered malformed layouts.
-function detectSelfClosedCycles(blockMap,maxCycleSize=4){
+function detectSelfClosedCycles(blockMap,maxCycleSize=4,brokenKeys=new Set()){
   const cycles=[];
   const signatures=new Set();
   if(!(blockMap instanceof Map))return{cycles,keys:new Set(),oversized:[]};
@@ -1218,9 +1221,13 @@ function detectSelfClosedCycles(blockMap,maxCycleSize=4){
       const key=blockKey(current.x,current.y,current.z);
       if(position.has(key)){
         const keys=path.slice(position.get(key));
-        // The two canonical /setblock markers intentionally face into one
-        // another. That is a broken-head encoding, not a self-closed chain.
+        // Broken-head markers intentionally face into one another. That is a
+        // broken-head encoding, not a self-closed chain. Besides the exact
+        // /setblock templates, exclude every block that belongs to a detected
+        // broken-head pattern; execute-style markers use `air` or other commands
+        // and would otherwise turn a downward chain into a false 2-block loop.
         const markerCycle=keys.some(cycleKey=>{
+          if(brokenKeys.has(cycleKey))return true;
           const node=blockMap.get(cycleKey);
           return isSetblockFirstMarker(node?.cmd||'')||isSetblockSecondMarker(node?.cmd||'');
         });
@@ -1260,8 +1267,19 @@ function getRelativeCommandOperation(cmd){
 function isSupportedRelativeCommand(cmd){
   return !!getRelativeCommandOperation(cmd)&&hasRelativeCoordinateSyntax(cmd);
 }
+function hasExecuteAtBeforeRun(cmd){
+  const source=String(cmd??'').trim();
+  if(!/^\s*\/?execute\b/i.test(source))return false;
+  const runMatch=/\brun\b/i.exec(source);
+  const head=runMatch?source.slice(0,runMatch.index):source;
+  // Bedrock's `/execute ... at @s ... run ...` is a normal positional execute
+  // command, not the broken-head template. Only inspect the subcommands before
+  // `run`; arguments after `run` must not affect broken-head detection.
+  return /(?:^|\s)at\s+@/i.test(head);
+}
 function isExecuteRunRelativeCommand(cmd){
-  return /^\s*\/?execute\b/i.test(String(cmd??'').trim())&&isSupportedRelativeCommand(cmd);
+  return /^\s*\/?execute\b/i.test(String(cmd??'').trim())&&
+    !hasExecuteAtBeforeRun(cmd)&&isSupportedRelativeCommand(cmd);
 }
 function isSetblockMarker(cmd,position){
   const s=String(cmd??'').trim();
@@ -1282,17 +1300,26 @@ function identifyBrokenHeadGeometry(root,getExact,isMarker){
   const cmd=String(root.cmd||'').trim();
   const isCommandRecord=b=>!!b&&['command','repeating','chain'].includes(b.type||b.blockType);
   const make=(kind,direction,previous,gap,marker,rootDirection=direction)=>{
-    const gapPosition=previous?getOffsetPosition(previous,direction,1):null;
-    const placeholder=gapPosition?{
+    // Only the two `-gap` forms own a physical auxiliary slot between the
+    // command head/first marker and the final marker. The `-direct` forms place
+    // the two markers next to each other, so inventing a placeholder there would
+    // shift the whole chain by one block and display a phantom blank block.
+    const hasGap=kind.endsWith('-gap');
+    const gapPosition=hasGap&&previous?getOffsetPosition(previous,direction,1):null;
+    const gapIsCommand=hasGap&&isCommandRecord(gap);
+    // A command block in the auxiliary slot is a real physical chain node. Keep
+    // its original command/type/condition/auto values and mark it so relayout
+    // and text editing do not downgrade it to an ordinary chain block.
+    const auxiliary=gapIsCommand?{...gap,isAuxiliary:true}:null;
+    const placeholder=gapPosition&&!gapIsCommand?{
       ...gapPosition,type:'placeholder',blockType:'chain',cmd:'',cond:0,auto:1,
       facing:direction,isAirPlaceholder:true,marked:false,note:''
     }:null;
     return{
-      kind,direction,rootDirection,wrongFacingBlock:marker,previous,gap,placeholder,
-      // The physical gap is represented in the logical chain as an empty air
-      // slot, regardless of whether the source position contained air, a solid
-      // block, or an auxiliary command block.
-      blocks:[...(kind.startsWith('testfor')?[previous]:[]),...(placeholder?[placeholder]:[]),marker].filter(Boolean),
+      kind,direction,rootDirection,wrongFacingBlock:marker,previous,gap,placeholder,auxiliary,
+      // Non-command gaps stay virtual air slots; command gaps become editable
+      // physical nodes in the same chain.
+      blocks:[...(kind.startsWith('testfor')?[previous]:[]),...(auxiliary?[auxiliary]:[]),...(placeholder?[placeholder]:[]),marker].filter(Boolean),
       skipped:gap||null
     };
   };
@@ -1399,11 +1426,18 @@ function normalizeBrokenChainBlocks(blocks,options={}){
   const direction=Number.isInteger(options.direction)?options.direction:(Number.isInteger(blocks._brokenDirection)?blocks._brokenDirection:2);
   const specialKeys=options.specialKeys instanceof Set?options.specialKeys:new Set(blocks._brokenSpecialKeys||[]);
   const facingMap=options.facingMap||blocks._brokenFacingMap||{};
+  const preserveCommands=!!options.preserveCommands;
   for(const b of blocks){
     if(!b||typeof b.cmd!=='string')continue;
+    // Commands are normalized exactly once, when the chain is first imported or
+    // created. Reflow runs on every edit and must not rotate already-normalized
+    // coordinates again (doing so corrupts non-Z-axis broken heads).
+    if(b.isBrokenNormalized)continue;
+    if(preserveCommands&&(b.brokenWrongFacing||b.isAuxiliary)){b.isBrokenNormalized=true;continue;}
     const key=blockKey(b.x,b.y,b.z);
     const facing=Number.isInteger(facingMap[key])?facingMap[key]:(specialKeys.has(key)?direction:(Number.isInteger(b.facing)?b.facing:direction));
     b.cmd=rotateRelativeCoordinateTriples(b.cmd,facing);
+    b.isBrokenNormalized=true;
   }
   if(options.applyCondition!==false){
     const indexes=findBrokenChainSetblockIndexes(blocks);
@@ -1673,26 +1707,49 @@ function traceChain(root,context,owner){
     if(!claim(root))return[];
     const facingMap={};
     const wrongFacingKeys=[];
+    const hasRepeatingBlock=()=>ordered.some(b=>b?.blockType==='repeating');
     const addBrokenPattern=(pattern,patternRoot)=>{
+      const repeatingIndex=pattern.blocks.findIndex(b=>b?.blockType==='repeating');
+      // A command chain may contain only one repeating command block. When a
+      // second one is found inside a broken-head pattern, stop before it and
+      // leave it (and every following block) to be traced as the next chain.
+      if(repeatingIndex>=0&&hasRepeatingBlock()){
+        for(const b of pattern.blocks.slice(0,repeatingIndex)){
+          claim(b,true);
+          facingMap[blockKey(b.x,b.y,b.z)]=pattern.direction;
+        }
+        // The new chain starts at the second repeating block. It must keep
+        // following the original broken-head direction (the following marker is
+        // intentionally misoriented), otherwise the rest of the chain would be
+        // split into isolated orphan blocks.
+        const repeatingBlock=pattern.blocks[repeatingIndex];
+        if(repeatingBlock)repeatingBlock.splitContinueDirection=pattern.direction;
+        if(pattern.wrongFacingBlock)pattern.wrongFacingBlock.splitContinueDirection=pattern.direction;
+        if(context)context.repeatingSplits=(context.repeatingSplits||0)+1;
+        return false;
+      }
       const rootKey=blockKey(patternRoot.x,patternRoot.y,patternRoot.z);
       facingMap[rootKey]=Number.isInteger(pattern.rootDirection)?pattern.rootDirection:pattern.direction;
       for(const b of pattern.blocks){
-        claim(b);
+        // Broken-head pattern members are physical chain segments, including
+        // an empty chain command block used as the auxiliary gap block.
+        claim(b,true);
         facingMap[blockKey(b.x,b.y,b.z)]=pattern.direction;
       }
-      if(pattern.gap&&['command','repeating','chain'].includes(pattern.gap.type||pattern.gap.blockType)){
-        const replacedGapKey=blockKey(pattern.gap.x,pattern.gap.y,pattern.gap.z);
-        owner.set(replacedGapKey,root);
-        discarded?.add(replacedGapKey);
-      }
+      // Physical command blocks in the gap are already claimed through
+      // pattern.blocks. Never discard them merely because their facing is wrong.
       const wrongKey=blockKey(pattern.wrongFacingBlock.x,pattern.wrongFacingBlock.y,pattern.wrongFacingBlock.z);
       wrongFacingKeys.push(wrongKey);
       const wrongCopy=orderedIndex.get(wrongKey);
       if(wrongCopy)wrongCopy.brokenWrongFacing=true;
       ordered._brokenGroups=(ordered._brokenGroups||[]).concat(pattern.kind);
       if(!ordered._brokenMatch)ordered._brokenMatch=pattern.kind.startsWith('testfor')?'testfor':'execute';
+      return true;
     };
-    addBrokenPattern(brokenHead,root);
+    if(!addBrokenPattern(brokenHead,root)){
+      ordered._repeatingSplit=true;
+      return ordered;
+    }
     let current=ordered[ordered.length-1]||root;
     let currentDirection=brokenHead.direction;
     let guard=0;
@@ -1703,6 +1760,13 @@ function traceChain(root,context,owner){
       if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk))break;
       const nestedPattern=identifyBrokenHeadGeometry(next,getExact,isBrokenHeadMarkerBlock);
       if(nestedPattern){
+        const nestedRepeating=(next.blockType||next.type)==='repeating'||
+          nestedPattern.blocks.some(b=>b?.blockType==='repeating');
+        if(nestedRepeating&&hasRepeatingBlock()){
+          if(context)context.repeatingSplits=(context.repeatingSplits||0)+1;
+          ordered._repeatingSplit=true;
+          break;
+        }
         if(!claim(next))break;
         addBrokenPattern(nestedPattern,next);
         current=ordered[ordered.length-1]||next;
@@ -1725,7 +1789,8 @@ function traceChain(root,context,owner){
     if(!claim(root))return[];
     let current=ordered[0];let guard=0;
     while(current&&guard++<10000){
-      const next=getLogical(current,current.facing,1);
+      const direction=Number.isInteger(current.splitContinueDirection)?current.splitContinueDirection:current.facing;
+      const next=getLogical(current,direction,1);
       if(!next||next.type!=='chain')break;
       const nk=blockKey(next.x,next.y,next.z);
       if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk)||!claimLogical(next))break;
@@ -1743,7 +1808,8 @@ function traceChain(root,context,owner){
     const currentKey=blockKey(current.x,current.y,current.z);
     if(mainSeen.has(currentKey))break;
     mainSeen.add(currentKey);
-    const next=getLogical(current,current.facing,1);
+    const direction=Number.isInteger(current.splitContinueDirection)?current.splitContinueDirection:current.facing;
+    const next=getLogical(current,direction,1);
     if(!next||next.type!=='chain')break;
     const nk=blockKey(next.x,next.y,next.z);
     if(owner.has(nk)||discarded?.has(nk)||blockedKeys?.has(nk)||!claimLogical(next))break;
@@ -1809,7 +1875,9 @@ function relayoutBlocks(ordered,chainType,xCol){
       facing=layerIdx%2===0?3:2;
     }
     const src=ordered[i];
-    blocks.push({x:xCol,y:pos.y,z:pos.z,facing:src.brokenWrongFacing?1:facing,blockType:i===0?firstBlockType:'chain',cmd:String(src.cmd||''),cond:src.cond?1:0,auto:src.auto!==0?1:0,brokenWrongFacing:!!src.brokenWrongFacing,isAirPlaceholder:!!src.isAirPlaceholder,marked:!!src.marked,note:src.note||''});
+    const auxiliary=!!src.isAuxiliary;
+    const sourceBlockType=['command','repeating','chain'].includes(src.blockType)?src.blockType:'chain';
+    blocks.push({x:xCol,y:pos.y,z:pos.z,facing:src.brokenWrongFacing?1:facing,blockType:auxiliary?sourceBlockType:(i===0?firstBlockType:'chain'),cmd:String(src.cmd||''),cond:src.cond?1:0,auto:src.auto!==0?1:0,brokenWrongFacing:!!src.brokenWrongFacing,isAuxiliary:auxiliary,isBrokenNormalized:!!src.isBrokenNormalized,isAirPlaceholder:!!src.isAirPlaceholder,marked:!!src.marked,note:src.note||''});
   }
   // Exactly one marker is intentionally misoriented. Keep this in the actual
   // block state as well as in the canonical marker command, otherwise a later
@@ -1832,10 +1900,23 @@ function relayoutBlocks(ordered,chainType,xCol){
 }
 function processCommands(commands,context={}){
   if(!commands||commands.length===0)return[];
+  context.repeatingSplits=0;
   const blockMap=context.blockMap instanceof Map
     ?context.blockMap
     :new Map(commands.map(b=>[blockKey(b.x,b.y,b.z),{...b,type:b.blockType}]));
-  const selfClosedDetection=detectSelfClosedCycles(blockMap,4);
+  const getExactFromMap=(b,facing,step=1)=>{
+    const p=getOffsetPosition(b,facing,step);
+    return p?(blockMap.get(blockKey(p.x,p.y,p.z))||null):null;
+  };
+  // Pre-scan broken-head members so a downward chain whose marker points back
+  // at its gap is not mistaken for a deliberate 2-block self-closed loop.
+  const brokenPatternKeys=new Set();
+  for(const root of commands){
+    const pattern=identifyBrokenHeadGeometry(root,getExactFromMap,isBrokenHeadMarkerBlock);
+    if(!pattern)continue;
+    for(const b of pattern.blocks)brokenPatternKeys.add(blockKey(b.x,b.y,b.z));
+  }
+  const selfClosedDetection=detectSelfClosedCycles(blockMap,4,brokenPatternKeys);
   const selfClosedCycleKeys=selfClosedDetection.keys;
   const discarded=new Set();
   const graphContext={...context,blockMap,discarded,selfClosedCycleKeys};
@@ -1847,10 +1928,6 @@ function processCommands(commands,context={}){
   graphContext.rootKeys=rootKeys;
   const pendingWrongKeys=new Set();
   const blockedKeys=new Set();
-  const getExactFromMap=(b,facing,step=1)=>{
-    const p=getOffsetPosition(b,facing,step);
-    return p?(blockMap.get(blockKey(p.x,p.y,p.z))||null):null;
-  };
   const isCommandBlockRecord=b=>!!b&&(b.type==='command'||b.type==='repeating'||b.type==='chain');
   // Detect canonical broken heads before tracing any roots. Their second
   // marker intentionally has a different facing. Only the command block that
@@ -1996,6 +2073,7 @@ function processCommands(commands,context={}){
   }
   filtered.sort((a,b)=>chainSort(a.blocks[0],b.blocks[0]));
   for(const c of filtered)delete c.rootKey;
+  context.repeatingSplits=graphContext.repeatingSplits||0;
   return filtered;
 }
 function reflowAllChains(){
@@ -2443,7 +2521,7 @@ function cloneChainForTextEditor(chain){
   }
   const blocks=(chain?.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).map(b=>({
     x:b.x,y:b.y,z:b.z,facing:b.facing,cmd:String(b.cmd||''),cond:b.cond?1:0,
-    auto:b.auto!==0?1:0,blockType:b.blockType,brokenWrongFacing:!!b.brokenWrongFacing,marked:!!b.marked,note:b.note||''
+    auto:b.auto!==0?1:0,blockType:b.blockType,isAuxiliary:!!b.isAuxiliary,isBrokenNormalized:!!b.isBrokenNormalized,brokenWrongFacing:!!b.brokenWrongFacing,marked:!!b.marked,note:b.note||''
   }));
   const firstBlockType=blocks[0]?.blockType==='command'||blocks[0]?.blockType==='repeating'
     ?blocks[0].blockType
@@ -2475,7 +2553,7 @@ function openTextEditorNew(initialText='',title='新建文本链'){
   textEditDraft={
     type,
     firstBlockType:'repeating',
-    blocks:normalizedLines.map(item=>({cmd:item.cmd,cond:item.cond,auto:1,facing:2,blockType:'chain',marked:false,note:''})),
+    blocks:normalizedLines.map(item=>({cmd:item.cmd,cond:item.cond,auto:1,facing:2,blockType:'chain',isBrokenNormalized:!!item.isBrokenNormalized,marked:false,note:''})),
     text:normalizedLines.map(item=>item.cmd).join('\n'),
     conditionLines:normalizedLines.map(item=>!!item.cond)
   };
@@ -2719,13 +2797,18 @@ function buildTextEditorChains(){
       (b.blockType==='chain'||b.blockType==='command'||b.blockType==='repeating'));
   const blocks=parsed.map((item,i)=>{
     const old=sourceBlocks[i]||{};
+    const auxiliary=!!old.isAuxiliary;
+    const oldBlockType=['command','repeating','chain'].includes(old.blockType)?old.blockType:null;
     return{
       ...(preserveCycleGeometry?{x:old.x,y:old.y,z:old.z}:{}),
       cmd:item.cmd,
       cond:item.cond?1:0,
       auto:old.auto!==undefined?(old.auto!==0?1:0):1,
       facing:preserveCycleGeometry?old.facing:2,
-      blockType:preserveCycleGeometry?old.blockType:(i===0?firstBlockType:'chain'),
+      blockType:preserveCycleGeometry?old.blockType:(auxiliary&&oldBlockType?oldBlockType:(i===0?firstBlockType:'chain')),
+      isAuxiliary:auxiliary,
+      isBrokenNormalized:!!old.isBrokenNormalized,
+      brokenWrongFacing:!!old.brokenWrongFacing,
       selfClosedCycle:preserveCycleGeometry&&!!old.selfClosedCycle,
       marked:!!old.marked,
       note:old.note||''
@@ -2938,7 +3021,17 @@ function reflowChainsForSize(chains){
     // This lets a user break a loop by changing a node's block type, while
     // preserving a valid 2–4 chain-block cycle through reflow/undo/redo.
     const localBlockMap=new Map((chain.blocks||[]).filter(b=>!isAirPlaceholderBlock(b)).map(b=>[blockKey(Number(b.x),Number(b.y),Number(b.z)),{...b,type:b.blockType}]));
-    const localCycles=detectSelfClosedCycles(localBlockMap,4);
+    const localGetExact=(b,facing,step=1)=>{
+      const p=getOffsetPosition(b,facing,step);
+      return p?(localBlockMap.get(blockKey(p.x,p.y,p.z))||null):null;
+    };
+    const localBrokenKeys=new Set();
+    for(const b of localBlockMap.values()){
+      const pattern=identifyBrokenHeadGeometry(b,localGetExact,isBrokenHeadMarkerBlock);
+      if(!pattern)continue;
+      for(const pb of pattern.blocks)localBrokenKeys.add(blockKey(pb.x,pb.y,pb.z));
+    }
+    const localCycles=detectSelfClosedCycles(localBlockMap,4,localBrokenKeys);
     const hasSelfClosedCycle=localCycles.cycles.length>0;
     if(hasSelfClosedCycle){
       const cycKeys=localCycles.keys;
@@ -2969,16 +3062,18 @@ function reflowChainsForSize(chains){
     if(headKind){
       // Re-apply the Z-axis coordinate normalization while preserving the
       // user's command verbs and chosen conditional flags.
-      normalizeBrokenChainBlocks(chain.blocks,{applyCondition:false});
+      normalizeBrokenChainBlocks(chain.blocks,{applyCondition:false,preserveCommands:true});
       chain.type='snake';
     }else if(placeholder){
       chain.type='snake';
     }else{
       chain.type=chain.blocks[0]?.blockType==='command'?'impulse':'repeat';
     }
-    const src=chain.blocks.map(b=>({cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,blockType:b.blockType,isAirPlaceholder:!!b.isAirPlaceholder,brokenWrongFacing:!!b.brokenWrongFacing}));
+    const src=chain.blocks.map(b=>({cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,blockType:b.blockType,isAuxiliary:!!b.isAuxiliary,isBrokenNormalized:!!b.isBrokenNormalized,isAirPlaceholder:!!b.isAirPlaceholder,brokenWrongFacing:!!b.brokenWrongFacing}));
     const newBlocks=relayoutBlocks(src,chain.type,-2*i);
     for(let j=0;j<newBlocks.length;j++){
+      newBlocks[j].isAuxiliary=!!chain.blocks[j]?.isAuxiliary;
+      newBlocks[j].isBrokenNormalized=!!chain.blocks[j]?.isBrokenNormalized;
       newBlocks[j].isAirPlaceholder=!!chain.blocks[j]?.isAirPlaceholder;
       newBlocks[j].marked=chain.blocks[j]?.marked||false;
       newBlocks[j].note=chain.blocks[j]?.note||'';
@@ -3000,6 +3095,8 @@ function appendImportedChains(chains,label,options={}){
       auto:b.auto!==0?1:0,
       facing:keepGeometry?Number(b.facing):2,
       blockType:b.blockType==='repeating'?'repeating':(b.blockType==='command'?'command':'chain'),
+      isAuxiliary:!!b.isAuxiliary,
+      isBrokenNormalized:!!b.isBrokenNormalized,
       isAirPlaceholder:!!b.isAirPlaceholder,
       selfClosedCycle:!!b.selfClosedCycle,
       brokenWrongFacing:!!b.brokenWrongFacing,
@@ -3036,7 +3133,9 @@ async function importChainFromTxt(file){
 async function importChainFromMcstructure(file){
   const buf=await file.arrayBuffer();
   const parsed=await parseMcstructure(buf);
-  const chains=processCommands(parsed.commands,{blockMap:parsed.blockMap,X:parsed.X,Y:parsed.Y,Z:parsed.Z});
+  const context={blockMap:parsed.blockMap,X:parsed.X,Y:parsed.Y,Z:parsed.Z};
+  const chains=processCommands(parsed.commands,context);
+  if(context.repeatingSplits)logWarn(`检测到 ${context.repeatingSplits} 处第二个循环命令方块，已从该处起自动拆分为下一条链`,'读取命令链');
   appendImportedChains(chains,'结构文件',{closeModal:true});
 }
 let textEditChain=-1;
@@ -3978,6 +4077,8 @@ window.addEventListener('beforeunload',e=>{flushAutosave();if(app.saved===false)
 
 function showInfo(ci,bi,b){
   document.getElementById('infoIdx').textContent='#'+bi;
+  const auxBadge=document.getElementById('infoAuxBadge');
+  if(auxBadge)auxBadge.classList.toggle('on',!!b.isAuxiliary);
   document.getElementById('infoMarkBadge').classList.toggle('on',!!b.marked);
   const typeEl=document.getElementById('infoType');
   typeEl.textContent=b.cond?`${TYPE_LABEL[b.blockType]} · 有条件`:TYPE_LABEL[b.blockType];
@@ -4104,7 +4205,7 @@ function updateStats(){
 function snapshot(){
   return app.chains.map(c=>({type:c.type,selfClosed:!!c.selfClosed,preservePhysicalType:!!c.preservePhysicalType,selfClosedCycleKeys:Array.isArray(c.selfClosedCycleKeys)?c.selfClosedCycleKeys.slice():[],blocks:c.blocks.map(b=>({
     x:b.x,y:b.y,z:b.z,cmd:b.cmd,cond:b.cond,auto:b.auto!==0?1:0,
-    facing:b.facing,blockType:b.blockType,isAirPlaceholder:!!b.isAirPlaceholder,selfClosedCycle:!!b.selfClosedCycle,
+    facing:b.facing,blockType:b.blockType,isAuxiliary:!!b.isAuxiliary,isBrokenNormalized:!!b.isBrokenNormalized,isAirPlaceholder:!!b.isAirPlaceholder,brokenWrongFacing:!!b.brokenWrongFacing,selfClosedCycle:!!b.selfClosedCycle,
     marked:!!b.marked,note:b.note||''}))}));
 }
 const AUTOSAVE_NBT_TYPE='__blockflow_autosave_nbt_type__';
@@ -4203,7 +4304,7 @@ async function restoreAutosave(){
         // silently leak into the live editor state after a restore.
         return{x,y,z,cmd:String(b.cmd??''),cond:b.cond?1:0,auto:b.auto!==0?1:0,
           facing:Number.isInteger(facing)&&facing>=0&&facing<=5?facing:2,
-          blockType,isAirPlaceholder:!!b.isAirPlaceholder,selfClosedCycle:!!b.selfClosedCycle,marked:!!b.marked,note:String(b.note??'')};
+          blockType,isAuxiliary:!!b.isAuxiliary,isBrokenNormalized:!!b.isBrokenNormalized,isAirPlaceholder:!!b.isAirPlaceholder,brokenWrongFacing:!!b.brokenWrongFacing,selfClosedCycle:!!b.selfClosedCycle,marked:!!b.marked,note:String(b.note??'')};
       });
       if(blocks.length===0)throw new Error(`自动保存中的第 ${ci+1} 条链没有命令方块`);
       const type=['impulse','repeat','snake'].includes(chain.type)?chain.type:
@@ -4532,7 +4633,9 @@ async function handleFile(file){
     const buf=await file.arrayBuffer();
     logInfo(`文件读取完成：${buf.byteLength} 字节`,'导入结构文件');
     await loadMcstructure(file,buf);
-    logOk(`导入完成：${app.chains.length} 条链，共 ${app.chains.reduce((n,c)=>n+c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length,0)} 个命令方块`,'导入结构文件');
+    const physicalCount=app.chains.reduce((n,c)=>n+c.blocks.filter(b=>!isAirPlaceholderBlock(b)).length,0);
+    const auxiliaryCount=app.chains.reduce((n,c)=>n+c.blocks.filter(b=>!!b.isAuxiliary).length,0);
+    logOk(`导入完成：${app.chains.length} 条链，共 ${physicalCount} 个命令方块${auxiliaryCount?`，其中辅助方块 ${auxiliaryCount} 个`:''}`,'导入结构文件');
   }catch(e){
     logError(e?.stack||e?.message||String(e),'导入结构文件');
     toast('加载失败：'+e.message,'err');
@@ -4615,7 +4718,9 @@ async function loadMcstructure(file,buf){
   app.originalSize=[p.X,p.Y,p.Z];
   app.sourceOrigin=Array.isArray(p.origin)?p.origin.slice(0,3):[0,0,0];
   app.parseWarnings=p.parseWarnings||0;
-  app.chains=processCommands(p.commands,{blockMap:p.blockMap,X:p.X,Y:p.Y,Z:p.Z});
+  const context={blockMap:p.blockMap,X:p.X,Y:p.Y,Z:p.Z};
+  app.chains=processCommands(p.commands,context);
+  if(context.repeatingSplits)logWarn(`检测到 ${context.repeatingSplits} 处第二个循环命令方块，已从该处起自动拆分为下一条链`,'读取命令链');
   if(app.chains.length===0)throw new Error('无法识别任何命令链');
   reflowChainsForSize(app.chains);
   ensureStructureSize(app.chains,'导入后结构');
