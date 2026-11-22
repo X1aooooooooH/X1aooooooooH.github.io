@@ -1267,6 +1267,12 @@ function getRelativeCommandOperation(cmd){
 function isSupportedRelativeCommand(cmd){
   return !!getRelativeCommandOperation(cmd)&&hasRelativeCoordinateSyntax(cmd);
 }
+// Broken-head markers are /setblock templates. `fill`, `clone` and especially
+// `structure load` are often ordinary commands with relative coordinates; they
+// must not be mistaken for the two special /setblock marker blocks.
+function isSetblockRelativeCommand(cmd){
+  return getRelativeCommandOperation(cmd)==='setblock'&&hasRelativeCoordinateSyntax(cmd);
+}
 function hasExecuteAtBeforeRun(cmd){
   const source=String(cmd??'').trim();
   if(!/^\s*\/?execute\b/i.test(source))return false;
@@ -1291,7 +1297,7 @@ function isSetblockMarker(cmd,position){
 function isSetblockFirstMarker(cmd){return isSetblockMarker(cmd,'first');}
 function isSetblockSecondMarker(cmd){return isSetblockMarker(cmd,'second');}
 function isBrokenHeadMarkerBlock(b){
-  return !!b&&['command','repeating','chain'].includes(b.type||b.blockType)&&String(b.cmd||'').trim()!==''&&isSupportedRelativeCommand(b.cmd||'');
+  return !!b&&['command','repeating','chain'].includes(b.type||b.blockType)&&String(b.cmd||'').trim()!==''&&isSetblockRelativeCommand(b.cmd||'');
 }
 // Shared broken-head recognizer. The gap is a geometric slot, not a required
 // block type: it may be air, an ordinary block, water/lava, or any command block.
@@ -1357,7 +1363,7 @@ function findBrokenChainSetblockIndexes(items){
   const found=[];
   for(let i=0;i<list.length;i++){
     const value=typeof list[i]==='string'?String(list[i]||'').trim():String(list[i]?.cmd||'').trim();
-    if(isSupportedRelativeCommand(value)){
+    if(isSetblockRelativeCommand(value)){
       found.push(i);
       if(found.length===2)break;
     }
@@ -1376,7 +1382,7 @@ function getBrokenHeadKind(items){
 }
 function isBrokenChainPlaceholder(items){
   if(!Array.isArray(items)||items.length<3||String(typeof items[0]==='string'?items[0]:items[0]?.cmd||'').trim()!=='')return false;
-  return isSupportedRelativeCommand(items[1]?.cmd??items[1])&&isSupportedRelativeCommand(items[2]?.cmd??items[2]);
+  return isSetblockRelativeCommand(items[1]?.cmd??items[1])&&isSetblockRelativeCommand(items[2]?.cmd??items[2]);
 }
 function collapseExecuteBrokenPlaceholder(blocks){
   // Do not delete a physical block while normalizing an execute-style template.
