@@ -1,0 +1,9 @@
+node_modules/
+*.mcstructure
+_selftest*.mcstructure
+.DS_Store
+Thumbs.db
+
+# Python migration leftovers (not used by this project)
+__pycache__/
+*.py[cod]

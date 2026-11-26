@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="textures/favicon.ico" type="image/x-icon">
+<title>BlockFlow</title>
+<meta name="blockflow-build" content="round3-module-split-2026-11-26">
+<link rel="stylesheet" href="./styles/tokens.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/upload.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/editor.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/components.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/responsive.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/ai.css?v=r3-20261127">
+<link rel="stylesheet" href="./styles/workspace.css?v=r3-20261127">
+</head>
+<body>
+<div id="uploadView" class="screen on">
+  <div class="upload-shell">
+    <div class="upload-card">
+      <div class="upload-top">
+        <div class="brand">
+          <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
+          <div class="brand-copy"><b>BlockFlow</b><span>MCBE命令链编辑器</span></div>
+        </div>
+        <div class="upload-eyes" id="uploadEyes" aria-hidden="true">
+          <div class="upload-eyes-quote" id="uploadEyesQuote">关注X1aooooooooH谢谢喵</div>
+          <div class="upload-eyes-pill">
+            <span class="upload-eye"><i></i></span>
+            <span class="upload-eye"><i></i></span>
+          </div>
+        </div>
+      </div>
+      <div class="upload-copy">
+        <h1>打开结构文件</h1>
+        <p>导入 .mcstructure 后开始编辑命令链。</p>
+      </div>
+      <div class="upload-scope-note"><strong>注意事项</strong><span>支持多种断链形式<br>导入后会自动格式化所有的指令<br>不适用于结构中存在大量彼此独立的单个命令方块的情况</span></div>
+      <label id="dropzone" class="drop-card">
+        <input id="fileInput" type="file" accept=".mcstructure">
+        <strong>选择 .mcstructure 文件</strong>
+        <small>点击选择，或把文件拖到这里</small>
+      </label>
+      <button id="uploadReadmeBtn" class="readme-launch-btn" type="button">阅读 README 使用说明</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading" class="loading-overlay hide" aria-hidden="true"><div class="loading-spinner"></div><span>正在加载三维场景……</span></div>
+
+<div id="editorView" class="screen">
+  <div class="editor-shell">
+    <header class="command-bar">
+      <div class="bar-main-row">
+        <button id="wsMobileLeft" class="ws-mobile-btn" type="button" aria-label="打开链列表" title="链列表">☰</button>
+        <button id="backBtn" class="icon-btn bar-brand" type="button" aria-label="返回文件导入">
+        <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
+        <span class="brand-copy"><b>BlockFlow</b></span>
+      </button>
+        <div class="bar-file">
+        <div class="bar-file-name"><span class="bar-label">当前文件</span><b id="tbarFile">未加载结构</b></div>
+        <div class="bar-file-stats">
+          <span><i>命令</i><b id="tbarCommands">0</b></span>
+          <span><i>链</i><b id="tbarChains">0</b></span>
+        </div>
+      </div>
+      </div>
+      <div class="bar-control-row">
+        <nav class="top-view-grid" aria-label="视图">
+        <button id="exitChainBtn" class="top-home-btn" title="返回结构总览" aria-label="返回结构总览" type="button">⌂</button>
+        <span class="top-view-sep" aria-hidden="true"></span>
+        <button class="view-btn" data-preset="front" title="正视图" type="button">前</button>
+        <button class="view-btn active" data-preset="side" title="侧视图" type="button">侧</button>
+        <button class="view-btn" data-preset="top" title="俯视图" type="button">顶</button>
+      </nav>
+        <div class="search-dock">
+        <div class="search-wrap">
+          <svg fill="#8993a1" width="18px" height="18px" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
+          <input id="blockSearch" class="search-input" type="text" placeholder="搜索命令或注释" autocomplete="off">
+          <button id="searchClear" class="search-clear" type="button" aria-label="清除">×</button>
+          
+        </div>
+      </div>
+      </div>
+      <div class="bar-actions">
+        <button id="aiWholeBtn" class="ai-top-btn" type="button" title="让 AI 阅读整个结构" hidden>AI阅读全文</button>
+        <button id="aiChainBtn" class="ai-top-btn" type="button" title="让 AI 阅读当前命令链" hidden>AI阅读分链</button>
+        <button id="undoBtn" class="icon-btn" title="撤销" aria-label="撤销" type="button">↶</button>
+        <button id="redoBtn" class="icon-btn" title="重做" aria-label="重做" type="button">↷</button>
+        <button id="diagnoseBtn" class="icon-btn bar-utility-btn" title="运行日志" type="button">日志</button>
+        <button id="replaceBtn" class="icon-btn bar-utility-btn" title="批量替换" type="button">替换</button>
+        <button id="themeBtn" class="icon-btn" title="主题" aria-label="切换主题" type="button">◐</button>
+        <button id="wsMobileSearch" class="icon-btn ws-mobile-btn" type="button" title="搜索" aria-label="搜索">⌕</button>
+        <button id="wsInspectorToggle" class="icon-btn ws-inspector-btn" type="button" title="收起/展开检查器" aria-label="收起或展开检查器">检视</button>
+        <div class="ws-more">
+          <button id="wsMoreBtn" class="icon-btn" type="button" aria-expanded="false" aria-haspopup="menu">更多</button>
+          <div id="wsMoreMenu" class="ws-more-menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-ws-ai>AI 检查</button>
+            <button type="button" role="menuitem" data-ws-click="saveBtn">导出结构</button>
+            <button type="button" role="menuitem" data-ws-click="diagnoseBtn">运行日志</button>
+            <button type="button" role="menuitem" data-ws-click="replaceBtn">批量替换</button>
+            <button type="button" role="menuitem" data-ws-click="themeBtn">切换主题</button>
+            <button type="button" role="menuitem" data-ws-click="usageHelpBtn">使用说明</button>
+          </div>
+        </div>
+        <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构">导出</button>
+      </div>
+    </header>
+
+    <aside id="wsSidebar" class="ws-sidebar">
+      <div class="ws-side-head"><div><b>结构 / 链</b><span id="wsChainCount">0 条</span></div><button id="wsAddChain" type="button" title="新增链" aria-label="新增链">＋</button></div>
+      <div class="ws-side-filter"><button class="on" type="button" data-ws-filter="all">全部</button><button type="button" data-ws-filter="empty">有空尾</button></div>
+      <div id="wsChainList" class="ws-chain-list"></div>
+      <div class="ws-side-foot"><button id="wsManage" type="button">管理链</button><button id="wsHelp" type="button">说明</button><button id="wsCollapse" type="button" title="收起侧栏" aria-label="收起侧栏">‹</button></div>
+    </aside>
+    <button id="wsMobileInspector" class="ws-mobile-btn" type="button" aria-label="打开检查器" title="检查器">检视</button>
+
+    <div id="searchResults" class="search-results"></div>
+
+    <div id="canvasWrap" class="canvas-wrap"></div>
+
+    <div id="chainBar" class="chain-dock">
+      <div class="chain-action-area">
+        <span class="chain-action-label">链操作</span>
+        <div class="chain-action-buttons">
+          <button id="chainManage" class="chain-manage-btn" title="管理命令链" type="button">管理链</button>
+          <button id="chainTextModeBtn" class="chain-text-mode-btn" title="当前链文本模式" type="button">文本模式</button>
+          <button id="chainDeleteBtn" class="chain-delete-btn" title="删除当前命令链" type="button">删除本链</button>
+        </div>
+      </div>
+      <div id="cameraPad" class="camera-pad" role="group" aria-label="摄像机平移方向键">
+        <button class="camera-pad-btn camera-pad-up" data-camera-move="up" type="button" aria-label="摄像机向上平移" title="向上平移">▲</button>
+        <button class="camera-pad-btn camera-pad-left" data-camera-move="left" type="button" aria-label="摄像机向左平移" title="向左平移">◀</button>
+        <span class="camera-pad-center" aria-hidden="true">⌖</span>
+        <button class="camera-pad-btn camera-pad-right" data-camera-move="right" type="button" aria-label="摄像机向右平移" title="向右平移">▶</button>
+        <button class="camera-pad-btn camera-pad-down" data-camera-move="down" type="button" aria-label="摄像机向下平移" title="向下平移">▼</button>
+      </div>
+      <div class="usage-help-area">
+        <button id="usageHelpBtn" class="usage-help-btn" type="button" title="打开完整 README 使用说明" aria-label="打开完整 README 使用说明">
+          <span class="usage-help-icon" aria-hidden="true">i</span><span>使用说明</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="chainManager" class="chain-manager">
+      <div class="chain-manager-head">
+        <div><b>链位置</b><span>拖动链条调整顺序</span></div>
+        <div class="chain-manager-head-actions">
+          <button id="chainAddBtn" class="chain-add-btn" type="button">新增链</button>
+          <button id="chainManagerClose" class="chain-manager-close" title="关闭" type="button">×</button>
+        </div>
+      </div>
+      <div id="chainManagerList" class="chain-manager-list"></div>
+      <div class="chain-sort-hint">拖动项目后会立即重新排列结构中的 X 位置。</div>
+    </div>
+
+    <div id="chainAddModal" class="chain-add-modal" role="dialog" aria-modal="true" aria-labelledby="chainAddTitle" aria-hidden="true">
+      <div class="chain-add-card">
+        <div class="chain-add-head"><b id="chainAddTitle">新增链</b><button id="chainAddClose" type="button" class="chain-add-close" aria-label="关闭新增链">×</button></div>
+        <div class="chain-add-title">导入已有指令</div>
+        <div class="chain-import-options">
+          <button id="importMcstructureBtn" type="button" class="chain-import-btn"><b>导入结构文件</b><span>选择 .mcstructure，自动识别其中的命令链</span></button>
+          <button id="importTxtBtn" type="button" class="chain-import-btn"><b>导入 TXT 指令</b><span>每行一条命令，自动判断断链或循环链</span></button>
+        </div>
+        <div class="chain-add-title chain-add-title-manual">手动新增</div>
+        <div class="chain-add-options">
+          <button type="button" data-add-chain-type="impulse"><b>脉冲链</b><span>创建 1 个命令方块</span></button>
+          <button type="button" data-add-chain-type="repeat"><b>循环链</b><span>创建 1 个重复命令方块</span></button>
+        </div>
+        <input id="importMcstructureInput" type="file" accept=".mcstructure" hidden>
+        <input id="importTxtInput" type="file" accept=".txt,text/plain" hidden>
+      </div>
+    </div>
+
+    <div id="textEditorOverlay" class="text-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="textEditorTitle" aria-hidden="true">
+      <div class="text-editor-card">
+        <div class="text-editor-head">
+          <div><b id="textEditorTitle">文本模式</b><span id="textEditorSub">每行一条命令 · 点击行号切换有无条件</span></div>
+          <button id="textEditorClose" type="button" class="text-editor-close" title="关闭" aria-label="关闭文本模式">×</button>
+        </div>
+        <div id="textEditorWork" class="text-editor-work">
+          <div id="textEditorLineNumbers" class="text-line-numbers" aria-hidden="true"></div>
+          <div id="textEditorCodeMain" class="text-code-main">
+            <pre id="textEditorHighlight" class="text-editor-highlight" aria-hidden="true" data-placeholder="输入命令，每行一条；点击左侧行号切换有无条件"></pre>
+            <textarea id="textEditorInput" class="text-editor-input" spellcheck="false" wrap="soft" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="命令文本编辑区"></textarea>
+          </div>
+        </div>
+        <div class="text-editor-foot">
+          <span id="textEditorHint">每行一条命令 · 自动换行 · 支持 Minecraft 命令语法高亮</span>
+          <div><button id="textEditorCancel" type="button" class="text-editor-btn">取消</button><button id="textEditorApply" type="button" class="text-editor-btn primary">应用修改</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewportHelp" class="viewport-help"><b>WASD</b> 移动<br><b>空格/Shift</b> 升降<br><b>左键</b> 旋转视角<br><b>鼠标滚轮</b> 缩放</div>
+
+    <aside id="inspector" class="inspector">
+      <div class="inspector-head"><b>对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭">×</button></div>
+      <div id="emptyState" class="empty-state"><div class="empty-icon">◇</div><b>尚未选择对象</b><p>选择场景中的命令方块后，在这里查看坐标、条件与标记。</p></div>
+      <div id="infoPanel" class="info">
+        <div class="object-summary"><span id="infoIdx" class="idx">#—</span><b id="infoType">命令方块</b><span id="infoAuxBadge">辅助方块</span><span id="infoMarkBadge">已标记</span></div>
+        <div class="inspector-select-row">
+          <label class="inspector-select-card"><select id="infoBlockType" aria-label="方块类型"><option value="command">脉冲</option><option value="chain">链式</option><option value="repeating">循环</option></select></label>
+          <label class="inspector-select-card"><select id="infoCond" aria-label="条件"><option value="0">无条件</option><option value="1">有条件</option></select></label>
+          <label class="inspector-select-card"><select id="infoAuto" aria-label="执行"><option value="1">保持开启</option><option value="0">红石触发</option></select></label>
+        </div>
+        <div class="inspector-field is-note"><div class="inspector-field-head">注释</div><textarea id="infoNote" spellcheck="false" wrap="soft" placeholder="输入注释……"></textarea></div>
+        <div class="inspector-field"><div class="inspector-field-head">命令</div><textarea id="infoCmd" spellcheck="false" wrap="soft" placeholder="输入命令……"></textarea></div>
+        <div class="edit-grid"><button id="infoMark" type="button">标记</button><button id="infoInsAfter" type="button">后插</button><button id="infoDel" class="danger" type="button">删除</button></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+
+<div id="diagnosticModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="diagnosticTitle" aria-hidden="true">
+  <div class="feature-card diagnostic-card">
+    <div class="feature-head"><div><b id="diagnosticTitle">运行日志</b><span>记录页面运行、导入、编辑、导出以及错误信息</span></div><div class="feature-head-actions"><button id="logCopy" class="feature-btn" type="button">复制日志</button><button id="diagnosticClose" class="feature-close" type="button" aria-label="关闭运行日志">×</button></div></div>
+    <div id="diagnosticBody" class="diagnostic-body"></div>
+  </div>
+</div>
+<div id="exportFormatModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="exportFormatTitle" aria-hidden="true">
+  <div class="feature-card export-format-card">
+    <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择">×</button></div>
+    <div class="export-format-options">
+      <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>网易版老/execute语法专用，可以正常使用</span></button>
+      <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>国际版通用格式</span></button>
+      <button id="exportNetEaseBtn" class="chain-import-btn" type="button"><b>导出网易版格式</b><span>网易专用，新版导入失败再选</span></button>
+      <button id="exportBothBtn" class="chain-import-btn" type="button"><b>同时导出旧版 + 新版 + 网易版</b></button>
+    </div>
+    <div class="feature-actions"><button id="exportFormatCancel" class="feature-btn" type="button">取消</button></div>
+  </div>
+</div>
+<div id="promptModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="promptModalTitle" aria-hidden="true">
+  <div class="feature-card prompt-card">
+    <div class="feature-head"><div><b id="promptModalTitle">提示</b></div><button id="promptModalClose" class="feature-close" type="button" aria-label="关闭提示">×</button></div>
+    <div id="promptModalMessage" class="prompt-modal-message"></div>
+    <div class="feature-actions"><button id="promptModalCancel" class="feature-btn" type="button">取消</button><button id="promptModalConfirm" class="feature-btn primary" type="button">继续</button></div>
+  </div>
+</div>
+<div id="replaceModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="replaceTitle" aria-hidden="true">
+  <div class="feature-card replace-card">
+    <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换">×</button></div>
+    <label class="feature-input-label"><span>查找</span><input id="replaceFind" type="text" autocomplete="off"></label>
+    <label class="feature-input-label"><span>替换为</span><input id="replaceWith" type="text" autocomplete="off"></label>
+    <div class="replace-scope"><label><input type="radio" name="replaceScope" value="all" checked> 全部链</label><label><input type="radio" name="replaceScope" value="current"> 当前链</label></div>
+    <div id="replacePreview" class="replace-preview">输入查找内容后会显示匹配数量</div>
+    <div class="feature-actions"><button id="replaceCancel" class="feature-btn" type="button">取消</button><button id="replaceApply" class="feature-btn primary" type="button">执行替换</button></div>
+  </div>
+</div>
+
+<div id="usageHelpModal" class="feature-modal usage-modal" role="dialog" aria-modal="true" aria-labelledby="usageHelpTitle" aria-hidden="true">
+  <div class="feature-card usage-card">
+    <div class="feature-head">
+      <div><b id="usageHelpTitle">使用说明</b><span>完整 README 文档 · 与发行包内 README.md 内容同步</span></div>
+      <button id="usageHelpClose" class="feature-close" type="button" aria-label="关闭使用说明">×</button>
+    </div>
+    <article id="usageReadmeBody" class="usage-readme-body" aria-live="polite">正在从同目录读取 README.md……</article>
+  </div>
+</div>
+
+<div id="resumeBar" class="resume-bar" hidden><span>发现上次未结束的编辑</span><button id="resumeBtn" type="button">恢复</button><button id="resumeDismiss" type="button">清除</button></div>
+
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="toastStack" class="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<script src="./vendor/three-offline.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "node:fs": "./src/skill-runtime/node-fs.js",
+    "node:path": "./src/skill-runtime/node-path.js",
+    "node:url": "./src/skill-runtime/node-url.js",
+    "node:zlib": "./src/skill-runtime/node-zlib.js"
+  }
+}
+</script>
+<script src="./src/data/skill-ids-data.js"></script>
+<script src="./src/data/ai-skill-data.js"></script>
+<script type="module" src="./src/main.js?v=r3-20261127"></script>
+<script type="module" src="./src/ai.js?v=r3-20261127"></script>
+<script type="module" src="./src/workspace.js?v=r3-20261127"></script>
+</body>
+</html>

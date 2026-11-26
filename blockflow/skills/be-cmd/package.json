@@ -1,0 +1,15 @@
+{
+  "name": "mcbe-blockflow",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minecraft Bedrock command-block chain and mcstructure toolkit",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "mcbe": "node scripts/mcbe.js",
+    "start": "node scripts/mcbe.js",
+    "test": "node scripts/mcbe.js selftest"
+  }
+}

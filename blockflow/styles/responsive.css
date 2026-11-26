@@ -1,0 +1,228 @@
+/* ============================================================
+   12. 响应式
+   ============================================================ */
+@media(max-width:900px){
+  .inspector{right:10px;width:min(350px,88vw)}
+  .chain-manager{right:10px;width:min(460px,calc(100vw - 20px))}
+  .text-editor-card{width:min(920px,calc(100vw - 32px))}
+}
+@media(max-width:700px){
+  .inspector-select-row{grid-template-columns:1fr}
+  .bar-utility-btn{display:none}
+}
+@media(max-width:600px){
+  .upload-shell{padding:20px}
+  .upload-card{max-width:calc(100vw - 28px);padding:28px 22px 22px;border-radius:20px}
+  .upload-card h1{font-size:42px}
+  .upload-card p{font-size:13px}
+  .bar-brand .brand-copy{display:none}
+  .bar-file-name{max-width:36vw}
+  .top-view-grid .view-btn{width:36px}
+  .search-input{width:120px}
+  .search-input:focus{width:190px}
+  .search-results{width:calc(100vw - 28px);max-width:none}
+  .viewport-help{min-width:0;max-width:calc(100vw - 32px);font-size:13.2px;padding:10px 12px}
+  .chain-dock{bottom:12px}
+  .text-editor-overlay{padding:12px}
+  .text-editor-card{width:calc(100vw - 24px);height:94vh}
+  .text-editor-head{padding:14px 15px}
+  .text-editor-head b{font-size:16px}
+  .text-editor-head span{font-size:12.5px}
+  .text-editor-work{margin:12px 11px 10px}
+  .text-line-numbers{flex-basis:46px;min-width:46px;padding-right:5px;font-size:12px}
+  .text-line-number{padding-right:6px}
+  .text-line-number.is-conditional::before{left:4px;width:5px;height:5px}
+  .text-editor-highlight,.text-editor-input{padding:14px 12px 20px;font-size:13px;line-height:1.7}
+  .text-editor-foot{align-items:flex-start;flex-direction:column;gap:10px;padding:11px 13px}
+  .text-editor-foot>div{width:100%}
+  .text-editor-foot .text-editor-btn{flex:1}
+}
+
+/* ============================================================
+   移动端：三段式工具顶栏 + 摄像机方向触控键
+   ============================================================ */
+ .bar-main-row,.bar-control-row{display:contents}
+.chain-action-area{display:flex;align-items:center;gap:8px;min-width:0}
+.chain-action-label{display:none}
+.chain-action-buttons{display:flex;align-items:center;gap:8px;min-width:0}
+.camera-pad{display:none}
+.usage-help-area{display:none}
+@media(max-width:900px){
+  .command-bar{
+    left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);
+    height:auto;min-height:0;max-height:none;
+    display:flex;flex-direction:column;align-items:stretch;gap:7px;
+    padding:8px;border-radius:15px;
+  }
+  .bar-main-row,.bar-control-row{display:flex;align-items:center;gap:7px;min-width:0;width:100%}
+  .bar-brand{width:36px;height:38px;flex:0 0 36px;justify-content:center;padding:0}
+  .bar-brand .brand-mark{width:27px;height:27px}
+  .bar-brand .brand-copy{display:none}
+  .bar-file{flex:1 1 auto;min-width:0;gap:5px}
+  .bar-file-name{flex:1 1 auto;min-width:0;max-width:none;height:38px;gap:6px;padding:4px 8px}
+  .bar-label{display:none}
+  .bar-file b{min-width:0;flex:1;font-size:12px;line-height:1.2}
+  .bar-file-stats{display:flex;flex:0 0 auto;gap:4px;margin-left:0;padding-left:5px}
+  .bar-file-stats span{gap:3px;padding:3px 5px;border-radius:6px}
+  .bar-file-stats i{font-size:9px}
+  .bar-file-stats b{font-size:11px}
+  .bar-control-row{gap:6px}
+  .top-view-grid{height:40px;gap:2px;padding:2px 3px;border-radius:9px}
+  .top-view-grid .view-btn{width:34px;height:34px;font-size:13px}
+  .top-view-grid .top-home-btn{width:30px;height:34px;font-size:15px}
+  .top-view-grid .top-view-sep{height:20px;margin:0 1px}
+  .search-dock{flex:1 1 auto;min-width:0;width:auto}
+  .search-wrap{width:100%;height:40px}
+  .search-input,.search-input:focus{display:block;width:100%;height:40px;padding:8px 32px 8px 36px;font-size:13px}
+  .search-input::placeholder{font-size:12px}
+  .search-wrap svg{left:11px;width:16px;height:16px}
+  .search-clear{right:8px}
+  .bar-actions{
+    display:grid;
+    width:100%;gap:5px;min-width:0;
+  }
+  .bar-actions .icon-btn,.bar-actions .export-btn{
+    display:flex;align-items:center;justify-content:center;min-width:0;width:100%;height:38px;
+    padding:0 4px;border-radius:8px;font-size:16px;white-space:nowrap;
+  }
+  .bar-actions .bar-utility-btn{display:flex;padding:0 2px;font-size:10.5px;letter-spacing:-.03em}
+  .bar-actions .export-btn{padding:0 5px;font-size:11.5px;font-weight:750}
+  .search-results{top:calc(env(safe-area-inset-top,0px) + 158px);left:8px;right:8px;transform:none;width:auto;max-width:none;max-height:min(42vh,320px)}
+  .viewport-help{display:none}
+  /* 底部控制台：左侧链管理 / 中央摄像机平移 / 右侧完整使用说明 */
+  .chain-dock{
+    left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
+    transform:none;width:auto;height:auto;min-height:0;
+    display:grid;grid-template-columns:minmax(0,1fr) 102px minmax(0,1fr);align-items:center;gap:7px;
+    padding:8px;border-radius:17px;
+    border:1px solid var(--glass-border);
+    background:var(--glass-bg);
+    -webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%);
+    box-shadow:var(--glass-shadow);
+  }
+  .chain-action-area{display:flex;min-width:0;min-height:100px;flex-direction:column;justify-content:center;gap:7px}
+  .chain-action-label{display:block;padding-left:2px;color:#778396;font-size:10px;line-height:1;letter-spacing:.12em;font-weight:700}
+  .chain-action-buttons{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;width:100%}
+  .chain-dock button{height:34px;width:100%;min-width:0;padding:0 5px;border-radius:10px;font-size:11.5px;white-space:nowrap}
+  .chain-dock .chain-manage-btn{background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:var(--text);font-weight:650;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .chain-dock .chain-text-mode-btn{background:rgba(142,162,255,.13);border:1px solid rgba(142,162,255,.30);color:#cbd6ff;font-weight:650;box-shadow:none}
+  .chain-dock .chain-delete-btn{background:rgba(255,110,125,.09);border:1px solid rgba(255,150,160,.25);color:#ffabb3;font-weight:650;box-shadow:none}
+  [data-theme="light"] .chain-dock{background:rgba(248,250,253,.88);border-color:rgba(78,94,118,.24);box-shadow:0 10px 32px rgba(31,45,65,.11),inset 0 1px 0 rgba(255,255,255,.88)}
+  [data-theme="light"] .chain-dock .chain-manage-btn{background:#e9eef6;border-color:#c8d2df;color:#33445c;box-shadow:inset 0 1px 0 rgba(255,255,255,.78)}
+  [data-theme="light"] .chain-dock .chain-text-mode-btn{background:#e9effb;border-color:#c8d4ef;color:#465d9c}
+  [data-theme="light"] .chain-dock .chain-delete-btn{background:#f8eeee;border-color:#e8c9cd;color:#b45a64}
+  .camera-pad{
+    position:relative;z-index:1;width:102px;height:102px;display:grid;
+    grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,32px);gap:2px;
+    padding:0;justify-self:center;align-self:center;justify-content:center;align-content:center;
+    border-radius:15px;background:rgba(7,10,15,.19);
+    border:1px solid rgba(130,145,166,.20);
+    touch-action:none;user-select:none;-webkit-user-select:none;
+  }
+  .chain-dock .camera-pad-btn,.chain-dock .camera-pad-center{
+    display:grid;place-items:center;width:32px;height:32px;margin:0;padding:0;
+    border:1px solid rgba(130,145,166,.25);border-radius:9px;
+    background:rgba(21,27,37,.82);color:#dbe3ef;
+    box-shadow:0 1px 3px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.06);
+    font:650 12.5px/1 var(--font-ui);touch-action:none;user-select:none;-webkit-user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .camera-pad-btn:active,.camera-pad-btn.is-pressed{background:#2b3550;border-color:#667ba9;color:#e1e8ff;transform:scale(.94)}
+  .chain-dock .camera-pad-center{border:0;background:transparent;box-shadow:none;color:#9aa6b7;font-size:12px}
+  [data-theme="light"] .camera-pad{background:rgba(220,227,237,.56);border-color:rgba(135,149,169,.17)}
+  [data-theme="light"] .chain-dock .camera-pad-btn{background:rgba(255,255,255,.82);color:#53647c;border-color:rgba(130,145,166,.19);box-shadow:0 1px 3px rgba(37,51,71,.05),inset 0 1px 0 rgba(255,255,255,.88)}
+  [data-theme="light"] .camera-pad-btn:active,[data-theme="light"] .camera-pad-btn.is-pressed{background:#dce5f6;border-color:#aabbdc;color:#3e5792}
+  [data-theme="light"] .chain-dock .camera-pad-center{color:#8997aa}
+  .camera-pad-up{grid-column:2;grid-row:1}
+  .camera-pad-left{grid-column:1;grid-row:2}
+  .camera-pad-center{grid-column:2;grid-row:2}
+  .camera-pad-right{grid-column:3;grid-row:2}
+  .camera-pad-down{grid-column:2;grid-row:3}
+  .usage-help-area{display:flex;align-items:center;justify-content:center;min-width:0;min-height:100px}
+  .usage-help-btn{width:100%;min-width:0;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 4px;border:1px solid rgba(130,145,166,.27);border-radius:12px;background:rgba(130,145,166,.10);color:var(--text);font:650 11.5px/1.2 var(--font-ui);white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);-webkit-tap-highlight-color:transparent}
+  .usage-help-btn:active{transform:scale(.97);background:rgba(130,145,166,.17)}
+  .usage-help-icon{width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(130,145,166,.34);border-radius:8px;font-size:15px;font-weight:750;line-height:1}
+  [data-theme="light"] .usage-help-btn{background:rgba(232,238,246,.82);border-color:#cbd5e1;color:#40516a;box-shadow:inset 0 1px 0 rgba(255,255,255,.86)}
+  [data-theme="light"] .usage-help-icon{border-color:#bdc9d8;color:#536987}
+  /* README 使用说明弹窗 */
+  .usage-card{width:min(920px,calc(100vw - 28px));height:min(90vh,900px);max-height:90vh}
+  .usage-readme-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:18px 26px 28px;color:#cbd5e1;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+  .usage-readme-body h1,.usage-readme-body h2,.usage-readme-body h3{color:#f1f5f9;line-height:1.35;scroll-margin-top:12px}
+  .usage-readme-body h1{font-size:27px;margin:4px 0 14px}
+  .usage-readme-body h2{font-size:20px;margin:28px 0 10px;padding-bottom:7px;border-bottom:1px solid rgba(132,148,171,.24)}
+  .usage-readme-body h3{font-size:16px;margin:20px 0 8px}
+  .usage-readme-body p{margin:8px 0 12px}
+  .usage-readme-body ul,.usage-readme-body ol{padding-left:23px;margin:8px 0 14px}
+  .usage-readme-body li{padding-left:2px;margin:4px 0}
+  .usage-readme-body a{color:#9db4ff;text-decoration:underline;text-underline-offset:2px}
+  .usage-readme-body strong{color:#f3f6fa}
+  .usage-readme-body code{padding:2px 5px;border-radius:5px;background:rgba(130,145,166,.17);color:#e5eaf2;font-size:.92em}
+  .usage-readme-body pre{overflow:auto;padding:13px 15px;border:1px solid rgba(132,148,171,.22);border-radius:10px;background:rgba(5,8,12,.42);line-height:1.6}
+  .usage-readme-body pre code{padding:0;background:transparent}
+  .usage-readme-body blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid #7c91c5;background:rgba(130,145,166,.08);color:#aebacc}
+  .usage-readme-body table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:13px}
+  .usage-readme-body th,.usage-readme-body td{padding:8px 10px;border:1px solid rgba(132,148,171,.24);text-align:left;vertical-align:top}
+  .usage-readme-body th{background:rgba(130,145,166,.14);color:#f1f5f9}
+  [data-theme="light"] .usage-readme-body{color:#465568}
+  [data-theme="light"] .usage-readme-body h1,[data-theme="light"] .usage-readme-body h2,[data-theme="light"] .usage-readme-body h3{color:#263241}
+  [data-theme="light"] .usage-readme-body h2{border-bottom-color:#d4dce6}
+  [data-theme="light"] .usage-readme-body a{color:#405caa}
+  [data-theme="light"] .usage-readme-body strong{color:#253448}
+  [data-theme="light"] .usage-readme-body code{background:#e9eef5;color:#33445b}
+  [data-theme="light"] .usage-readme-body pre{background:#f0f3f7;border-color:#d2dae4;color:#33445b}
+  [data-theme="light"] .usage-readme-body blockquote{background:#f0f4f8;color:#5a687a}
+  [data-theme="light"] .usage-readme-body th,[data-theme="light"] .usage-readme-body td{border-color:#d3dce6}
+  [data-theme="light"] .usage-readme-body th{background:#eaf0f6;color:#2e3f55}
+  .chain-manager{top:calc(env(safe-area-inset-top,0px) + 158px);max-height:calc(100% - 180px)}
+  .inspector{top:calc(env(safe-area-inset-top,0px) + 158px);bottom:calc(env(safe-area-inset-bottom,0px) + 132px)}
+}
+@media(max-width:380px){
+  .command-bar{left:6px;right:6px;padding:7px;gap:6px}
+  .bar-main-row,.bar-control-row{gap:5px}
+  .bar-file-stats{gap:3px;padding-left:4px}
+  .bar-file-stats span{padding:3px 4px}
+  .top-view-grid .view-btn{width:31px}
+  .top-view-grid .top-home-btn{width:27px}
+  .search-input,.search-input:focus{font-size:12px;padding-left:32px}
+  .bar-actions{gap:4px}
+  .bar-actions .bar-utility-btn{font-size:9.5px}
+  .bar-actions .export-btn{font-size:10.5px}
+  .chain-dock{left:6px;right:6px;grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr);gap:5px;padding:7px}
+  .chain-action-area,.usage-help-area{min-height:96px}
+  .camera-pad{width:96px;height:96px;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:2px}
+  .chain-dock .camera-pad-btn,.chain-dock .camera-pad-center{width:30px;height:30px}
+  .chain-dock button{padding-left:3px;padding-right:3px;font-size:10.5px}
+  .chain-action-buttons{gap:4px}
+  .usage-help-btn{height:72px;font-size:10.5px;gap:6px}
+  .usage-help-icon{width:23px;height:23px}
+}
+
+/* README 弹窗：固定弹窗高度，正文独立滚动，并将阅读列居中 */
+.usage-card{
+  width:min(920px,calc(100vw - 28px));
+  height:min(90vh,900px);
+  max-height:90vh;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.usage-card>.feature-head{flex:0 0 auto}
+.usage-readme-body{
+  display:block;
+  flex:1 1 0;
+  min-height:0;
+  width:100%;
+  max-width:840px;
+  margin:0 auto;
+  padding:24px clamp(20px,4vw,42px) 40px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+  box-sizing:border-box;
+  text-align:left;
+}
+.usage-readme-body>*{max-width:100%}
+.usage-readme-body pre,.usage-readme-body .readme-table-wrap{max-width:100%;overflow:auto}

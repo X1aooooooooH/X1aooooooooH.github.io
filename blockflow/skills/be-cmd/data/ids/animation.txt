@@ -1,0 +1,559 @@
+# ID: 中文说明；来源标注用于区分官方本地化、资料翻译和语义整理。
+animation.actor.billboard: 实体=其他；说明=应用于物品弹射物，使之朝向镜头；循环=是；动画长度=N/A
+animation.agent.move: 实体=智能体；说明=智能体移动动画；循环=是；动画长度=N/A
+animation.agent.shrug: 实体=智能体；说明=智能体执行命令失败动画；循环=否；动画长度=1.5
+animation.agent.swing_arms: 实体=智能体；说明=智能体抬起手臂动画；循环=是；动画长度=N/A
+animation.allay.dance: 实体=悦灵；说明=悦灵跳舞动画；循环=是；动画长度=2.75
+animation.allay.fly: 实体=悦灵；说明=悦灵飞行动画；循环=是；动画长度=2
+animation.allay.hold_item: 实体=悦灵；说明=悦灵手持物品动画；循环=停留到最后一帧；动画长度=2
+animation.allay.hold_item_fly: 实体=悦灵；说明=悦灵手持物品飞行动画；循环=是；动画长度=2
+animation.allay.idle: 实体=悦灵；说明=悦灵空闲动画；循环=是；动画长度=2
+animation.allay.look_at_target.default: 实体=悦灵；说明=悦灵看向目标动画；循环=是；动画长度=N/A
+animation.armadillo.baby_peek: 实体=犰狳；说明=幼年犰狳窥视动画；循环=停留到最后一帧；动画长度=2.5
+animation.armadillo.baby_roll_up: 实体=犰狳；说明=幼年犰狳蜷缩动画；循环=停留到最后一帧；动画长度=0.5
+animation.armadillo.baby_rolled_up: 实体=犰狳；说明=幼年犰狳蜷缩后动画；循环=停留到最后一帧；动画长度=N/A
+animation.armadillo.baby_unroll: 实体=犰狳；说明=幼年犰狳起身动画；循环=停留到最后一帧；动画长度=1.5
+animation.armadillo.baby_unroll_fast: 实体=犰狳；说明=幼年犰狳快速起身动画；循环=停留到最后一帧；动画长度=1.5
+animation.armadillo.baby_walk: 实体=犰狳；说明=幼年犰狳移动动画；循环=是；动画长度=1.4583
+animation.armadillo.look_at_target: 实体=犰狳；说明=犰狳看向目标；循环=是；动画长度=N/A
+animation.armadillo.peek: 实体=犰狳；说明=犰狳窥视动画；循环=停留到最后一帧；动画长度=2.5
+animation.armadillo.roll_up: 实体=犰狳；说明=犰狳蜷缩动画；循环=停留到最后一帧；动画长度=0.5
+animation.armadillo.rolled_up: 实体=犰狳；说明=犰狳蜷缩后动画；循环=停留到最后一帧；动画长度=N/A
+animation.armadillo.unroll: 实体=犰狳；说明=犰狳起身动画；循环=停留到最后一帧；动画长度=1.5
+animation.armadillo.unroll_fast: 实体=犰狳；说明=犰狳快速起身动画；循环=停留到最后一帧；动画长度=0.05
+animation.armadillo.walk: 实体=犰狳；说明=犰狳移动动画；循环=是；动画长度=1.45833
+animation.armor.boots.offset: 实体=盔甲；说明=装备靴子动画；循环=是；动画长度=N/A
+animation.armor.chestplate.offset: 实体=盔甲；说明=装备胸甲动画；循环=是；动画长度=N/A
+animation.armor.helmet.offset: 实体=盔甲；说明=装备头盔动画；循环=是；动画长度=N/A
+animation.armor.leggings.offset: 实体=盔甲；说明=装备护腿动画；循环=是；动画长度=N/A
+animation.armor_stand.athena_pose: 实体=盔甲架；说明=盔甲架雅典娜姿势；循环=是；动画长度=N/A
+animation.armor_stand.brandish_pose: 实体=盔甲架；说明=盔甲架挥剑姿势；循环=是；动画长度=N/A
+animation.armor_stand.cancan_a_pose: 实体=盔甲架；说明=盔甲架康康舞姿势（向右）；循环=是；动画长度=N/A
+animation.armor_stand.cancan_b_pose: 实体=盔甲架；说明=盔甲架康康舞姿势（向左）；循环=是；动画长度=N/A
+animation.armor_stand.default_pose: 实体=盔甲架；说明=盔甲架默认姿势；循环=是；动画长度=N/A
+animation.armor_stand.entertain_pose: 实体=盔甲架；说明=盔甲架招待姿势；循环=是；动画长度=N/A
+animation.armor_stand.hero_pose: 实体=盔甲架；说明=盔甲架勇者姿势；循环=是；动画长度=N/A
+animation.armor_stand.holding_heavy_core: 实体=盔甲架；说明=盔甲架持有沉重核心；循环=是；动画长度=N/A
+animation.armor_stand.honor_pose: 实体=盔甲架；说明=盔甲架致敬姿势；循环=是；动画长度=N/A
+animation.armor_stand.no_pose: 实体=盔甲架；说明=盔甲架无姿势；循环=是；动画长度=N/A
+animation.armor_stand.riposte_pose: 实体=盔甲架；说明=盔甲架回刺反击姿势；循环=是；动画长度=N/A
+animation.armor_stand.salute_pose: 实体=盔甲架；说明=盔甲架行礼姿势；循环=是；动画长度=N/A
+animation.armor_stand.solemn_pose: 实体=盔甲架；说明=盔甲架典仪姿势；循环=是；动画长度=N/A
+animation.armor_stand.wiggle: 实体=盔甲架；说明=盔甲架摆动（受伤时）；循环=是；动画长度=N/A
+animation.armor_stand.zombie_pose: 实体=盔甲架；说明=盔甲架僵尸姿势；循环=是；动画长度=N/A
+animation.arrow.move: 实体=箭；说明=箭移动动画；循环=是；动画长度=N/A
+animation.axolotl.baby_idle_floor: 实体=美西螈；说明=幼年美西螈地面空闲动画；循环=是；动画长度=2.88
+animation.axolotl.baby_idle_floor_underwater: 实体=美西螈；说明=幼年美西螈水底空闲动画；循环=是；动画长度=5.12
+animation.axolotl.baby_idle_underwater: 实体=美西螈；说明=幼年美西螈水中空闲动画；循环=是；动画长度=5.2
+animation.axolotl.baby_swim: 实体=美西螈；说明=幼年美西螈游泳动画；循环=是；动画长度=1
+animation.axolotl.baby_walk_floor: 实体=美西螈；说明=幼年美西螈地面移动动画；循环=是；动画长度=2.72
+animation.axolotl.baby_walk_floor_underwater: 实体=美西螈；说明=幼年美西螈水底移动动画；循环=是；动画长度=2.04
+animation.axolotl.idle_floor: 实体=美西螈；说明=美西螈地面空闲动画；循环=是；动画长度=2.8
+animation.axolotl.idle_floor_underwater: 实体=美西螈；说明=美西螈水底空闲动画；循环=是；动画长度=5.12
+animation.axolotl.idle_underwater: 实体=美西螈；说明=美西螈水中空闲动画；循环=是；动画长度=5.2
+animation.axolotl.play_dead: 实体=美西螈；说明=美西螈装死动画；循环=是；动画长度=N/A
+animation.axolotl.swim: 实体=美西螈；说明=美西螈游泳动画；循环=是；动画长度=1
+animation.axolotl.swim_angle: 实体=美西螈；说明=美西螈斜向游泳动画；循环=是；动画长度=N/A
+animation.axolotl.walk_floor: 实体=美西螈；说明=美西螈地面移动动画；循环=是；动画长度=2.72
+animation.axolotl.walk_floor_underwater: 实体=美西螈；说明=美西螈水底移动动画；循环=是；动画长度=2.04
+animation.bat.flying: 实体=蝙蝠；说明=蝙蝠飞行动画；循环=是；动画长度=0.5
+animation.bat.resting: 实体=蝙蝠；说明=蝙蝠倒挂休息动画；循环=是；动画长度=N/A
+animation.bee.bobbing: 实体=蜜蜂；说明=蜜蜂采粉动画；循环=是；动画长度=N/A
+animation.bee.fly.bobbing: 实体=蜜蜂；说明=蜜蜂的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.bee.flying: 实体=蜜蜂；说明=蜜蜂飞行动画；循环=是；动画长度=2.55
+animation.bee.no_stinger: 实体=蜜蜂；说明=蜜蜂失去螯针动画；循环=是；动画长度=N/A
+animation.bee.sting: 实体=蜜蜂；说明=蜜蜂攻击动画；循环=是；动画长度=N/A
+animation.blaze.move: 实体=烈焰人；说明=烈焰人空闲动画；循环=是；动画长度=N/A
+animation.bow.wield: 实体=弓；说明=使用弓动画；循环=是；动画长度=N/A
+animation.bow.wield_first_person_pull: 实体=弓；说明=第一人称使用弓动画；循环=是；动画长度=N/A
+animation.breeze.idle: 实体=旋风人；说明=旋风人空闲动画；循环=是；动画长度=2
+animation.breeze.idle_ground_particles: 实体=旋风人；说明=旋风人空闲生成地面粒子动画；循环=否；动画长度=0.1
+animation.breeze.idle_ground_sound:
+animation.breeze.jump: 实体=旋风人；说明=旋风人跳跃动画；循环=是；动画长度=1.125
+animation.breeze.shoot: 实体=旋风人；说明=旋风人射击动画；循环=否；动画长度=1.125
+animation.breeze.slide: 实体=旋风人；说明=旋风人滑行动画；循环=停留到最后一帧；动画长度=0.2
+animation.breeze.slide_ground_particles: 实体=旋风人；说明=旋风人生成地面粒子动画；循环=是；动画长度=0.1
+animation.breeze.whirl_sound: 实体=旋风人；说明=旋风人播放空闲音效动画；循环=是；动画长度=1.5
+animation.camel.baby_dash: 实体=骆驼、骆驼尸壳；说明=幼年骆驼冲刺动画，未使用；循环=是；动画长度=0.5
+animation.camel.baby_idle: 实体=骆驼、骆驼尸壳；说明=幼年骆驼空闲动画；循环=是；动画长度=4
+animation.camel.baby_sit: 实体=骆驼、骆驼尸壳；说明=幼年骆驼坐时动画；循环=是；动画长度=N/A
+animation.camel.baby_sit_down: 实体=骆驼、骆驼尸壳；说明=幼年骆驼坐下动画；循环=停留到最后一帧；动画长度=2
+animation.camel.baby_stand_up: 实体=骆驼、骆驼尸壳；说明=幼年骆驼起身动画；循环=停留到最后一帧；动画长度=2.6
+animation.camel.baby_walk: 实体=骆驼、骆驼尸壳；说明=幼年骆驼移动动画；循环=是；动画长度=1.5
+animation.camel.dash: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳冲刺动画；循环=是；动画长度=0.5
+animation.camel.dash_sound: 实体=骆驼、骆驼尸壳；说明=骆驼播放冲刺音效动画；循环=否；动画长度=0.5
+animation.camel.idle: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳空闲动画；循环=是；动画长度=4
+animation.camel.look_at_target:
+animation.camel.sit: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳坐时动画；循环=是；动画长度=N/A
+animation.camel.sit_down: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳坐下动画；循环=停留到最后一帧；动画长度=2
+animation.camel.stand_up: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳起身动画；循环=停留到最后一帧；动画长度=2.6
+animation.camel.walk: 实体=骆驼、骆驼尸壳；说明=成年骆驼和骆驼尸壳移动动画；循环=是；动画长度=1.5
+animation.cat.baby_lie_down: 实体=猫；说明=幼年猫躺下动画；循环=是；动画长度=0.0417
+animation.cat.baby_sit: 实体=猫；说明=幼年猫坐下动画；循环=是；动画长度=0.0417
+animation.cat.baby_sneak: 实体=猫；说明=猫的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.cat.baby_sprint: 实体=猫；说明=猫的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.cat.baby_transform: 实体=猫；说明=猫幼年体型，未使用；循环=是；动画长度=N/A
+animation.cat.baby_walk: 实体=猫；说明=猫的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.cat.lie_down: 实体=猫；说明=猫躺下动画；循环=是；动画长度=N/A
+animation.cat.sit: 实体=猫；说明=猫坐下动画；循环=是；动画长度=N/A
+animation.cat.sneak: 实体=猫；说明=猫潜行动画；循环=是；动画长度=N/A
+animation.cat.sprint: 实体=猫；说明=猫疾跑动画；循环=是；动画长度=N/A
+animation.cat.walk: 实体=猫；说明=猫移动动画；循环=是；动画长度=N/A
+animation.chicken.baby_transform: 实体=鸡；说明=幼年鸡体型，未使用；循环=是；动画长度=N/A
+animation.chicken.general: 实体=鸡；说明=鸡空闲动画；循环=是；动画长度=N/A
+animation.chicken.general.v1.0: 实体=鸡；说明=鸡空闲动画（v1.0）；循环=是；动画长度=N/A
+animation.chicken.move: 实体=鸡；说明=鸡移动动画；循环=是；动画长度=N/A
+animation.cod.flop: 实体=鳕鱼；说明=鳕鱼扑腾动画；循环=是；动画长度=N/A
+animation.cod.swim: 实体=鳕鱼；说明=鳕鱼游泳动画；循环=是；动画长度=N/A
+animation.common.look_at_target: 实体=NPC、代理机器人、兔子、劫掠兽、北极熊、哞菇、嗅探兽、女巫、守卫者、旋风人、村民、流浪商人、海龟、潜影贝、烈焰人、熊猫、牛、狐狸、狼、猪、猫、羊、羊驼、美西螈、苦力怕、行商羊驼、豹猫、远古守卫者、铁傀儡、铜傀儡、雪傀儡、青蛙、鸡、鹦鹉；说明=NPC、代理机器人、兔子、劫掠兽、北极熊、哞菇、嗅探兽、女巫、守卫者、旋风人、村民、流浪商人、海龟、潜影贝、烈焰人、熊猫、牛、狐狸、狼、猪、猫、羊、羊驼、美西螈、苦力怕、行商羊驼、豹猫、远古守卫者、铁傀儡、铜傀儡、雪傀儡、青蛙、鸡、鹦鹉的看向目标动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.copper_golem.chest_interaction.put_item: 实体=铜傀儡；说明=铜傀儡放入物品动画；循环=是；动画长度=3
+animation.copper_golem.chest_interaction.put_item_fail: 实体=铜傀儡；说明=铜傀儡放入物品失败动画；循环=是；动画长度=3
+animation.copper_golem.chest_interaction.take_item: 实体=铜傀儡；说明=铜傀儡取出物品动画；循环=是；动画长度=3
+animation.copper_golem.chest_interaction.take_item_fail: 实体=铜傀儡；说明=铜傀儡取出物品失败动画；循环=是；动画长度=3
+animation.copper_golem.hold_item: 实体=铜傀儡；说明=铜傀儡手持物品空闲动画；循环=是；动画长度=0.8333
+animation.copper_golem.spin: 实体=铜傀儡；说明=铜傀儡旋转头部动画；循环=否；动画长度=3.5
+animation.copper_golem.spin.oxidized: 实体=铜傀儡；说明=氧化的铜傀儡旋转头部动画，未使用；循环=否；动画长度=3.5
+animation.copper_golem.spin.weathered: 实体=铜傀儡；说明=锈蚀的铜傀儡旋转头部动画，未使用；循环=否；动画长度=3.5
+animation.copper_golem.walk: 实体=铜傀儡；说明=铜傀儡移动动画；循环=是；动画长度=0.8333
+animation.copper_golem.walk_holding_item: 实体=铜傀儡；说明=铜傀儡手持物品移动动画；循环=是；动画长度=0.8333
+animation.cow.baby_transform: 实体=牛；说明=幼年牛体型，未使用；循环=是；动画长度=N/A
+animation.cow.setup: 实体=牛；说明=牛模型配置动画；循环=是；动画长度=N/A
+animation.cow.setup.v1.0: 实体=牛；说明=牛模型配置动画（v1.0）；循环=是；动画长度=N/A
+animation.creaking.attack: 实体=嘎枝；说明=嘎枝攻击动画；循环=否；动画长度=0.7083
+animation.creaking.look_at_target: 实体=嘎枝；说明=嘎枝看向目标动画；循环=是；动画长度=N/A
+animation.creaking.sway: 实体=嘎枝；说明=嘎枝摆动动画（受伤时）；循环=否；动画长度=0.275
+animation.creaking.twitch: 实体=嘎枝；说明=嘎枝抽搐动画；循环=停留到最后一帧；动画长度=2.25
+animation.creaking.walk: 实体=嘎枝；说明=嘎枝移动动画；循环=是；动画长度=1.125
+animation.creeper.legs: 实体=苦力怕；说明=苦力怕移动动画；循环=是；动画长度=N/A
+animation.creeper.swelling: 实体=苦力怕；说明=苦力怕即将爆炸时的膨胀动画；循环=是；动画长度=N/A
+animation.crossbow.wield: 实体=弩；说明=使用弩动画；循环=是；动画长度=N/A
+animation.crossbow.wield_first_person_pull: 实体=弩；说明=第一人称使用弩动画；循环=是；动画长度=N/A
+animation.dolphin.move: 实体=海豚；说明=海豚游泳动画；循环=是；动画长度=N/A
+animation.drowned.attack.baby_rotations: 实体=溺尸；说明=幼年溺尸旋转角度；循环=是；动画长度=N/A
+animation.drowned.attack.rotations: 实体=溺尸；说明=溺尸旋转角度；循环=是；动画长度=N/A
+animation.drowned.attack.rotations.v1.0: 实体=溺尸；说明=溺尸旋转角度（v1.0）；循环=是；动画长度=N/A
+animation.drowned.swimming.v1.0: 实体=溺尸；说明=溺尸游泳动画（v1.0）；循环=是；动画长度=N/A
+animation.elytra.default: 实体=鞘翅；说明=鞘翅默认动画；循环=是；动画长度=N/A
+animation.elytra.gliding: 实体=鞘翅；说明=鞘翅滑翔动画；循环=是；动画长度=N/A
+animation.elytra.sleeping: 实体=鞘翅；说明=睡觉时鞘翅动画；循环=是；动画长度=N/A
+animation.elytra.sneaking: 实体=鞘翅；说明=潜行时鞘翅动画；循环=是；动画长度=N/A
+animation.elytra.swimming: 实体=鞘翅；说明=游泳时鞘翅动画；循环=是；动画长度=N/A
+animation.ender_crystal.move: 实体=末地水晶；说明=末地水晶上下移动动画；循环=是；动画长度=N/A
+animation.ender_dragon.jaw_movement: 实体=末影龙；说明=末影龙下颌运动动画；循环=是；动画长度=N/A
+animation.ender_dragon.neck_head_movement: 实体=末影龙；说明=末影龙颈部和头部运动动画；循环=是；动画长度=N/A
+animation.ender_dragon.setup: 实体=末影龙；说明=末影龙配置动画；循环=是；动画长度=N/A
+animation.ender_dragon.tail_movement: 实体=末影龙；说明=末影龙尾部运动动画；循环=是；动画长度=N/A
+animation.ender_dragon.wings_limbs_movement: 实体=末影龙；说明=末影龙翅膀运动动画；循环=是；动画长度=N/A
+animation.enderman.arms_legs: 实体=末影人；说明=末影人四肢控制动画；循环=是；动画长度=N/A
+animation.enderman.base_pose: 实体=末影人；说明=末影人默认姿势；循环=是；动画长度=N/A
+animation.enderman.base_pose_v1.0: 实体=末影人；说明=末影人默认姿势（v1.0）；循环=是；动画长度=N/A
+animation.enderman.carrying: 实体=末影人；说明=末影人手持方块动画；循环=是；动画长度=N/A
+animation.enderman.scary_face: 实体=末影人；说明=末影人被激怒动画；循环=是；动画长度=N/A
+animation.enderman.scary_face_v1.0: 实体=末影人；说明=末影人被激怒动画（v1.0）；循环=是；动画长度=N/A
+animation.endermite.move: 实体=末影螨；说明=末影螨移动动画；循环=是；动画长度=N/A
+animation.evocation_fang.bite: 实体=唤魔者尖牙；说明=唤魔者尖牙攻击动画；循环=是；动画长度=N/A
+animation.evoker.casting: 实体=唤魔者；说明=唤魔者诅咒施法动画；循环=是；动画长度=N/A
+animation.evoker.casting.v1.0: 实体=唤魔者；说明=唤魔者诅咒施法动画（v1.0）；循环=是；动画长度=N/A
+animation.evoker.general: 实体=唤魔者；说明=唤魔者默认姿势；循环=是；动画长度=N/A
+animation.evoker.general.v1.0: 实体=唤魔者；说明=唤魔者默认姿势（v1.0）；循环=是；动画长度=N/A
+animation.evoker.move: 实体=唤魔者；说明=唤魔者移动动画；循环=是；动画长度=N/A
+animation.fireworks_rocket.move: 实体=烟花火箭；说明=烟花火箭移动动画；循环=是；动画长度=N/A
+animation.fox.baby_pounce: 实体=狐狸；说明=幼年狐狸跳跃动画；循环=是；动画长度=1.625
+animation.fox.baby_sit: 实体=狐狸；说明=幼年狐狸坐下动画；循环=停留到最后一帧；动画长度=0.25
+animation.fox.baby_sleep: 实体=狐狸；说明=幼年狐狸睡觉动画；循环=停留到最后一帧；动画长度=0.7083
+animation.fox.baby_transform:
+animation.fox.baby_walk: 实体=狐狸；说明=幼年狐狸移动动画；循环=是；动画长度=0.5
+animation.fox.baby_wiggle: 实体=狐狸；说明=幼年狐狸跳跃前扭动动画；循环=是；动画长度=1.5
+animation.fox.crouch: 实体=狐狸；说明=狐狸潜行动画；循环=是；动画长度=N/A
+animation.fox.pounce: 实体=狐狸；说明=狐狸跳跃动画；循环=是；动画长度=N/A
+animation.fox.setup: 实体=狐狸；说明=狐狸模型配置动画；循环=是；动画长度=N/A
+animation.fox.sit: 实体=狐狸；说明=狐狸坐下动画；循环=是；动画长度=N/A
+animation.fox.sleep: 实体=狐狸；说明=狐狸睡觉动画；循环=是；动画长度=N/A
+animation.fox.stuck: 实体=狐狸；说明=狐狸陷进雪中动画；循环=是；动画长度=N/A
+animation.fox.wiggle: 实体=狐狸；说明=狐狸跳跃前左右扭动动画；循环=是；动画长度=N/A
+animation.frog.croak: 实体=青蛙；说明=青蛙鼓动鸣囊动画；循环=否；动画长度=3
+animation.frog.idle.water: 实体=青蛙；说明=青蛙水中空闲动画；循环=是；动画长度=3
+animation.frog.jump: 实体=青蛙；说明=青蛙跳跃动画；循环=停留到最后一帧；动画长度=0.375
+animation.frog.swim: 实体=青蛙；说明=青蛙游泳动画；循环=是；动画长度=1.04167
+animation.frog.tongue: 实体=青蛙；说明=青蛙捕食动画；循环=否；动画长度=0.5
+animation.frog.walk: 实体=青蛙；说明=青蛙移动动画；循环=是；动画长度=1.25
+animation.frostbite.arms_idle:
+animation.frostbite.baby_arms_idle:
+animation.ghast.move: 实体=恶魂；说明=恶魂的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ghast.scale:
+animation.goat.attack: 实体=山羊；说明=山羊冲撞动画；循环=是；动画长度=N/A
+animation.goat.baby_scaling: 实体=山羊；说明=山羊幼年体型；循环=是；动画长度=N/A
+animation.goat.look_at_target: 实体=山羊；说明=山羊看向目标动画；循环=是；动画长度=N/A
+animation.goat.ram_attack: 实体=山羊；说明=山羊准备冲撞动画；循环=是；动画长度=N/A
+animation.goat.walk: 实体=山羊；说明=山羊移动动画；循环=是；动画长度=N/A
+animation.guardian.move_eye: 实体=守卫者；说明=守卫者的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.guardian.move_eye.v1.0: 实体=守卫者、远古守卫者；说明=守卫者、远古守卫者的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.guardian.setup: 实体=守卫者、远古守卫者；说明=守卫者、远古守卫者的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.guardian.spikes: 实体=守卫者；说明=守卫者的棘刺动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.guardian.spikes.v1.0: 实体=守卫者、远古守卫者；说明=守卫者、远古守卫者的棘刺动作（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.guardian.swim: 实体=守卫者、远古守卫者；说明=守卫者、远古守卫者的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.happy_ghast.move: 实体=快乐恶魂；说明=快乐恶魂默认移动动画；循环=是；动画长度=N/A
+animation.happy_ghast.scale: 实体=快乐恶魂；说明=？；循环=是；动画长度=N/A
+animation.hoglin.attack: 实体=僵尸疣猪兽、疣猪兽；说明=僵尸疣猪兽、疣猪兽的攻击动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.hoglin.baby_scaling: 实体=僵尸疣猪兽、疣猪兽；说明=僵尸疣猪兽、疣猪兽的幼年体型缩放动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.hoglin.look_at_target: 实体=僵尸疣猪兽、疣猪兽；说明=僵尸疣猪兽、疣猪兽的看向目标动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.hoglin.walk: 实体=僵尸疣猪兽、疣猪兽；说明=僵尸疣猪兽、疣猪兽的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.baby_transform: 实体=马；说明=马的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.eat: 实体=马；说明=马的进食动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.look_at_player: 实体=马；说明=马的看向玩家动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.mouth: 实体=马；说明=马的嘴部动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.setup: 实体=马；说明=马的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.shake_tail: 实体=马；说明=马的摇尾巴动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.stand: 实体=马；说明=马的站立动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.baby_transform: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.eat: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.setup: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.stand: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.tail: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v2.walk: 实体=马；说明=马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.baby_transform: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.eat: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.look_at_player: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.rear: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.tail: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.v3.walk: 实体=僵尸马、马、驴、骡、骷髅马；说明=僵尸马、马、驴、骡、骷髅马的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.horse.walk: 实体=马；说明=马的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.attack.rotations: 实体=怪人村民、掠夺者、末影人、沼骸、焦骷髅；说明=怪人村民、掠夺者、末影人、沼骸、焦骷髅的攻击时旋转动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.attack.rotations.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅的攻击时旋转（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.base_pose: 实体=其他；说明=默认姿势；循环=是；动画长度=N/A
+animation.humanoid.base_pose.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、监守者、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、监守者、骷髅的默认姿势（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.big_head: 实体=其他；说明=大头动画，未使用；循环=是；动画长度=N/A
+animation.humanoid.big_head.v1.0: 实体=溺尸；说明=溺尸的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.bob: 实体=其他；说明=手臂轻微摆动动画；循环=是；动画长度=N/A
+animation.humanoid.bob.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的摆动（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.bow_and_arrow: 实体=其他；说明=使用弓动画；循环=是；动画长度=N/A
+animation.humanoid.bow_and_arrow.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅的使用弓箭（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.brandish_spear: 实体=其他；说明=持剑攻击动画；循环=是；动画长度=N/A
+animation.humanoid.brandish_spear.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的挥舞长矛（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.brushing: 实体=其他；说明=使用刷子动画；循环=是；动画长度=N/A
+animation.humanoid.celebrating: 实体=其他；说明=庆祝动画；循环=是；动画长度=N/A
+animation.humanoid.charging: 实体=其他；说明=？；循环=是；动画长度=N/A
+animation.humanoid.charging.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的蓄力（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.damage_nearby_mobs: 实体=其他；说明=近战攻击动画；循环=是；动画长度=N/A
+animation.humanoid.damage_nearby_mobs.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的攻击附近生物（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.fishing_rod:
+animation.humanoid.holding: 实体=其他；说明=手持物品动画；循环=是；动画长度=N/A
+animation.humanoid.holding.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的持有物品（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.holding_brush: 实体=其他；说明=手持刷子动画；循环=是；动画长度=N/A
+animation.humanoid.holding_spyglass: 实体=玩家；说明=玩家的使用望远镜动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.holding_spyhlass: 实体=其他；说明=使用望远镜动画；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.default: 实体=其他；说明=默认看向目标动画；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.default.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、唤魔者、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、唤魔者、尸壳、恼鬼、流浪者、溺尸、骷髅的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.gliding: 实体=怪人村民、掠夺者、末影人、沼骸、焦骷髅、猪灵、猪灵蛮兵、玩家；说明=怪人村民、掠夺者、末影人、沼骸、焦骷髅、猪灵、猪灵蛮兵、玩家的看向目标、滑翔动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.gliding.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、尸壳、恼鬼、流浪者、溺尸、骷髅的看向目标、滑翔（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.swimming: 实体=其他；说明=游泳时看向目标动画；循环=是；动画长度=N/A
+animation.humanoid.look_at_target.swimming.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、卫道士、尸壳、恼鬼、流浪者、溺尸、骷髅的看向目标、游泳（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.look_at_target_gilding: 实体=其他；说明=？；循环=是；动画长度=N/A
+animation.humanoid.melee_spear_hold: 实体=猪灵、玩家；说明=猪灵、玩家的手持长矛姿势动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.melee_spear_use: 实体=猪灵、玩家；说明=猪灵、玩家的使用长矛动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.move: 实体=其他；说明=移动动画；循环=是；动画长度=N/A
+animation.humanoid.move.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的移动（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.riding.arms: 实体=其他；说明=手臂骑乘动画；循环=是；动画长度=N/A
+animation.humanoid.riding.arms.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.riding.body: 实体=怪人村民、掠夺者、沼骸、焦骷髅、猪灵、猪灵蛮兵；说明=怪人村民、掠夺者、沼骸、焦骷髅、猪灵、猪灵蛮兵的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.riding.legs: 实体=其他；说明=腿部骑乘动画；循环=是；动画长度=N/A
+animation.humanoid.riding.legs.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.sneaking: 实体=其他；说明=潜行动画；循环=是；动画长度=N/A
+animation.humanoid.sneaking.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、骷髅的潜行（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.humanoid.swimming: 实体=其他；说明=游泳动画；循环=是；动画长度=1.3
+animation.humanoid.swimming.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、监守者、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、监守者、骷髅的游泳（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1.3
+animation.humanoid.tooting_goat_horn: 实体=其他；说明=使用山羊角动画；循环=是；动画长度=N/A
+animation.humanoid.use_item_progress: 实体=其他；说明=？；循环=是；动画长度=N/A
+animation.humanoid.use_item_progress.v1.0: 实体=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅；说明=僵尸、僵尸村民、僵尸猪灵、凋灵骷髅、尸壳、恼鬼、流浪者、溺尸、骷髅的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.idle_arm_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=是；动画长度=N/A
+animation.idle_back_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=是；动画长度=N/A
+animation.idle_bottom_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=是；动画长度=N/A
+animation.idle_torso_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=是；动画长度=N/A
+animation.iron_golem.attack: 实体=铁傀儡；说明=铁傀儡攻击动画；循环=停留到最后一帧；动画长度=N/A
+animation.iron_golem.flower: 实体=铁傀儡；说明=铁傀儡给予幼年村民或铜傀儡花动画；循环=停留到最后一帧；动画长度=N/A
+animation.iron_golem.move: 实体=铁傀儡；说明=铁傀儡默认移动动画；循环=停留到最后一帧；动画长度=N/A
+animation.iron_golem.move_to_target: 实体=铁傀儡；说明=铁傀儡的向目标移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.iron_golem.walk: 实体=铁傀儡；说明=铁傀儡追击实体动画；循环=停留到最后一帧；动画长度=N/A
+animation.iron_golem.walk_to_target: 实体=铁傀儡；说明=铁傀儡的向目标行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.llama.baby_transform: 实体=行商羊驼；说明=行商羊驼的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.llama.baby_transform.v1.0: 实体=羊驼；说明=羊驼的幼年体型变换（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.llama.setup: 实体=行商羊驼；说明=行商羊驼的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.llama.setup.v1.0: 实体=羊驼；说明=羊驼的模型配置（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.llama_spit.setup: 实体=羊驼口水；说明=羊驼口水的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.magma_cube.move: 实体=岩浆怪；说明=岩浆怪的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.minecart.move: 实体=矿车；说明=矿车的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.minecart.move.v1.0: 实体=TNT 矿车、命令方块矿车、带箱子的矿车、漏斗矿车、矿车；说明=TNT 矿车、命令方块矿车、带箱子的矿车、漏斗矿车、矿车的移动（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.mooshroom.baby_transform: 实体=哞菇；说明=哞菇的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.mooshroom.setup: 实体=哞菇；说明=哞菇的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.mooshroom.setup.v1.0: 实体=哞菇；说明=哞菇的模型配置（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.nautilus.breathe: 实体=僵尸鹦鹉螺、鹦鹉螺；说明=僵尸鹦鹉螺、鹦鹉螺的呼吸动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1
+animation.nautilus.dashing: 实体=僵尸鹦鹉螺、鹦鹉螺；说明=僵尸鹦鹉螺、鹦鹉螺的冲刺动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=否；动画长度=0.5
+animation.nautilus.look_at_target: 实体=僵尸鹦鹉螺、鹦鹉螺；说明=僵尸鹦鹉螺、鹦鹉螺的看向目标动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1
+animation.nautilus.swim: 实体=僵尸鹦鹉螺、鹦鹉螺；说明=僵尸鹦鹉螺、鹦鹉螺的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1
+animation.npc.baby_transform: 实体=NPC；说明=NPC的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.npc.general: 实体=NPC；说明=NPC的常规动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.npc.get_in_bed: 实体=NPC；说明=NPC的上床动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.npc.move: 实体=NPC；说明=NPC的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.npc.raise_arms: 实体=NPC；说明=NPC的抬起手臂动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot.baby_transform: 实体=豹猫；说明=豹猫的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot.sit: 实体=豹猫；说明=豹猫的坐下动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot.sneak: 实体=豹猫；说明=豹猫的潜行动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot.sprint: 实体=豹猫；说明=豹猫的疾跑动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot.walk: 实体=豹猫；说明=豹猫的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.baby_transform: 实体=豹猫；说明=豹猫的0、幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.setup: 实体=豹猫；说明=豹猫的0、模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.sit: 实体=豹猫；说明=豹猫的0、坐下动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.sneak: 实体=豹猫；说明=豹猫的0、潜行动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.sprint: 实体=豹猫；说明=豹猫的0、疾跑动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ocelot_v1.0.walk: 实体=豹猫；说明=豹猫的0、行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.baby_lying: 实体=熊猫；说明=熊猫的幼年躺卧动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.baby_rolling: 实体=熊猫；说明=熊猫的幼年翻滚动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.baby_sitting: 实体=熊猫；说明=熊猫的幼年坐姿动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.baby_transform: 实体=熊猫；说明=熊猫的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.lying: 实体=熊猫；说明=熊猫的躺卧动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.rolling: 实体=熊猫；说明=熊猫的翻滚动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.sitting: 实体=熊猫；说明=熊猫的坐姿动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.sneezing: 实体=熊猫；说明=熊猫的打喷嚏动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.panda.unhappy: 实体=熊猫；说明=熊猫的不高兴动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.base: 实体=鹦鹉；说明=鹦鹉的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.dance: 实体=鹦鹉；说明=鹦鹉的跳舞动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.flying: 实体=鹦鹉；说明=鹦鹉的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.moving: 实体=鹦鹉；说明=鹦鹉的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.sitting: 实体=鹦鹉；说明=鹦鹉的坐姿动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.parrot.standing: 实体=鹦鹉；说明=鹦鹉的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.phantom.base_pose: 实体=幻翼；说明=幻翼默认姿势；循环=是；动画长度=N/A
+animation.phantom.move: 实体=幻翼；说明=幻翼移动动画；循环=是；动画长度=2.417
+animation.pig.baby_transform: 实体=猪；说明=猪的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pig.setup: 实体=猪；说明=猪的模型配置动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pig.setup.v1.0: 实体=猪；说明=猪的模型配置（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.admire: 实体=猪灵；说明=猪灵的欣赏物品动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.celebrate_hunt: 实体=猪灵；说明=猪灵的狩猎庆祝动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.celebrate_hunt_special: 实体=猪灵；说明=猪灵的特殊狩猎庆祝动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.crossbow.charge: 实体=猪灵、猪灵蛮兵；说明=猪灵、猪灵蛮兵的弩蓄力动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.crossbow.hold: 实体=猪灵、猪灵蛮兵；说明=猪灵、猪灵蛮兵的手持弩动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.hand.attack: 实体=猪灵、猪灵蛮兵；说明=猪灵、猪灵蛮兵的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.move: 实体=猪灵、猪灵蛮兵；说明=猪灵、猪灵蛮兵的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.piglin.sword.attack: 实体=猪灵、猪灵蛮兵；说明=猪灵、猪灵蛮兵的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pillager.crossbow.charge: 实体=掠夺者；说明=掠夺者的弩蓄力动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pillager.crossbow.hold: 实体=掠夺者；说明=掠夺者的手持弩动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.attack.positions: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.attack.rotations: 实体=玩家；说明=玩家旋转角度；循环=是；动画长度=N/A
+animation.player.base_pose.upside_down: 实体=玩家；说明=玩家翻转默认姿势[注 1]；循环=是；动画长度=N/A
+animation.player.bob: 实体=玩家；说明=玩家手臂轻微摆动动画；循环=是；动画长度=N/A
+animation.player.bob.stationary: 实体=玩家；说明=玩家手臂轻微摆动；循环=是；动画长度=N/A
+animation.player.bow_equipped: 实体=玩家；说明=玩家拉弓动画；循环=是；动画长度=N/A
+animation.player.cape: 实体=玩家；说明=披风动画；循环=是；动画长度=N/A
+animation.player.crawl: 实体=玩家；说明=玩家爬行动画；循环=是；动画长度=1.3
+animation.player.crawl.legs: 实体=玩家；说明=玩家腿部爬行动画；循环=是；动画长度=N/A
+animation.player.crawl.no_right_arm: 实体=玩家；说明=玩家的爬行、无右臂动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1.3
+animation.player.crossbow_equipped: 实体=玩家；说明=玩家装填弩动画；循环=是；动画长度=N/A
+animation.player.crossbow_hold: 实体=玩家；说明=玩家手持弩动画；循环=是；动画长度=N/A
+animation.player.first_person.attack_rotation: 实体=玩家；说明=玩家攻击动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.attack_rotation_item: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.first_person.base_pose: 实体=玩家；说明=玩家默认姿势（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.breathing_bob: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.first_person.crossbow_equipped: 实体=玩家；说明=玩家装填弩动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.crossbow_hold: 实体=玩家；说明=玩家手持弩动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.empty_hand: 实体=玩家；说明=玩家空手动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.map_hold: 实体=玩家；说明=玩家手持地图动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.map_hold_attack: 实体=玩家；说明=玩家手持地图攻击动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.map_hold_main_hand: 实体=玩家；说明=玩家主手持地图动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.map_hold_off_hand: 实体=玩家；说明=玩家副手持地图动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.melee_spear_attack: 实体=玩家；说明=玩家的第一人称近战长矛攻击动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.first_person.melee_spear_hold: 实体=玩家；说明=玩家的第一人称手持长矛姿势动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.first_person.melee_spear_use: 实体=玩家；说明=玩家的第一人称使用长矛动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.first_person.shield_block: 实体=玩家；说明=玩家使用盾牌动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.swap_item: 实体=玩家；说明=玩家切换主副手物品动画（第一人称）；循环=是；动画长度=N/A
+animation.player.first_person.vr_attack_rotation: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.first_person.walk: 实体=玩家；说明=玩家移动动画（第一人称）；循环=是；动画长度=N/A
+animation.player.glide: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.holding: 实体=玩家；说明=玩家手持物品动画；循环=是；动画长度=N/A
+animation.player.holding.zombie: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.holding_heavy_core: 实体=玩家；说明=玩家手持沉重核心动画；循环=是；动画长度=N/A
+animation.player.look_at_target.inverted: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.look_at_target.ui: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.melee_spear_attack: 实体=玩家；说明=玩家的近战长矛攻击动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.move.arms: 实体=玩家；说明=玩家手臂摆动动画（移动时）；循环=是；动画长度=N/A
+animation.player.move.arms.single: 实体=玩家；说明=玩家右手摆动动画（移动时）；循环=是；动画长度=N/A
+animation.player.move.arms.stationary: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.move.arms.statue_of_liberty: 实体=玩家；说明=玩家自由女神像姿势；循环=是；动画长度=N/A
+animation.player.move.arms.zombie: 实体=玩家；说明=玩家僵尸手臂动画；循环=是；动画长度=N/A
+animation.player.move.legs: 实体=玩家；说明=玩家腿部摆动动画（移动时）；循环=是；动画长度=N/A
+animation.player.move.legs.inverted: 实体=玩家；说明=玩家翻转腿部摆动动画[注 1]；循环=是；动画长度=N/A
+animation.player.move.legs.single: 实体=玩家；说明=玩家右腿摆动动画；循环=是；动画长度=N/A
+animation.player.move.legs.stationary: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.riding.arms: 实体=玩家；说明=玩家手臂骑乘动画；循环=是；动画长度=N/A
+animation.player.riding.arms.zombie: 实体=玩家；说明=玩家僵尸手臂骑乘动画；循环=是；动画长度=N/A
+animation.player.riding.legs: 实体=玩家；说明=玩家腿部骑乘动画；循环=是；动画长度=N/A
+animation.player.riding.root: 实体=玩家；说明=玩家的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.player.shield_block_main_hand: 实体=玩家；说明=玩家主手使用盾牌动画；循环=是；动画长度=N/A
+animation.player.shield_block_off_hand: 实体=玩家；说明=玩家副手使用盾牌动画；循环=是；动画长度=N/A
+animation.player.sleeping: 实体=玩家；说明=玩家睡觉动画；循环=是；动画长度=N/A
+animation.player.sneaking: 实体=玩家；说明=玩家潜行动画；循环=是；动画长度=N/A
+animation.player.sneaking.inverted: 实体=玩家；说明=玩家翻转潜行动画[注 1]；循环=是；动画长度=N/A
+animation.player.swim: 实体=玩家；说明=玩家游泳动画；循环=是；动画长度=1.3
+animation.player.swim.legs: 实体=玩家；说明=玩家腿部游泳动画；循环=是；动画长度=N/A
+animation.player.swim.legs.single: 实体=玩家；说明=玩家右腿游泳动画；循环=是；动画长度=N/A
+animation.player.swim.legs.stationary: 实体=玩家；说明=？；循环=是；动画长度=N/A
+animation.player.swim.no_right_arm: 实体=玩家；说明=玩家的游泳、无右臂动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=1.3
+animation.polarbear.baby_transform: 实体=北极熊；说明=北极熊的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.polarbear.move: 实体=北极熊；说明=北极熊的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pufferfish.flop: 实体=河豚；说明=河豚的扑腾动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.pufferfish.swim: 实体=河豚；说明=河豚的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.quadruped.walk: 实体=北极熊、哞菇、熊猫、牛、狐狸、猪、羊、羊驼、行商羊驼；说明=北极熊、哞菇、熊猫、牛、狐狸、猪、羊、羊驼、行商羊驼的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.rabbit.baby_transform: 实体=兔子；说明=兔子的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.rabbit.idle_head_tilt: 实体=兔子；说明=兔子的空闲时歪头动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=4
+animation.rabbit.move: 实体=兔子；说明=兔子的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.rabbit.move.baby: 实体=兔子；说明=兔子的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=0.75
+animation.rabbit.move.v2: 实体=兔子；说明=兔子的移动（v2）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=0.75
+animation.ravager.biting: 实体=劫掠兽；说明=劫掠兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ravager.idle_mouth: 实体=劫掠兽；说明=劫掠兽的空闲 嘴部动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ravager.roaring: 实体=劫掠兽；说明=劫掠兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ravager.stunned: 实体=劫掠兽；说明=劫掠兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.ravager.walk: 实体=劫掠兽；说明=劫掠兽的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.react_arm_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_arm_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_back_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_back_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_arm_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_back_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_bottom_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_head_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bored_torso_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bottom_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bottom_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_bottom_3: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_confirm_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_confirm_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_head_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_head_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_idle: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=是；动画长度=N/A
+animation.react_offer_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_arm_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_arm_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_back_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_back_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_bottom_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_bottom_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_head_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_head_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_torso_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_offer_torso_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_torso_1: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.react_torso_2: 实体=角色创建器中的角色[需要更多信息]；说明=；循环=否；动画长度=N/A
+animation.salmon.flop: 实体=鲑鱼；说明=鲑鱼的扑腾动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.salmon.swim: 实体=鲑鱼；说明=鲑鱼的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.sheep.baby_grazing: 实体=羊；说明=羊的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=2.0
+animation.sheep.baby_transform:
+animation.sheep.grazing:
+animation.sheep.grazing.v2: 实体=羊；说明=羊的动作细节待核实（v2）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=2.0
+animation.sheep.setup:
+animation.sheep.setup.v2:
+animation.shield.wield_first_person_blocking:
+animation.shield.wield_main_hand_first_person: 实体=盾牌；说明=盾牌主手格挡（第一人称）；循环=是；动画长度=N/A
+animation.shield.wield_main_hand_first_person_blocking: 实体=盾牌；说明=盾牌主手格挡成功（第一人称）；循环=停留到最后一帧；动画长度=N/A
+animation.shield.wield_off_hand_first_person: 实体=盾牌；说明=盾牌副手格挡（第一人称）；循环=是；动画长度=N/A
+animation.shield.wield_off_hand_first_person_blocking: 实体=盾牌；说明=盾牌副手格挡成功（第一人称）；循环=停留到最后一帧；动画长度=N/A
+animation.shield.wield_third_person: 实体=盾牌；说明=盾牌格挡（第三人称）；循环=是；动画长度=N/A
+animation.shulker.facing: 实体=潜影贝；说明=潜影贝的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.shulker.facing.v1.0: 实体=潜影贝；说明=潜影贝的动作细节待核实（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.shulker.move: 实体=潜影贝；说明=潜影贝的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.shulker.move.v1.0: 实体=潜影贝；说明=潜影贝的移动（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.shulker_bullet.move: 实体=潜影贝子弹；说明=潜影贝子弹的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.silverfish.move: 实体=蠹虫；说明=蠹虫的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.skeleton.attack: 实体=骷髅；说明=骷髅近战攻击动画；循环=是；动画长度=N/A
+animation.skeleton.attack.v1.0: 实体=骷髅；说明=骷髅的攻击（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.sniffer.baby_transform: 实体=嗅探兽；说明=嗅探兽幼年体型；循环=是；动画长度=N/A
+animation.sniffer.dig: 实体=嗅探兽；说明=嗅探兽刨挖动画；循环=是；动画长度=8
+animation.sniffer.feeling_happy: 实体=嗅探兽；说明=嗅探兽刨挖结束动画；循环=是；动画长度=2
+animation.sniffer.longsniff: 实体=嗅探兽；说明=嗅探兽用力闻嗅动画；循环=否；动画长度=1
+animation.sniffer.search: 实体=嗅探兽；说明=嗅探兽连续嗅探动画；循环=是；动画长度=2
+animation.sniffer.sniffsniff: 实体=嗅探兽；说明=嗅探兽闻嗅动画；循环=是；动画长度=8
+animation.sniffer.stand_up: 实体=嗅探兽；说明=嗅探兽停止刨挖动画；循环=停留到最后一帧；动画长度=3
+animation.sniffer.walk: 实体=嗅探兽；说明=嗅探兽移动动画；循环=是；动画长度=2
+animation.snowgolem.arms: 实体=雪傀儡；说明=雪傀儡的手臂动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.snowgolem.move: 实体=雪傀儡；说明=雪傀儡的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.snowgolem.move.v1.8: 实体=雪傀儡；说明=雪傀儡的移动（v1.8）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spear.held_first_person: 实体=长矛；说明=长矛的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spear.held_third_person: 实体=长矛；说明=长矛的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spear.hit: 实体=长矛；说明=长矛的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=否；动画长度=0.5
+animation.spider.default_leg_pose: 实体=洞穴蜘蛛、蜘蛛；说明=洞穴蜘蛛、蜘蛛的默认腿部姿势动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spider.look_at_target: 实体=洞穴蜘蛛、蜘蛛；说明=洞穴蜘蛛、蜘蛛的看向目标动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spider.walk: 实体=洞穴蜘蛛、蜘蛛；说明=洞穴蜘蛛、蜘蛛的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.spyglass.holding: 实体=望远镜；说明=手持望远镜；循环=是；动画长度=N/A
+animation.spyglass.scoping: 实体=望远镜；说明=使用望远镜；循环=是；动画长度=N/A
+animation.squid.move: 实体=鱿鱼、发光鱿鱼；说明=（发光）鱿鱼移动动画；循环=是；动画长度=N/A
+animation.squid.rotate: 实体=鱿鱼、发光鱿鱼；说明=（发光）鱿鱼旋转动画；循环=是；动画长度=N/A
+animation.strider.baby.bristle_flow: 实体=炽足兽；说明=炽足兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=0.75
+animation.strider.baby.walk: 实体=炽足兽；说明=炽足兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=61
+animation.strider.bristle_flow: 实体=炽足兽；说明=炽足兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.strider.look_at_target.default: 实体=炽足兽；说明=炽足兽的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.strider.walk: 实体=炽足兽；说明=炽足兽的行走动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.sulfur_cube.offset: 实体=硫方怪；说明=硫方怪的装备偏移动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.sulfur_cube.swelling: 实体=硫方怪；说明=硫方怪的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.tadple.swim: 实体=蝌蚪；说明=蝌蚪游泳动画；循环=是；动画长度=2
+animation.tadpole.swim: 实体=蝌蚪；说明=蝌蚪的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=2
+animation.trident.wield_first_persom_raise: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.trident.wield_first_person: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.trident.wield_first_person_raise: 实体=三叉戟；说明=三叉戟的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.trident.wield_first_person_raise_shake: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.trident.wield_first_person_riptide: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.trident.wield_third_person: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.trident.wield_third_person_raise: 实体=三叉戟；说明=？；循环=是；动画长度=N/A
+animation.tripod_camera.neutral: 实体=三脚架摄像机；说明=三脚架摄像机的中立姿势动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.tropicalfish.flop: 实体=热带鱼；说明=热带鱼的扑腾动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.tropicalfish.swim: 实体=热带鱼；说明=热带鱼的游泳动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.turtle.baby_move: 实体=海龟；说明=海龟的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.turtle.general: 实体=海龟；说明=海龟的常规动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.turtle.ground_move: 实体=海龟；说明=海龟的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.turtle.move: 实体=海龟；说明=海龟的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.vex.attack.rotations.v1.0:
+animation.vex.charge: 实体=恼鬼；说明=恼鬼蓄力动画；循环=是；动画长度=N/A
+animation.vex.idle: 实体=恼鬼；说明=恼鬼空闲动画；循环=是；动画长度=N/A
+animation.vex.move:
+animation.villager.baby_transform: 实体=村民；说明=村民的幼年体型变换动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.villager.general: 实体=村民、流浪商人；说明=村民、流浪商人的常规动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.villager.general.v1.0: 实体=女巫、村民；说明=女巫、村民的常规动作（v1.0）动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.villager.get_in_bed: 实体=村民；说明=村民的上床动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.villager.move: 实体=唤魔者、女巫、村民、流浪商人；说明=唤魔者、女巫、村民、流浪商人的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.villager.raise_arms: 实体=村民、流浪商人；说明=村民、流浪商人的抬起手臂动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.vindicator.attack: 实体=卫道士；说明=卫道士近战攻击动画；循环=是；动画长度=N/A
+animation.vindicator.base: 实体=卫道士；说明=卫道士默认姿势；循环=是；动画长度=N/A
+animation.vindicator.hand_attack: 实体=卫道士；说明=卫道士空手攻击动画；循环=是；动画长度=N/A
+animation.vindicator.riding.arms: 实体=卫道士；说明=卫道士手臂骑乘动画；循环=是；动画长度=N/A
+animation.vindicator.riding.legs: 实体=卫道士；说明=卫道士腿部骑乘动画；循环=是；动画长度=N/A
+animation.vindicator.walk: 实体=卫道士；说明=卫道士移动动画；循环=是；动画长度=N/A
+animation.warden.attack: 实体=监守者；说明=监守者近战攻击动画；循环=否；动画长度=0.33333
+animation.warden.bob: 实体=监守者；说明=监守者身体摆动动画；循环=是；动画长度=N/A
+animation.warden.dig: 实体=监守者；说明=监守者钻入地面动画；循环=停留到最后一帧；动画长度=5
+animation.warden.emerge: 实体=监守者；说明=监守者钻出地面动画；循环=否；动画长度=6.64
+animation.warden.hurt:
+animation.warden.look_at_target.default: 实体=监守者；说明=监守者看向目标动画；循环=是；动画长度=N/A
+animation.warden.move: 实体=监守者；说明=监守者移动动画；循环=是；动画长度=N/A
+animation.warden.roar: 实体=监守者；说明=监守者怒吼动画；循环=否；动画长度=4.2
+animation.warden.shiver: 实体=监守者；说明=监守者感应振动动画；循环=是；动画长度=N/A
+animation.warden.sniff: 实体=监守者；说明=监守者嗅探动画；循环=是；动画长度=N/A
+animation.warden.sonic_boom: 实体=监守者；说明=监守者远程攻击动画；循环=否；动画长度=3
+animation.wind_charge.rotate: 实体=风弹；说明=风弹旋转动画；循环=是；动画长度=N/A
+animation.witch.general: 实体=女巫；说明=女巫的常规动作动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.wither_boss.look_at_target: 实体=凋灵；说明=凋灵看向目标动画；循环=是；动画长度=N/A
+animation.wither_boss.move: 实体=凋灵；说明=凋灵移动动画；循环=是；动画长度=N/A
+animation.wither_boss.scale: 实体=凋灵；说明=凋灵体型；循环=是；动画长度=N/A
+animation.wither_skeleton.attack: 实体=凋灵骷髅；说明=凋灵骷髅的攻击动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.wither_skull.move: 实体=凋灵头颅；说明=凋灵头颅的移动动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.wolf.angry: 实体=狼；说明=狼愤怒动画；循环=是；动画长度=N/A
+animation.wolf.baby_scaling: 实体=狼；说明=幼年狼体型；循环=是；动画长度=N/A
+animation.wolf.baby_sitting: 实体=狼；说明=狼的幼年坐姿动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.wolf.head_rot_z: 实体=狼；说明=狼乞求食物动画；循环=是；动画长度=N/A
+animation.wolf.leg_default: 实体=狼；说明=狼腿部动画；循环=是；动画长度=N/A
+animation.wolf.setup: 实体=狼；说明=狼起身动画；循环=是；动画长度=N/A
+animation.wolf.shaking: 实体=狼；说明=狼甩动身体动画；循环=是；动画长度=N/A
+animation.wolf.sitting: 实体=狼；说明=狼坐下动画；循环=是；动画长度=N/A
+animation.wolf.tail_default: 实体=狼；说明=狼尾巴默认高度；循环=是；动画长度=N/A
+animation.zombie.attack_bare_hand: 实体=僵尸、僵尸村民、尸壳、僵尸猪灵；说明=僵尸空手攻击动画；循环=是；动画长度=N/A
+animation.zombie.baby_attack_bare_hand: 实体=怪人村民；说明=怪人村民的动作细节待核实动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.zombie.melee_spear_hold: 实体=怪人村民；说明=怪人村民的手持长矛姿势动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.zombie.melee_spear_use: 实体=怪人村民；说明=怪人村民的使用长矛动画（依据 ID 与原版 JSON 语义整理，非官方名称）；循环=是；动画长度=N/A
+animation.zombie.swimming: 实体=僵尸、僵尸村民、尸壳、僵尸猪灵；说明=僵尸游泳动画；循环=是；动画长度=N/A

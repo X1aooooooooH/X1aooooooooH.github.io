@@ -1,0 +1,76 @@
+{
+  "protocol": "BlockFlow browser tools",
+  "readTools": {
+    "search_commands": {
+      "arguments": {
+        "query": "string",
+        "regex": "boolean?",
+        "caseSensitive": "boolean?",
+        "scope": "all|chain|text?",
+        "chain": "number? (1-based)",
+        "limit": "number?"
+      }
+    },
+    "inspect": { "arguments": { "scope": "all|chain|text?" } },
+    "check_syntax": { "arguments": { "scope": "all|chain|text?" } },
+    "check_chain": { "arguments": { "scope": "all|chain|text?" } },
+    "verify": { "arguments": { "scope": "all|chain|text?" } },
+    "lookup_id": { "arguments": { "query": "string" } }
+  },
+  "actionBlock": {
+    "fence": "blockflow-actions",
+    "shape": {
+      "actions": [
+        {
+          "label": "string",
+          "description": "string?",
+          "ops": ["Operation[]"]
+        }
+      ]
+    }
+  },
+  "operations": {
+    "replace": {
+      "find": "string",
+      "replace": "string",
+      "scope": "all|chain|text?",
+      "chain": "number?",
+      "regex": "boolean?",
+      "caseSensitive": "boolean?"
+    },
+    "update_command": {
+      "chain": "number (1-based)",
+      "block": "number (0-based)",
+      "command": "string",
+      "blockType": "command|chain|repeating?",
+      "cond": "0|1?",
+      "auto": "0|1?"
+    },
+    "insert_commands": {
+      "chain": "number",
+      "at": "number (0-based insert position)",
+      "commands": "string[]",
+      "blockTypes": "string[]?"
+    },
+    "delete_blocks": {
+      "chain": "number",
+      "blocks": "number[] (0-based)"
+    },
+    "create_chain": {
+      "type": "snake|repeat|impulse",
+      "commands": "string[]",
+      "blockTypes": "string[]?",
+      "at": "number? (1-based chain position)"
+    },
+    "replace_chain": {
+      "chain": "number",
+      "type": "snake|repeat|impulse?",
+      "commands": "string[]",
+      "blockTypes": "string[]?"
+    },
+    "move_chain": {
+      "from": "number (1-based)",
+      "to": "number (1-based)"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "x1aoooooooh-projects",
+  "version": "1.7.0",
+  "private": true,
+  "type": "module",
+  "description": "Static project index and BlockFlow MCBE structure command-chain editor.",
+  "scripts": {
+    "dev": "python -m http.server 8765",
+    "start": "python -m http.server 8765"
+  }
+}
