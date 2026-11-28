@@ -3,26 +3,36 @@ import { DEFAULT_SKILL, SKILL_PATHS } from './prompts.js';
 let skillCache = null;
 let skillSource = '';
 let skillRuntimePromise = null;
+/**
+ * 按顺序尝试若干路径，返回第一个能加载的模块。
+ * src/skill-runtime/lib/ 现在只是转发层，真实实现在 skills/be-cmd/scripts/lib/，
+ * 所以第二个路径通常就是第一个路径实际加载到的那份文件；保留回退是为了
+ * 万一转发路径在某些部署布局下解析不到时仍能直接命中实现。
+ */
+async function loadFirstAvailable(paths) {
+  for (const path of paths) {
+    try {
+      return await import(path);
+    } catch {
+      // 继续尝试下一个候选路径
+    }
+  }
+  return null;
+}
+
 export async function loadSkillRuntime() {
   if (location.protocol === 'file:') return { syntax: null, rules: null };
   if (skillRuntimePromise) return skillRuntimePromise;
-  skillRuntimePromise = (async () => {
-    let syntax = null;
-    let rules = null;
-    for (const path of ['../skill-runtime/lib/syntax.js', '../../skills/be-cmd/scripts/lib/syntax.js']) {
-      try {
-        syntax = await import(path);
-        break;
-      } catch {}
-    }
-    for (const path of ['../skill-runtime/lib/rules.js', '../../skills/be-cmd/scripts/lib/rules.js']) {
-      try {
-        rules = await import(path);
-        break;
-      } catch {}
-    }
-    return { syntax, rules };
-  })().catch(() => ({ syntax: null, rules: null }));
+  skillRuntimePromise = (async () => ({
+    syntax: await loadFirstAvailable([
+      '../skill-runtime/lib/syntax.js',
+      '../../skills/be-cmd/scripts/lib/syntax.js'
+    ]),
+    rules: await loadFirstAvailable([
+      '../skill-runtime/lib/rules.js',
+      '../../skills/be-cmd/scripts/lib/rules.js'
+    ])
+  }))().catch(() => ({ syntax: null, rules: null }));
   return skillRuntimePromise;
 }
 export async function searchSkillIds(query) {
