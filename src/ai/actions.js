@@ -1,7 +1,7 @@
-import { app } from '../state.js?v=r49-cleanup-20261129';
-import { cloneChains } from '../core/model.js?v=r49-cleanup-20261129';
-import { reflowChainsForSize, ensureStructureSize } from '../core/layout.js?v=r49-cleanup-20261129';
-import { refreshChainsUI, pushHistory } from '../editor.js?v=r49-cleanup-20261129';
+import { app } from '../state.js?v=r51-ai-modules-20261129';
+import { cloneChains } from '../core/model.js?v=r51-ai-modules-20261129';
+import { reflowChainsForSize, ensureStructureSize } from '../core/layout.js?v=r51-ai-modules-20261129';
+import { refreshChainsUI, pushHistory } from '../editor.js?v=r51-ai-modules-20261129';
 
 function newChainUid() {
   return 'chain-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);

@@ -1,12 +1,12 @@
-import { BLOCK_COLOR, FACING_VEC, FACE_NORMAL, FACE_RIGHT, FACE_UP } from './core/constants.js?v=r49-cleanup-20261129';
-import { isAirPlaceholderBlock } from './core/blocks.js?v=r49-cleanup-20261129';
-import { chainBounds } from './core/model.js?v=r49-cleanup-20261129';
-import { TEX_FILES } from './core/textures.js?v=r49-cleanup-20261129';
-import { isInputFocused } from './ui/dom.js?v=r49-cleanup-20261129';
-import { app } from './state.js?v=r49-cleanup-20261129';
-import { logInfo } from './log.js?v=r49-cleanup-20261129';
-import { dot3, easeInOutQuad } from './core/util.js?v=r49-cleanup-20261129';
-import { hideInfo, showInfo } from './inspector.js?v=r49-cleanup-20261129';
+import { BLOCK_COLOR, FACING_VEC, FACE_NORMAL, FACE_RIGHT, FACE_UP } from './core/constants.js?v=r51-ai-modules-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r51-ai-modules-20261129';
+import { chainBounds } from './core/model.js?v=r51-ai-modules-20261129';
+import { TEX_FILES } from './core/textures.js?v=r51-ai-modules-20261129';
+import { isInputFocused } from './ui/dom.js?v=r51-ai-modules-20261129';
+import { app } from './state.js?v=r51-ai-modules-20261129';
+import { logInfo } from './log.js?v=r51-ai-modules-20261129';
+import { dot3, easeInOutQuad } from './core/util.js?v=r51-ai-modules-20261129';
+import { hideInfo, showInfo } from './inspector.js?v=r51-ai-modules-20261129';
 
 const texCache = {};
 let texLoaded = false;

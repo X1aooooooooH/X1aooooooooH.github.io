@@ -2,9 +2,9 @@ import {
   getBrokenHeadKind,
   isBrokenChainPlaceholder,
   normalizeBrokenChainBlocks
-} from '../core/broken-chain.js?v=r49-cleanup-20261129';
-import { escapeHtml } from './dom.js?v=r49-cleanup-20261129';
-import { appendImportedChains } from '../editor.js?v=r49-cleanup-20261129';
+} from '../core/broken-chain.js?v=r51-ai-modules-20261129';
+import { escapeHtml } from './dom.js?v=r51-ai-modules-20261129';
+import { appendImportedChains } from '../editor.js?v=r51-ai-modules-20261129';
 
 // 这里的工具供两处使用：工作区的内联文本编辑器，以及 TXT 文件导入。
 // 旧的整屏文本编辑弹窗已经删除，链文本现在只在 workspace.js 的内联编辑器里编辑。

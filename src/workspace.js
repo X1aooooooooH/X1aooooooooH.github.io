@@ -1,7 +1,7 @@
-import { createLineMetrics } from './ui/line-metrics.js?v=r49-cleanup-20261129';
-import { icon } from './ui/icons.js?v=r49-cleanup-20261129';
-import { rememberModalFocus, restoreModalFocus } from './ui/feedback.js?v=r49-cleanup-20261129';
-import { TYPE_LABEL } from './core/constants.js?v=r49-cleanup-20261129';
+import { createLineMetrics } from './ui/line-metrics.js?v=r51-ai-modules-20261129';
+import { icon } from './ui/icons.js?v=r51-ai-modules-20261129';
+import { rememberModalFocus, restoreModalFocus } from './ui/feedback.js?v=r51-ai-modules-20261129';
+import { TYPE_LABEL } from './core/constants.js?v=r51-ai-modules-20261129';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const inlineMetrics = createLineMetrics();

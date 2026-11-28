@@ -1,5 +1,5 @@
-import { MAX_STRUCTURE_SIZE, STD_Z } from './constants.js?v=r49-cleanup-20261129';
-import { blockKey, getOffsetPosition, isAirPlaceholderBlock } from './blocks.js?v=r49-cleanup-20261129';
+import { MAX_STRUCTURE_SIZE, STD_Z } from './constants.js?v=r51-ai-modules-20261129';
+import { blockKey, getOffsetPosition, isAirPlaceholderBlock } from './blocks.js?v=r51-ai-modules-20261129';
 import {
   detectSelfClosedCycles,
   getBrokenHeadKind,
@@ -7,8 +7,8 @@ import {
   isBrokenChainPlaceholder,
   isBrokenHeadMarkerBlock,
   normalizeBrokenChainBlocks
-} from './broken-chain.js?v=r49-cleanup-20261129';
-import { relayoutBlocks } from './trace.js?v=r49-cleanup-20261129';
+} from './broken-chain.js?v=r51-ai-modules-20261129';
+import { relayoutBlocks } from './trace.js?v=r51-ai-modules-20261129';
 
 function getStructureDimensions(chains) {
   if (!Array.isArray(chains) || chains.length === 0) return { X: 0, Y: 0, Z: 0 };

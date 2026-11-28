@@ -1,4 +1,4 @@
-import { app } from './state.js?v=r49-cleanup-20261129';
+import { app } from './state.js?v=r51-ai-modules-20261129';
 
 const MAX_LOGS = 300;
 

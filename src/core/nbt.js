@@ -1,4 +1,4 @@
-import { MAX_IMPORT_BYTES, MAX_NBT_ARRAY_ITEMS, MAX_NBT_DEPTH, MAX_NBT_LIST_ITEMS } from './constants.js?v=r49-cleanup-20261129';
+import { MAX_IMPORT_BYTES, MAX_NBT_ARRAY_ITEMS, MAX_NBT_DEPTH, MAX_NBT_LIST_ITEMS } from './constants.js?v=r51-ai-modules-20261129';
 
 export const TAG = {
   END: 0,

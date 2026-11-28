@@ -1,4 +1,4 @@
-import { DEFAULT_BASE } from './prompts.js?v=r49-cleanup-20261129';
+import { DEFAULT_BASE } from './prompts.js?v=r51-ai-modules-20261129';
 
 export function endpointFor(baseUrl) {
   const base = String(baseUrl || DEFAULT_BASE)

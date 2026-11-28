@@ -1,16 +1,16 @@
 'use strict';
 
-import { MAX_STRUCTURE_SIZE, MAX_IMPORT_BYTES } from './core/constants.js?v=r49-cleanup-20261129';
-import { isAirPlaceholderBlock } from './core/blocks.js?v=r49-cleanup-20261129';
-import { buildExportLayouts, ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r49-cleanup-20261129';
-import { serializeOutputForFormat } from './core/structure.js?v=r49-cleanup-20261129';
-import { cloneChains } from './core/model.js?v=r49-cleanup-20261129';
-import { app } from './state.js?v=r49-cleanup-20261129';
-import { storageGet } from './core/storage.js?v=r49-cleanup-20261129';
-import { rand6 } from './core/util.js?v=r49-cleanup-20261129';
-import { logInfo, logOk, logError, setCurrentAction, formatLogText } from './log.js?v=r49-cleanup-20261129';
-import { escapeHtml, isInputFocused } from './ui/dom.js?v=r49-cleanup-20261129';
-import { renderReadmeMarkdown } from './ui/markdown.js?v=r49-cleanup-20261129';
+import { MAX_STRUCTURE_SIZE, MAX_IMPORT_BYTES } from './core/constants.js?v=r51-ai-modules-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r51-ai-modules-20261129';
+import { buildExportLayouts, ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r51-ai-modules-20261129';
+import { serializeOutputForFormat } from './core/structure.js?v=r51-ai-modules-20261129';
+import { cloneChains } from './core/model.js?v=r51-ai-modules-20261129';
+import { app } from './state.js?v=r51-ai-modules-20261129';
+import { storageGet } from './core/storage.js?v=r51-ai-modules-20261129';
+import { rand6 } from './core/util.js?v=r51-ai-modules-20261129';
+import { logInfo, logOk, logError, setCurrentAction, formatLogText } from './log.js?v=r51-ai-modules-20261129';
+import { escapeHtml, isInputFocused } from './ui/dom.js?v=r51-ai-modules-20261129';
+import { renderReadmeMarkdown } from './ui/markdown.js?v=r51-ai-modules-20261129';
 import {
   toast,
   download,
@@ -18,7 +18,7 @@ import {
   rememberModalFocus,
   showPromptModal,
   showInputPopover
-} from './ui/feedback.js?v=r49-cleanup-20261129';
+} from './ui/feedback.js?v=r51-ai-modules-20261129';
 import {
   renderAllBlocks,
   selectBlock,
@@ -33,9 +33,9 @@ import {
   setViewPreset,
   getPickRecord,
   setSceneHandlers
-} from './scene.js?v=r49-cleanup-20261129';
-import { initTheme } from './ui/theme.js?v=r49-cleanup-20261129';
-import { hideInfo } from './inspector.js?v=r49-cleanup-20261129';
+} from './scene.js?v=r51-ai-modules-20261129';
+import { initTheme } from './ui/theme.js?v=r51-ai-modules-20261129';
+import { hideInfo } from './inspector.js?v=r51-ai-modules-20261129';
 
 import {
   updateChainBar,
@@ -55,8 +55,8 @@ import {
   loadMcstructure,
   flushAutosave,
   duplicateChainAt
-} from './editor.js?v=r49-cleanup-20261129';
-import { highlightTextEditorLine, importChainFromTxt } from './ui/text-editor.js?v=r49-cleanup-20261129';
+} from './editor.js?v=r51-ai-modules-20261129';
+import { highlightTextEditorLine, importChainFromTxt } from './ui/text-editor.js?v=r51-ai-modules-20261129';
 
 initTheme();
 

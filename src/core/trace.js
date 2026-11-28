@@ -1,5 +1,5 @@
-import { STD_Z } from './constants.js?v=r49-cleanup-20261129';
-import { blockKey, getOffsetPosition } from './blocks.js?v=r49-cleanup-20261129';
+import { STD_Z } from './constants.js?v=r51-ai-modules-20261129';
+import { blockKey, getOffsetPosition } from './blocks.js?v=r51-ai-modules-20261129';
 import {
   detectSelfClosedCycles,
   findBrokenChainSetblockIndexes,
@@ -10,7 +10,7 @@ import {
   isExecuteRunRelativeCommand,
   isTestforCommand,
   normalizeBrokenChainBlocks
-} from './broken-chain.js?v=r49-cleanup-20261129';
+} from './broken-chain.js?v=r51-ai-modules-20261129';
 
 export function traceChain(root, context, owner) {
   const { blockMap, rootKeys } = context;

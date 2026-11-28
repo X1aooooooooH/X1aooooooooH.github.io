@@ -59,7 +59,7 @@ blockflow/
 │   ├── inspector.js       # 方块检查器
 │   ├── editor.js          # 链编辑、历史、自动保存、导入导出
 │   ├── ai.js              # AI 会话入口（ES Module）
-│   ├── ai/                # prompts / api / skill / context / actions
+│   ├── ai/                # state / store / session / settings / view / send / notify / prompts / api / skill / context / actions
 │   ├── core/              # nbt / structure / trace / layout / model
 │   │                      #   broken-chain.js 是编辑器侧实现；技能侧 chain.js 独立且已漂移
 │   ├── ui/                # dom / feedback / markdown / text-editor / theme

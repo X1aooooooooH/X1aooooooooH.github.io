@@ -1,5 +1,5 @@
-import { FACING_VEC } from './constants.js?v=r49-cleanup-20261129';
-import { blockKey, getOffsetPosition } from './blocks.js?v=r49-cleanup-20261129';
+import { FACING_VEC } from './constants.js?v=r51-ai-modules-20261129';
+import { blockKey, getOffsetPosition } from './blocks.js?v=r51-ai-modules-20261129';
 
 /**
  * 断链（broken chain）识别与归一化的**唯一实现**。

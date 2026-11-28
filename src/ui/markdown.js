@@ -1,4 +1,4 @@
-import { escapeHtml } from './dom.js?v=r49-cleanup-20261129';
+import { escapeHtml } from './dom.js?v=r51-ai-modules-20261129';
 
 const SAFE_LINK = /^(https?:|mailto:|#|\.\/|\.\.\/|\/)/i;
 
