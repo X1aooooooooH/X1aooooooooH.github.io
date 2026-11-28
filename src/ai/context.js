@@ -1,6 +1,6 @@
 import { app } from '../state.js';
-import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-head.js';
-import { getTextEditChain } from '../ui/text-editor.js?v=r39-layout-20261129';
+import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-chain.js';
+import { getTextEditChain } from '../ui/text-editor.js?v=r40-broken-chain-20261129';
 import { CONTEXT_LIMIT } from './prompts.js';
 import { loadSkillRuntime, searchSkillIds } from './skill.js';
 
@@ -63,7 +63,8 @@ export function buildContext(scope) {
       }
     } else {
       if (scope === 'text') {
-        if (Number.isInteger(getTextEditChain()) && getTextEditChain() >= 0) ci = getTextEditChain();
+        const inlineChain = getTextEditChain();
+        if (Number.isInteger(inlineChain) && inlineChain >= 0) ci = inlineChain;
       }
       if (ci < 0 && typeof app.selectedChain === 'number' && app.selectedChain >= 0) ci = app.selectedChain;
       if (ci < 0 && app.chains.length === 1) ci = 0;
@@ -192,7 +193,10 @@ export function collectSkillCommands(scope) {
       for (let i = 0; i < app.chains.length; i++) pushChain(i);
     } else {
       let ci = -1;
-      if (scope === 'text' && Number.isInteger(getTextEditChain()) && getTextEditChain() >= 0) ci = getTextEditChain();
+      if (scope === 'text') {
+        const inlineChain = getTextEditChain();
+        if (Number.isInteger(inlineChain) && inlineChain >= 0) ci = inlineChain;
+      }
       if (ci < 0 && typeof app.selectedChain === 'number' && app.selectedChain >= 0) ci = app.selectedChain;
       if (ci < 0 && app.chains.length === 1) ci = 0;
       if (scope === 'text') {
@@ -214,7 +218,10 @@ function scopedChainIndexes(scope) {
     if (typeof app === 'undefined' || !app || !Array.isArray(app.chains) || !app.chains.length) return [];
     if (scope === 'all') return app.chains.map((_, i) => i);
     let ci = -1;
-    if (scope === 'text' && Number.isInteger(getTextEditChain()) && getTextEditChain() >= 0) ci = getTextEditChain();
+    if (scope === 'text') {
+      const inlineChain = getTextEditChain();
+      if (Number.isInteger(inlineChain) && inlineChain >= 0) ci = inlineChain;
+    }
     if (ci < 0 && typeof app.selectedChain === 'number' && app.selectedChain >= 0) ci = app.selectedChain;
     if (ci < 0 && app.chains.length === 1) ci = 0;
     return ci >= 0 && ci < app.chains.length ? [ci] : [];

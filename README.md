@@ -49,7 +49,6 @@ blockflow/
 │   ├── upload.css
 │   ├── editor.css
 │   ├── components.css
-│   ├── responsive.css
 │   ├── ai.css
 │   └── workspace.css      # 工作区外壳（覆盖旧编辑器外壳）
 ├── src/
@@ -62,6 +61,7 @@ blockflow/
 │   ├── ai.js              # AI 会话入口（ES Module）
 │   ├── ai/                # prompts / api / skill / context / actions
 │   ├── core/              # nbt / structure / trace / layout / model
+│   │                      #   broken-chain.js 是断链规则的唯一实现，改断链只改它
 │   ├── ui/                # dom / feedback / markdown / text-editor / theme
 │   ├── data/              # 预生成技能 ID / 技能数据
 │   └── skill-runtime/     # 浏览器内技能运行时

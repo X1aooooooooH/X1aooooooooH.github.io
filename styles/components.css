@@ -1,5 +1,6 @@
 /* ============================================================
-   10. 閸旂喕鍏樺鍦崶閿涘牊妫╄箛?/ 閹靛綊鍣洪弴鎸庡床閿?   ============================================================ */
+   10. 功能弹窗：替换 / 导出 / 提示
+   ============================================================ */
 .feature-modal{position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,8,12,.48);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .feature-modal.on{display:flex}
 .feature-card{width:min(720px,calc(100vw - 32px));max-height:min(82vh,760px);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(116,131,151,.40);border-radius:17px;background:linear-gradient(145deg,rgba(18,23,31,.97),rgba(9,13,19,.985))}
@@ -41,7 +42,7 @@
 [data-theme="light"] .feature-btn{background:#edf2f7;color:#2b3745;border-color:#c4ceda}
 [data-theme="light"] .feature-btn.primary{background:#4257a9;color:#fff;border-color:#4257a9}
 [data-theme="light"] .feature-btn:hover{background:#e1e8ef}
-/* 閺冦儱绻旈崚妤勩€?*/
+/* 日志面板 */
 .log-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(105,118,138,.20)}
 .log-toolbar span{font-size:12px;color:#8f9caf}
 .log-clear{height:32px;padding:0 10px;border:1px solid rgba(105,118,138,.34);border-radius:8px;background:rgba(255,255,255,.05);color:#dbe3ee;font-size:12px}
@@ -73,7 +74,7 @@
 [data-theme="light"] .log-message{color:#263241}
 [data-theme="light"] .log-empty{color:#778498}
 /* ============================================================
-   11. 閹垹顦查弶?/ Toast / Loading
+   11. 提示与加载 / Toast / Loading
    ============================================================ */
 .resume-bar{position:fixed;z-index:40;left:50%;top:14px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;padding:9px 11px 9px 14px;border:1px solid rgba(116,131,151,.34);border-radius:11px;background:rgba(20,26,35,.92);color:#cbd4e1;font-size:13.2px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .resume-bar[hidden]{display:none}

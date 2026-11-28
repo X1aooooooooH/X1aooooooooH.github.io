@@ -6,7 +6,7 @@
  * - The bundled skills/be-cmd/SKILL.md is injected as the system prompt.
  */
 import { app } from './state.js';
-import { getTextEditChain } from './ui/text-editor.js?v=r39-layout-20261129';
+import { getTextEditChain } from './ui/text-editor.js?v=r40-broken-chain-20261129';
 import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js';
 import { refreshChainsUI, pushHistory } from './editor.js';
 import { logInfo, logWarn, logOk, logError } from './log.js';
@@ -197,7 +197,10 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
 
   function conversationAnchorIndex(scope) {
     if (typeof app === 'undefined' || !app || !Array.isArray(app.chains) || !app.chains.length) return -1;
-    if (scope === 'text' && Number.isInteger(getTextEditChain()) && getTextEditChain() >= 0) return getTextEditChain();
+    if (scope === 'text') {
+      const inlineChain = getTextEditChain();
+      if (Number.isInteger(inlineChain) && inlineChain >= 0) return inlineChain;
+    }
     if (typeof app.selectedChain === 'number' && app.selectedChain >= 0 && app.selectedChain < app.chains.length) return app.selectedChain;
     return 0;
   }

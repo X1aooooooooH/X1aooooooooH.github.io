@@ -16,8 +16,8 @@ import {
   resizeRenderer, isPreviewReady, hasTextures,
   captureOverviewCamera, setBlockVisibility, applyChainCamera, setViewPreset, deselect
 } from './scene.js';
-import { hideInfo } from './inspector.js?v=r39-layout-20261129';
-import { setTheme } from './ui/theme.js?v=r39-layout-20261129';
+import { hideInfo } from './inspector.js?v=r40-broken-chain-20261129';
+import { setTheme } from './ui/theme.js?v=r40-broken-chain-20261129';
 
 const AUTOSAVE_NBT_TYPE = '__blockflow_autosave_nbt_type__';
 
@@ -528,7 +528,8 @@ function undo(){
     app.singleChain=false;
     if(app.mode==='chain')document.getElementById('exitChainBtn').style.display='flex';
   }
-  app.camera=null;
+  // 撤销只改链内容时保留当前视角；链数变了（撤销新建/删除）才重新取景。
+  if(app.chains.length!==before)app.camera=null;
   syncSavedState();
   syncHistoryScreen();
   updateHistoryBtns();
@@ -541,6 +542,7 @@ function undo(){
 
 function redo(){
   if(app.historyIndex>=app.history.length-1)return;
+  const before=app.chains.length;
   app.historyIndex++;
   applySnap(app.history[app.historyIndex]);
   if(app.chains.length===0)app.selectedChain=-1;
@@ -553,7 +555,8 @@ function redo(){
     app.singleChain=false;
     if(app.mode==='chain')document.getElementById('exitChainBtn').style.display='flex';
   }
-  app.camera=null;
+  // 与撤销一致：结构没变就保留视角。
+  if(app.chains.length!==before)app.camera=null;
   syncSavedState();
   syncHistoryScreen();
   updateHistoryBtns();

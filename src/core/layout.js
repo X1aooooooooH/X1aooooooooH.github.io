@@ -3,7 +3,7 @@ import { blockKey, getOffsetPosition, isAirPlaceholderBlock } from './blocks.js'
 import {
   detectSelfClosedCycles, getBrokenHeadKind, identifyBrokenHeadGeometry,
   isBrokenChainPlaceholder, isBrokenHeadMarkerBlock, normalizeBrokenChainBlocks
-} from './broken-head.js';
+} from './broken-chain.js';
 import { relayoutBlocks } from './trace.js';
 
 function getStructureDimensions(chains){

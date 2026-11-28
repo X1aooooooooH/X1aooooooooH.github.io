@@ -4,7 +4,7 @@ import {
   detectSelfClosedCycles, findBrokenChainSetblockIndexes, getBrokenHeadKind,
   identifyBrokenHeadGeometry, isBrokenChainPlaceholder, isBrokenHeadMarkerBlock,
   isExecuteRunRelativeCommand, isTestforCommand, normalizeBrokenChainBlocks
-} from './broken-head.js';
+} from './broken-chain.js';
 
 export function traceChain(root,context,owner){
   const {blockMap,discarded,blockedKeys,rootKeys}=context;

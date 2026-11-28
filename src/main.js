@@ -20,8 +20,8 @@ import {
   applyChainCamera, animateCameraTo, captureOverviewCamera, cycleBlock, setViewPreset,
   getPickRecord, setSceneHandlers
 } from './scene.js';
-import { initTheme } from './ui/theme.js?v=r39-layout-20261129';
-import { hideInfo } from './inspector.js?v=r39-layout-20261129';
+import { initTheme } from './ui/theme.js?v=r40-broken-chain-20261129';
+import { hideInfo } from './inspector.js?v=r40-broken-chain-20261129';
 
 import {
   updateChainBar, closeChainAddModal, addChainOfType,
@@ -31,7 +31,7 @@ import {
 } from './editor.js';
 import {
   highlightTextEditorLine, importChainFromTxt
-} from './ui/text-editor.js?v=r39-layout-20261129';
+} from './ui/text-editor.js?v=r40-broken-chain-20261129';
 
 initTheme();
 

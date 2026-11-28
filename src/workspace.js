@@ -788,6 +788,11 @@ function renderInlineVisuals() {
   });
 }
 
+/** 把一条链的命令方块拼成编辑器文本：每行一条命令，顺序与物理方块一致。 */
+function chainToText(chain) {
+  return (chain?.blocks || []).map(block => String(block.cmd ?? '')).join('\n');
+}
+
 function renderInlineText(force = false) {
   const app = window.app;
   const panel = $('#wsCurrentChain');
@@ -803,7 +808,7 @@ function renderInlineText(force = false) {
   panel.hidden = false;
   $('#wsCurrentChainName').textContent = chain.name || `链 ${app.selectedChain + 1}`;
   const blocks = chain.blocks || [];
-  const value = blocks.map(block => String(block.cmd ?? '')).join('\n');
+  const value = chainToText(chain);
   if (force || inlineChain !== app.selectedChain) {
     inlineConditions = blocks.map(block => !!block.cond);
     if (document.activeElement !== input) {
@@ -869,17 +874,27 @@ function applyInlineText() {
   const target = next[ci];
   const chainType = target.type === 'impulse' ? 'impulse' : (target.type === 'snake' ? 'snake' : 'repeat');
   const firstBlockType = chainType === 'impulse' ? 'command' : 'repeating';
-  // Reset from the current text: do not keep old coordinates, facings, marks,
-  // notes, air placeholders or cycle topology.
-  const blocks = lines.map((line, index) => ({
-    cmd: String(line ?? '').trim(),
-    cond: inlineConditions[index] ? 1 : 0,
-    auto: 1,
-    facing: 2,
-    blockType: index === 0 ? firstBlockType : 'chain',
-    marked: false,
-    note: ''
-  }));
+  // 逐行复用原方块，只替换命令文本和条件。
+  // 朝向、执行方式、标记、注释、辅助方块身份、断链归一化状态都属于物理方块本身，
+  // 改文本不应该把它们重置——README §1.7 要求保留辅助方块的
+  // blockType/cond/auto/isAuxiliary，也禁止二次旋转断链标记的相对坐标。
+  const previousBlocks = target.blocks || [];
+  const blocks = lines.map((line, index) => {
+    const cmd = String(line ?? '').trim();
+    const cond = inlineConditions[index] ? 1 : 0;
+    const previous = previousBlocks[index];
+    if (previous) return { ...previous, cmd, cond };
+    // 文本比原来长，新增的行按链头类型给一套默认值。
+    return {
+      cmd,
+      cond,
+      auto: 1,
+      facing: 2,
+      blockType: index === 0 ? firstBlockType : 'chain',
+      marked: false,
+      note: ''
+    };
+  });
   target.type = chainType;
   target.selfClosed = false;
   target.selfClosedCycleKeys = [];
@@ -914,11 +929,18 @@ function applyInlineText() {
 function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain }) {
 
   inlineText.addEventListener('input', () => {
-    if (inlineText.value !== (window.app?.chains?.[window.app.selectedChain]?.blocks || []).map(block => String(block.cmd ?? '')).join('\n')) {
+    const currentChain = window.app?.chains?.[window.app?.selectedChain];
+    if (inlineText.value !== chainToText(currentChain)) {
       inlineDirty = true;
       $('#wsCurrentStatus').textContent = '待同步';
     }
     renderInlineVisuals();
+  });
+  // README 要求「失焦同步」：光标离开文本框时把尚未确认的改动落盘。
+  // 少了这一步，切换链时 renderInlineText 会直接用方块数据覆盖 input.value，
+  // 未确认的编辑就在没有任何提示的情况下丢失了。
+  inlineText.addEventListener('blur', () => {
+    if (inlineDirty) applyInlineText();
   });
   inlineText.addEventListener('keydown', event => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
@@ -944,7 +966,8 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
     numbers.scrollTop = codeMain.scrollTop;
   });
   $('#wsInlineApply')?.addEventListener('click', () => {
-    inlineDirty = true;
+    // 点按钮一定会先触发 textarea 的 blur，那里已经同步过；
+    // 这里不再强制标记 dirty，避免一次编辑写两条撤销记录。
     applyInlineText();
   });
   bindSidebarEvents();

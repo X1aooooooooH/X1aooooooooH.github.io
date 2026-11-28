@@ -1,6 +1,53 @@
 import { FACING_VEC } from './constants.js';
 import { blockKey, getOffsetPosition } from './blocks.js';
 
+/**
+ * 断链（broken chain）识别与归一化的**唯一实现**。
+ *
+ * 这里放的是「规则」，不是「流程」：
+ *   - 什么算断链头、什么算 /setblock 标记、相对坐标怎么转换，全部在本文件定义。
+ *   - 怎么遍历结构、怎么追踪一条链、怎么排布导出，属于 trace.js 和 layout.js。
+ *
+ * 改断链行为时只改这个文件。trace.js / layout.js / text-editor.js / ai/context.js
+ * 都通过下面的导出调用，不各自实现规则。
+ *
+ * 对应 README 的章节：
+ *   §1.1 断链头类型（testfor / execute，命令前可有可无 '/'）
+ *        -> startsCommand / isTestforCommand / isExecuteRunRelativeCommand
+ *   §1.2 支持的命令（setblock / fill / clone / structure）
+ *        -> getRelativeCommandOperation
+ *   §1.3 相对坐标识别（不限定 ~~~ 模板）
+ *        -> hasRelativeCoordinateSyntax
+ *   §1.4 间隔方块（空气 / 普通方块 / 命令方块都可能是 gap）
+ *        -> identifyBrokenHeadGeometry 的 gap 处理
+ *   §1.5 多组断链（每组独立识别）
+ *        -> 规则层只认单组，多组由调用方循环
+ *   §1.6 断链后坐标转换到 Z 轴
+ *        -> rotateRelativeCoordinateTriples / normalizeBrokenChainBlocks
+ *   §1.7 辅助方块（gap 里的命令方块是真实节点，其余是空气占位）
+ *        -> identifyBrokenHeadGeometry 的 auxiliary / placeholder
+ *   §1.8 /execute ... at @ 排除
+ *        -> hasExecuteAtBeforeRun
+ *   §1.9 一条链最多一个循环命令方块
+ *        -> 由 trace.js 依据本文件的类型判断拆链
+ *
+ * 分区：
+ *   1. 命令行识别       startsCommand / is*Command / hasRelativeCoordinateSyntax
+ *   2. 标记方块识别     isSetblockMarker / isSetblockFirstMarker / isSetblockSecondMarker / isBrokenHeadMarkerBlock
+ *   3. 断链头几何识别   identifyBrokenHeadGeometry
+ *   4. 链级识别         findBrokenChainSetblockIndexes / getBrokenHeadKind / isBrokenChainPlaceholder
+ *   5. 相对坐标处理     parseRelativeComponent / formatRelativeComponent / rotateRelativeVector / rotateRelativeCoordinateTriples
+ *   6. 归一化           normalizeBrokenChainBlocks
+ *   7. 自闭环检测       detectSelfClosedCycles
+ *
+ * 注意：函数体沿用历史紧凑写法（无空格、单行 if）。为了保证行为可验证，
+ * 本轮只做分区与文档化，逐节展开留到后续单独进行。
+ */
+
+// ─────────────────────────────────────────────────────────────
+// 7. 自闭环检测
+// ─────────────────────────────────────────────────────────────
+
 // Detect intentional self-closed command-block loops. Only cycles of 2–4
 // chain-command blocks are treated as supported loops; larger loops are left
 // to the normal validation path because they are considered malformed layouts.
@@ -46,6 +93,10 @@ export function detectSelfClosedCycles(blockMap,maxCycleSize=4,brokenKeys=new Se
   }
   return{cycles,keys:new Set(cycles.flat()),oversized};
 }
+// ─────────────────────────────────────────────────────────────
+// 1. 命令行识别
+// ─────────────────────────────────────────────────────────────
+
 // Minecraft command text may include the leading slash or omit it.
 export function startsCommand(cmd,name){return new RegExp('^\\s*\\/?'+name+'\\b','i').test(String(cmd??'').trim());}
 export function isTestforCommand(cmd){return startsCommand(cmd,'testfor');}
@@ -65,6 +116,10 @@ export function getRelativeCommandOperation(cmd){
 export function isSupportedRelativeCommand(cmd){
   return !!getRelativeCommandOperation(cmd)&&hasRelativeCoordinateSyntax(cmd);
 }
+// ─────────────────────────────────────────────────────────────
+// 2. 标记方块识别
+// ─────────────────────────────────────────────────────────────
+
 // Broken-head markers are /setblock templates. `fill`, `clone` and especially
 // `structure load` are often ordinary commands with relative coordinates; they
 // must not be mistaken for the two special /setblock marker blocks.
@@ -97,6 +152,10 @@ export function isSetblockSecondMarker(cmd){return isSetblockMarker(cmd,'second'
 export function isBrokenHeadMarkerBlock(b){
   return !!b&&['command','repeating','chain'].includes(b.type||b.blockType)&&String(b.cmd||'').trim()!==''&&isSetblockRelativeCommand(b.cmd||'');
 }
+// ─────────────────────────────────────────────────────────────
+// 3. 断链头几何识别
+// ─────────────────────────────────────────────────────────────
+
 // Shared broken-head recognizer. The gap is a geometric slot, not a required
 // block type: it may be air, an ordinary block, water/lava, or any command block.
 export function identifyBrokenHeadGeometry(root,getExact,isMarker){
@@ -156,6 +215,10 @@ export function identifyBrokenHeadGeometry(root,getExact,isMarker){
   }
   return null;
 }
+// ─────────────────────────────────────────────────────────────
+// 4. 链级识别：从一组方块里判断断链类型
+// ─────────────────────────────────────────────────────────────
+
 export function findBrokenChainSetblockIndexes(items){
   const list=Array.isArray(items)?items:[];
   const found=[];
@@ -182,6 +245,10 @@ export function isBrokenChainPlaceholder(items){
   if(!Array.isArray(items)||items.length<3||String(typeof items[0]==='string'?items[0]:items[0]?.cmd||'').trim()!=='')return false;
   return isSetblockRelativeCommand(items[1]?.cmd??items[1])&&isSetblockRelativeCommand(items[2]?.cmd??items[2]);
 }
+// ─────────────────────────────────────────────────────────────
+// 5. 相对坐标处理
+// ─────────────────────────────────────────────────────────────
+
 export function parseRelativeComponent(token){
   const m=String(token).match(/^~(-?\d+(?:\.\d+)?)?$/);
   return m?Number(m[1]||0):null;
@@ -219,6 +286,10 @@ export function rotateRelativeCoordinateTriples(cmd,facing){
   });
   return source;
 }
+// ─────────────────────────────────────────────────────────────
+// 6. 归一化：把断链的相对坐标一次性转到 Z 轴方向
+// ─────────────────────────────────────────────────────────────
+
 export function normalizeBrokenChainBlocks(blocks,options={}){
   if(!Array.isArray(blocks))return false;
   const kind=options.kind||getBrokenHeadKind(blocks);

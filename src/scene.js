@@ -6,7 +6,7 @@ import { isInputFocused } from './ui/dom.js';
 import { app } from './state.js';
 import { logInfo } from './log.js';
 import { dot3, easeInOutQuad } from './core/util.js';
-import { hideInfo, showInfo } from './inspector.js?v=r39-layout-20261129';
+import { hideInfo, showInfo } from './inspector.js?v=r40-broken-chain-20261129';
 
 const texCache = {};
 let texLoaded = false;

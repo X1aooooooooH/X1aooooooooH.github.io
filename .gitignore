@@ -1,0 +1,23 @@
+# ---- AI 协作产物（本地有效，不进仓库）----
+# 由 AI 助手创建的项目约定与审查报告。
+# 这些文件对本地 agent 生效，但不需要随仓库分发。
+AGENTS.md
+REVIEW-*.md
+
+# ---- 临时与校验文件 ----
+.harness/
+.tmp-*
+*.tmp
+*.log
+
+# ---- 依赖与构建（本项目无构建步骤，仅作兜底）----
+node_modules/
+dist/
+build/
+
+# ---- 编辑器与操作系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
