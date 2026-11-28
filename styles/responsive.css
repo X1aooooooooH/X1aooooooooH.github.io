@@ -21,7 +21,6 @@
   .search-input{width:120px}
   .search-input:focus{width:190px}
   .search-results{width:calc(100vw - 28px);max-width:none}
-  .viewport-help{min-width:0;max-width:calc(100vw - 32px);font-size:13.2px;padding:10px 12px}
   .chain-dock{bottom:12px}
   .text-editor-overlay{padding:12px}
   .text-editor-card{width:calc(100vw - 24px);height:94vh}
@@ -88,7 +87,6 @@
   .bar-actions .bar-utility-btn{display:flex;padding:0 2px;font-size:10.5px;letter-spacing:-.03em}
   .bar-actions .export-btn{padding:0 5px;font-size:11.5px;font-weight:750}
   .search-results{top:calc(env(safe-area-inset-top,0px) + 158px);left:8px;right:8px;transform:none;width:auto;max-width:none;max-height:min(42vh,320px)}
-  .viewport-help{display:none}
   /* 底部控制台：左侧链管理 / 中央摄像机平移 / 右侧完整使用说明 */
   .chain-dock{
     left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);
@@ -98,17 +96,16 @@
     border:1px solid var(--glass-border);
     background:var(--glass-bg);
     -webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%);
-    box-shadow:var(--glass-shadow);
   }
   .chain-action-area{display:flex;min-width:0;min-height:100px;flex-direction:column;justify-content:center;gap:7px}
   .chain-action-label{display:block;padding-left:2px;color:#778396;font-size:10px;line-height:1;letter-spacing:.12em;font-weight:700}
   .chain-action-buttons{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-width:0;width:100%}
   .chain-dock button{height:34px;width:100%;min-width:0;padding:0 5px;border-radius:10px;font-size:11.5px;white-space:nowrap}
-  .chain-dock .chain-manage-btn{background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:var(--text);font-weight:650;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
-  .chain-dock .chain-text-mode-btn{background:rgba(142,162,255,.13);border:1px solid rgba(142,162,255,.30);color:#cbd6ff;font-weight:650;box-shadow:none}
-  .chain-dock .chain-delete-btn{background:rgba(255,110,125,.09);border:1px solid rgba(255,150,160,.25);color:#ffabb3;font-weight:650;box-shadow:none}
-  [data-theme="light"] .chain-dock{background:rgba(248,250,253,.88);border-color:rgba(78,94,118,.24);box-shadow:0 10px 32px rgba(31,45,65,.11),inset 0 1px 0 rgba(255,255,255,.88)}
-  [data-theme="light"] .chain-dock .chain-manage-btn{background:#e9eef6;border-color:#c8d2df;color:#33445c;box-shadow:inset 0 1px 0 rgba(255,255,255,.78)}
+  .chain-dock .chain-manage-btn{background:rgba(255,255,255,.07);border:1px solid var(--glass-border);color:var(--text);font-weight:650}
+  .chain-dock .chain-text-mode-btn{background:rgba(142,162,255,.13);border:1px solid rgba(142,162,255,.30);color:#cbd6ff;font-weight:650}
+  .chain-dock .chain-delete-btn{background:rgba(255,110,125,.09);border:1px solid rgba(255,150,160,.25);color:#ffabb3;font-weight:650}
+  [data-theme="light"] .chain-dock{background:rgba(248,250,253,.88);border-color:rgba(78,94,118,.24)}
+  [data-theme="light"] .chain-dock .chain-manage-btn{background:#e9eef6;border-color:#c8d2df;color:#33445c}
   [data-theme="light"] .chain-dock .chain-text-mode-btn{background:#e9effb;border-color:#c8d4ef;color:#465d9c}
   [data-theme="light"] .chain-dock .chain-delete-btn{background:#f8eeee;border-color:#e8c9cd;color:#b45a64}
   .camera-pad{
@@ -123,14 +120,13 @@
     display:grid;place-items:center;width:32px;height:32px;margin:0;padding:0;
     border:1px solid rgba(130,145,166,.25);border-radius:9px;
     background:rgba(21,27,37,.82);color:#dbe3ef;
-    box-shadow:0 1px 3px rgba(0,0,0,.10),inset 0 1px 0 rgba(255,255,255,.06);
     font:650 12.5px/1 var(--font-ui);touch-action:none;user-select:none;-webkit-user-select:none;
     -webkit-tap-highlight-color:transparent;
   }
   .camera-pad-btn:active,.camera-pad-btn.is-pressed{background:#2b3550;border-color:#667ba9;color:#e1e8ff;transform:scale(.94)}
-  .chain-dock .camera-pad-center{border:0;background:transparent;box-shadow:none;color:#9aa6b7;font-size:12px}
+  .chain-dock .camera-pad-center{border:0;background:transparent;color:#9aa6b7;font-size:12px}
   [data-theme="light"] .camera-pad{background:rgba(220,227,237,.56);border-color:rgba(135,149,169,.17)}
-  [data-theme="light"] .chain-dock .camera-pad-btn{background:rgba(255,255,255,.82);color:#53647c;border-color:rgba(130,145,166,.19);box-shadow:0 1px 3px rgba(37,51,71,.05),inset 0 1px 0 rgba(255,255,255,.88)}
+  [data-theme="light"] .chain-dock .camera-pad-btn{background:rgba(255,255,255,.82);color:#53647c;border-color:rgba(130,145,166,.19)}
   [data-theme="light"] .camera-pad-btn:active,[data-theme="light"] .camera-pad-btn.is-pressed{background:#dce5f6;border-color:#aabbdc;color:#3e5792}
   [data-theme="light"] .chain-dock .camera-pad-center{color:#8997aa}
   .camera-pad-up{grid-column:2;grid-row:1}
@@ -139,10 +135,10 @@
   .camera-pad-right{grid-column:3;grid-row:2}
   .camera-pad-down{grid-column:2;grid-row:3}
   .usage-help-area{display:flex;align-items:center;justify-content:center;min-width:0;min-height:100px}
-  .usage-help-btn{width:100%;min-width:0;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 4px;border:1px solid rgba(130,145,166,.27);border-radius:12px;background:rgba(130,145,166,.10);color:var(--text);font:650 11.5px/1.2 var(--font-ui);white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);-webkit-tap-highlight-color:transparent}
+  .usage-help-btn{width:100%;min-width:0;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:8px 4px;border:1px solid rgba(130,145,166,.27);border-radius:12px;background:rgba(130,145,166,.10);color:var(--text);font:650 11.5px/1.2 var(--font-ui);white-space:nowrap;-webkit-tap-highlight-color:transparent}
   .usage-help-btn:active{transform:scale(.97);background:rgba(130,145,166,.17)}
   .usage-help-icon{width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(130,145,166,.34);border-radius:8px;font-size:15px;font-weight:750;line-height:1}
-  [data-theme="light"] .usage-help-btn{background:rgba(232,238,246,.82);border-color:#cbd5e1;color:#40516a;box-shadow:inset 0 1px 0 rgba(255,255,255,.86)}
+  [data-theme="light"] .usage-help-btn{background:rgba(232,238,246,.82);border-color:#cbd5e1;color:#40516a}
   [data-theme="light"] .usage-help-icon{border-color:#bdc9d8;color:#536987}
   /* README 使用说明弹窗 */
   .usage-card{width:min(920px,calc(100vw - 28px));height:min(90vh,900px);max-height:90vh}

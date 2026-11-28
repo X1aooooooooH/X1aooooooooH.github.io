@@ -15,5 +15,3 @@ export const FACING_VEC = { 0: [0, -1, 0], 1: [0, 1, 0], 2: [0, 0, -1], 3: [0, 0
 export const FACE_NORMAL = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 export const FACE_RIGHT = [[0, 0, -1], [0, 0, 1], [1, 0, 0], [1, 0, 0], [1, 0, 0], [-1, 0, 0]];
 export const FACE_UP = [[0, 1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [0, 1, 0], [0, 1, 0]];
-export const COMMAND_BLOCK_TYPES = Object.freeze(['command', 'repeating', 'chain']);
-export const isCommandBlockType = type => COMMAND_BLOCK_TYPES.includes(type);

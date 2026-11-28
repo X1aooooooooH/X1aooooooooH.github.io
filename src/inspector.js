@@ -1,4 +1,5 @@
 import { TYPE_LABEL } from './core/constants.js';
+import { icon } from './ui/icons.js';
 
 const elements = new Map();
 function byId(id) {
@@ -17,7 +18,7 @@ export function showInfo(ci, bi, block) {
   if (typeSelect) typeSelect.value = block.blockType;
   const markButton = byId('infoMark');
   if (markButton) {
-    markButton.textContent = '⚑';
+    markButton.innerHTML = icon('block-mark');
     markButton.title = block.marked ? '取消标记' : '标记';
     markButton.setAttribute('aria-label', markButton.title);
     markButton.classList.toggle('active', !!block.marked);
@@ -28,6 +29,7 @@ export function showInfo(ci, bi, block) {
   if (autoSelect) autoSelect.value = block.auto !== 0 ? '1' : '0';
   byId('infoPanel').classList.add('on');
   byId('inspector')?.classList.add('open');
+  window.dispatchEvent(new CustomEvent('blockflow:block-edit', { detail: { chain: ci, block: bi } }));
   const command = byId('infoCmd');
   const note = byId('infoNote');
   if (command && document.activeElement !== command) command.value = block.cmd || '';
@@ -37,4 +39,5 @@ export function showInfo(ci, bi, block) {
 export function hideInfo() {
   byId('infoPanel').classList.remove('on');
   byId('inspector')?.classList.remove('open');
+  window.dispatchEvent(new CustomEvent('blockflow:block-edit', { detail: null }));
 }

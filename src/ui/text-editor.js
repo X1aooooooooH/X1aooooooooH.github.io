@@ -106,7 +106,12 @@ function openTextEditorDraft(title,applyLabel){
   document.getElementById('textEditorSub').textContent=textEditIsNew
     ?'文本模式 · 每行一条命令 · 点击行号切换有无条件'
     :'只编辑当前链 · 每行一条命令';
-  document.getElementById('textEditorApply').textContent=applyLabel;
+  const applyButton=document.getElementById('textEditorApply');
+  applyButton.innerHTML='<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12.5 4.5 4.5L19.5 6.5"/></svg>';
+  applyButton.title=applyLabel||'确认修改';
+  applyButton.setAttribute('aria-label',applyLabel||'确认修改');
+  applyButton.classList.remove('is-confirming','is-confirmed');
+  applyButton.disabled=false;
   renderTextEditor();
   rememberModalFocus('textEditorOverlay');
   overlay.classList.add('on');
@@ -407,13 +412,30 @@ function buildTextEditorChains(){
   }];
 }
 
+function animateTextEditorConfirm(){
+  const button=document.getElementById('textEditorApply');
+  if(!button)return;
+  button.classList.remove('is-confirming','is-confirmed');
+  // Restart the short press/check animation on every successful apply.
+  void button.offsetWidth;
+  button.disabled=true;
+  button.classList.add('is-confirming');
+  window.setTimeout(()=>{
+    button.classList.remove('is-confirming');
+    button.classList.add('is-confirmed');
+  },180);
+  window.setTimeout(()=>button.classList.remove('is-confirmed'),900);
+  // Keep the modal visible long enough for the success feedback to be seen.
+  window.setTimeout(closeTextEditor,700);
+}
+
 function applyTextEditor(){
   setCurrentAction('应用文本编辑');
   try{
     const segments=buildTextEditorChains();
     if(textEditIsNew){
       appendImportedChains(segments,'文本链',{closeModal:false,silentToast:true});
-      closeTextEditor();
+      animateTextEditorConfirm();
       toast(segments[0]?.type==='snake'?'检测到断链特征，已自动规范两个 /setblock':'文本链已加入结构','ok');
       logOk('文本链已加入结构','应用文本编辑');
       return;
@@ -433,7 +455,7 @@ function applyTextEditor(){
     app.singleChain=app.chains.length===1;
     pushHistory();
     refreshChainsUI();
-    closeTextEditor();
+    animateTextEditorConfirm();
     toast(segments[0]?.type==='snake'?'文本已应用并识别为断链':'文本已应用','ok');
     logOk('文本修改完成','应用文本编辑');
   }catch(e){
@@ -486,8 +508,8 @@ document.getElementById('textEditorInput').addEventListener('keydown',e=>{
 });
 
 export {
-  openTextEditorNew, openTextEditorForChain, openTextEditorDraft, closeTextEditor,
-  highlightTextEditorLine, renderTextEditor, applyTextEditor, importChainFromTxt
+  openTextEditorForChain, closeTextEditor,
+  highlightTextEditorLine, importChainFromTxt
 };
 export const getTextEditChain = () => textEditChain;
 export const getTextEditDraft = () => textEditDraft;

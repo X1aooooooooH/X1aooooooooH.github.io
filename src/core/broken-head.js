@@ -182,10 +182,6 @@ export function isBrokenChainPlaceholder(items){
   if(!Array.isArray(items)||items.length<3||String(typeof items[0]==='string'?items[0]:items[0]?.cmd||'').trim()!=='')return false;
   return isSetblockRelativeCommand(items[1]?.cmd??items[1])&&isSetblockRelativeCommand(items[2]?.cmd??items[2]);
 }
-export function collapseExecuteBrokenPlaceholder(blocks){
-  // Do not delete a physical block while normalizing an execute-style template.
-  return false;
-}
 export function parseRelativeComponent(token){
   const m=String(token).match(/^~(-?\d+(?:\.\d+)?)?$/);
   return m?Number(m[1]||0):null;

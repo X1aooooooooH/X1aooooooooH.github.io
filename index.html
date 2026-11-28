@@ -5,43 +5,123 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="textures/favicon.ico" type="image/x-icon">
 <title>BlockFlow</title>
-<meta name="blockflow-build" content="round3-module-split-2026-11-26">
-<link rel="stylesheet" href="./styles/tokens.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/upload.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/editor.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/components.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/responsive.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/ai.css?v=r3-20261127">
-<link rel="stylesheet" href="./styles/workspace.css?v=r3-20261127">
+<meta name="blockflow-build" content="cleanup-2026-11-28">
+<script>
+/* Apply the stored/system theme before the first paint to avoid a dark-to-light flash. */
+(() => {
+  const prefersDark = () => typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
+  try {
+    const stored = localStorage.getItem('mcs-theme');
+    document.documentElement.dataset.theme = stored === 'dark' || stored === 'light' ? stored : (prefersDark() ? 'dark' : 'light');
+  } catch {
+    document.documentElement.dataset.theme = prefersDark() ? 'dark' : 'light';
+  }
+})();
+</script>
+<link rel="stylesheet" href="./styles/tokens.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/upload.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/editor.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/components.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/responsive.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/ai.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/workspace.css?v=r32-cleanup-20261128">
 </head>
 <body>
+<svg class="icon-sprite" aria-hidden="true" focusable="false"><defs>
+<symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V21"/></symbol>
+<symbol id="icon-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></symbol>
+<symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+<symbol id="icon-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
+<symbol id="icon-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></symbol>
+<symbol id="icon-theme" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></symbol>
+<symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.28 5.28l1.56 1.56m10.32 10.32 1.56 1.56m0-13.44-1.56 1.56M6.84 17.16l-1.56 1.56"/></symbol>
+<symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.4 15.1A8.7 8.7 0 0 1 8.9 3.6 8.8 8.8 0 1 0 20.4 15.1Z"/><path d="M16.8 3.2v2.2M18 4.3h-2.2"/></symbol>
+<symbol id="icon-block-mark" viewBox="0 0 24 24"><path d="M5 20V4.5h14v10H9.2L5 20Z"/><path d="m9 9 2 2 4-4"/></symbol>
+<symbol id="icon-block-insert" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/><path d="M12 10v4m-2-2h4"/></symbol>
+<symbol id="icon-block-delete" viewBox="0 0 24 24"><path d="M4.5 7h15M9 7V4.5h6V7m-8 0 .8 12h8.4L17 7"/><path d="m10 11 4 4m0-4-4 4"/></symbol>
+<symbol id="icon-block-ai" viewBox="0 0 24 24"><path d="m12 2.8 1.9 6.1 6.1 1.9-6.1 1.9-1.9 6.1-1.9-6.1L4 10.8l6.1-1.9L12 2.8Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></symbol>
+<symbol id="icon-log" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
+<symbol id="icon-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 4.1 1.9c-.8.6-1.6 1.1-1.6 2.2"/><circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/></symbol>
+<symbol id="icon-export" viewBox="0 0 24 24"><path d="M12 15V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4.5 15v3.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V15"/></symbol>
+<symbol id="icon-view-front" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16M9.5 5v14"/></symbol>
+<symbol id="icon-view-side" viewBox="0 0 24 24"><path d="M4 6.5h9v12H4z"/><path d="M13 6.5 20 3.5v12l-7 3"/></symbol>
+<symbol id="icon-view-top" viewBox="0 0 24 24"><path d="M4 8.5 12 4l8 4.5-8 4.5-8-4.5Z"/><path d="M4 8.5v7.5L12 20.5l8-4.5V8.5"/><path d="M12 13v7.5"/></symbol>
+<symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="m19.5 19.5-3.8-3.8"/></symbol>
+<symbol id="icon-replace" viewBox="0 0 24 24"><path d="M4.5 8h13.5l-3.2-3.2"/><path d="M19.5 16H6l3.2 3.2"/></symbol>
+<symbol id="icon-undo" viewBox="0 0 24 24"><path d="M8.5 7 4 11.5 8.5 16"/><path d="M4.5 11.5h9a6 6 0 0 1 6 6v.5"/></symbol>
+<symbol id="icon-redo" viewBox="0 0 24 24"><path d="m15.5 7 4.5 4.5-4.5 4.5"/><path d="M19.5 11.5h-9a6 6 0 0 0-6 6v.5"/></symbol>
+<symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19.5 6.5"/></symbol>
+<symbol id="icon-minimize" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol><symbol id="icon-expand" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+<symbol id="icon-close" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></symbol>
+<symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
+<symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4.5 7h15M4.5 12h15M4.5 17h15"/></symbol>
+<symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></symbol>
+<symbol id="icon-grip" viewBox="0 0 24 24"><circle cx="9" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="17.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="17.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
+<symbol id="icon-pencil" viewBox="0 0 24 24"><path d="m4.5 19.5 4.2-.9L19 8.3a2 2 0 0 0-2.8-2.8L5.9 15.8l-1.4 3.7Z"/><path d="m14 6.5 3.5 3.5"/></symbol>
+<symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9 7V4.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V7M6.5 7l.9 12.5a1.5 1.5 0 0 0 1.5 1.5h6.2a1.5 1.5 0 0 0 1.5-1.5L17.5 7"/><path d="M10 11v5.5M14 11v5.5"/></symbol>
+<symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="icon-flag" viewBox="0 0 24 24"><path d="M5.5 20.5V4.5"/><path d="M5.5 4.5c4-1.8 8 1.8 13.5 0v8c-5.5 1.8-9.5-1.8-13.5 0"/></symbol>
+<symbol id="icon-inspector" viewBox="0 0 24 24"><path d="M2.5 12S6 6.2 12 6.2 21.5 12 21.5 12 18 17.8 12 17.8 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+<symbol id="icon-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></symbol>
+<symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.1" fill="var(--surface, #10151d)"/><circle cx="15" cy="12" r="2.1" fill="var(--surface, #10151d)"/><circle cx="8" cy="17" r="2.1" fill="var(--surface, #10151d)"/></symbol>
+<symbol id="icon-sparkle" viewBox="0 0 24 24"><path d="M12 3.2 13.7 8.3 18.8 10l-5.1 1.7L12 16.8l-1.7-5.1L5.2 10l5.1-1.7L12 3.2Z"/><path d="M18.5 15.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z"/></symbol>
+<symbol id="icon-cube" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
+<symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 4v11.5"/><path d="m7.5 11 4.5 4.5 4.5-4.5"/><path d="M4.5 19.5h15"/></symbol>
+<symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 19.5V8"/><path d="m7.5 12.5 4.5-4.5 4.5 4.5"/><path d="M4.5 4.5h15"/></symbol>
+<symbol id="icon-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4.5"/><circle cx="12" cy="16.2" r=".65" fill="currentColor" stroke="none"/></symbol>
+<symbol id="icon-file-check" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="m9.2 14.8 2 2 3.8-3.8"/></symbol>
+</defs></svg>
 <div id="uploadView" class="screen on">
   <div class="upload-shell">
     <div class="upload-card">
       <div class="upload-top">
         <div class="brand">
-          <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
-          <div class="brand-copy"><b>BlockFlow</b><span>MCBE命令链编辑器</span></div>
-        </div>
-        <div class="upload-eyes" id="uploadEyes" aria-hidden="true">
-          <div class="upload-eyes-quote" id="uploadEyesQuote">关注X1aooooooooH谢谢喵</div>
-          <div class="upload-eyes-pill">
-            <span class="upload-eye"><i></i></span>
-            <span class="upload-eye"><i></i></span>
-          </div>
+          <img class="brand-mark" src="textures/favicon.ico" alt="">
         </div>
       </div>
+      <button class="upload-eyes" id="uploadEyes" type="button" aria-label="打开使用说明" title="打开 README 使用说明">
+        <span class="upload-eyes-pill" aria-hidden="true">
+          <span class="upload-eye"><i></i></span>
+          <span class="upload-eye"><i></i></span>
+        </span>
+      </button>
       <div class="upload-copy">
-        <h1>打开结构文件</h1>
-        <p>导入 .mcstructure 后开始编辑命令链。</p>
+        <h1>BlockFlow</h1>
       </div>
-      <div class="upload-scope-note"><strong>注意事项</strong><span>支持多种断链形式<br>导入后会自动格式化所有的指令<br>不适用于结构中存在大量彼此独立的单个命令方块的情况</span></div>
-      <label id="dropzone" class="drop-card">
-        <input id="fileInput" type="file" accept=".mcstructure">
-        <strong>选择 .mcstructure 文件</strong>
-        <small>点击选择，或把文件拖到这里</small>
+      <label id="dropzone" class="upload-zone" for="fileInput">
+        <input id="fileInput" type="file" accept=".mcstructure" hidden>
+        <span class="upload-zone-icon" aria-hidden="true">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-export"></use></svg>
+        </span>
+        <span class="upload-zone-title">选择或拖入 .mcstructure 文件</span>
+        <span class="upload-zone-desc">非命令方块数据会被清空</span>
+        <span class="upload-zone-desc">您的命令链会进行格式化，规则请见提示</span>
       </label>
-      <button id="uploadReadmeBtn" class="readme-launch-btn" type="button">阅读 README 使用说明</button>
+
+      <div id="uploadError" class="upload-error" role="alert">
+        <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-alert"></use></svg>
+        <span id="uploadErrorText">仅支持 .mcstructure 格式的结构文件</span>
+      </div>
+
+      <div id="uploadSelected" class="upload-selected">
+        <div class="upload-selected-row">
+          <span class="upload-file-icon" aria-hidden="true">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-file-check"></use></svg>
+          </span>
+          <span class="upload-file-meta">
+            <b id="uploadSelectedName"></b>
+            <small id="uploadSelectedSize"></small>
+          </span>
+          <button id="uploadRemove" class="upload-file-remove" type="button" title="移除文件" aria-label="移除文件">
+            <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg>
+          </button>
+        </div>
+        <div class="upload-selected-actions">
+          <button id="uploadReselect" class="upload-btn" type="button">重新选择</button>
+          <button id="uploadLoad" class="upload-btn upload-btn-primary" type="button">确认并进入</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -52,9 +132,9 @@
   <div class="editor-shell">
     <header class="command-bar">
       <div class="bar-main-row">
-        <button id="wsMobileLeft" class="ws-mobile-btn" type="button" aria-label="打开链列表" title="链列表">☰</button>
-        <button id="backBtn" class="icon-btn bar-brand" type="button" aria-label="返回文件导入">
-        <img class="brand-mark" src="textures/favicon.ico" alt="BlockFlow">
+        <button id="wsMobileLeft" class="ws-mobile-btn" type="button" aria-label="打开链列表" title="链列表"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-menu"></use></svg></button>
+        <button id="backBtn" class="icon-btn bar-brand" type="button" aria-label="返回文件导入" title="返回文件导入">
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-arrow-left"></use></svg>
         <span class="brand-copy"><b>BlockFlow</b></span>
       </button>
         <div class="bar-file">
@@ -67,17 +147,17 @@
       </div>
       <div class="bar-control-row">
         <nav class="top-view-grid" aria-label="视图">
-        <button id="exitChainBtn" class="top-home-btn" title="返回结构总览" aria-label="返回结构总览" type="button">⌂</button>
+        <button id="exitChainBtn" class="top-home-btn" title="返回结构总览" aria-label="返回结构总览" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-home"></use></svg></button>
         <span class="top-view-sep" aria-hidden="true"></span>
-        <button class="view-btn" data-preset="front" title="正视图" type="button">前</button>
-        <button class="view-btn active" data-preset="side" title="侧视图" type="button">侧</button>
-        <button class="view-btn" data-preset="top" title="俯视图" type="button">顶</button>
+        <button class="view-btn" data-preset="front" title="正视图" aria-label="正视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-front"></use></svg></button>
+        <button class="view-btn active" data-preset="side" title="侧视图" aria-label="侧视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-side"></use></svg></button>
+        <button class="view-btn" data-preset="top" title="俯视图" aria-label="俯视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-top"></use></svg></button>
       </nav>
         <div class="search-dock">
         <div class="search-wrap">
-          <svg fill="#8993a1" width="18px" height="18px" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-search"></use></svg>
           <input id="blockSearch" class="search-input" type="text" placeholder="搜索命令或注释" autocomplete="off">
-          <button id="searchClear" class="search-clear" type="button" aria-label="清除">×</button>
+          <button id="searchClear" class="search-clear" type="button" aria-label="清除"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
           
         </div>
       </div>
@@ -85,15 +165,15 @@
       <div class="bar-actions">
         <button id="aiWholeBtn" class="ai-top-btn" type="button" title="让 AI 阅读整个结构" hidden>AI阅读全文</button>
         <button id="aiChainBtn" class="ai-top-btn" type="button" title="让 AI 阅读当前命令链" hidden>AI阅读分链</button>
-        <button id="undoBtn" class="icon-btn" title="撤销" aria-label="撤销" type="button">↶</button>
-        <button id="redoBtn" class="icon-btn" title="重做" aria-label="重做" type="button">↷</button>
-        <button id="diagnoseBtn" class="icon-btn bar-utility-btn" title="运行日志" type="button">日志</button>
-        <button id="replaceBtn" class="icon-btn bar-utility-btn" title="批量替换" type="button">替换</button>
-        <button id="themeBtn" class="icon-btn" title="主题" aria-label="切换主题" type="button">◐</button>
-        <button id="wsMobileSearch" class="icon-btn ws-mobile-btn" type="button" title="搜索" aria-label="搜索">⌕</button>
-        <button id="wsInspectorToggle" class="icon-btn ws-inspector-btn" type="button" title="收起/展开检查器" aria-label="收起或展开检查器">检视</button>
+        <button id="undoBtn" class="icon-btn" title="撤销" aria-label="撤销" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-undo"></use></svg></button>
+        <button id="redoBtn" class="icon-btn" title="重做" aria-label="重做" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-redo"></use></svg></button>
+        <button id="diagnoseBtn" class="icon-btn bar-utility-btn" title="运行日志" aria-label="运行日志" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-log"></use></svg></button>
+        <button id="replaceBtn" class="icon-btn bar-utility-btn" title="批量替换" aria-label="批量替换" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-replace"></use></svg></button>
+        <button id="themeBtn" class="icon-btn" title="主题" aria-label="切换主题" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-theme"></use></svg></button>
+        <button id="wsMobileSearch" class="icon-btn ws-mobile-btn" type="button" title="搜索" aria-label="搜索"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-search"></use></svg></button>
+        <button id="wsInspectorToggle" class="icon-btn ws-inspector-btn" type="button" title="收起/展开检查器" aria-label="收起或展开检查器"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-inspector"></use></svg></button>
         <div class="ws-more">
-          <button id="wsMoreBtn" class="icon-btn" type="button" aria-expanded="false" aria-haspopup="menu">更多</button>
+          <button id="wsMoreBtn" class="icon-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="更多"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-more"></use></svg></button>
           <div id="wsMoreMenu" class="ws-more-menu" role="menu" hidden>
             <button type="button" role="menuitem" data-ws-ai>AI 检查</button>
             <button type="button" role="menuitem" data-ws-click="saveBtn">导出结构</button>
@@ -103,17 +183,17 @@
             <button type="button" role="menuitem" data-ws-click="usageHelpBtn">使用说明</button>
           </div>
         </div>
-        <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构">导出</button>
+        <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构" aria-label="导出当前命令链结构"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-export"></use></svg></button>
       </div>
     </header>
 
     <aside id="wsSidebar" class="ws-sidebar">
-      <div class="ws-side-head"><div><b>结构 / 链</b><span id="wsChainCount">0 条</span></div><button id="wsAddChain" type="button" title="新增链" aria-label="新增链">＋</button></div>
+      <div class="ws-side-head"><div><b>结构 / 链</b><span id="wsChainCount">0 条</span></div><button id="wsAddChain" type="button" title="新增链" aria-label="新增链"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg></button></div>
       <div class="ws-side-filter"><button class="on" type="button" data-ws-filter="all">全部</button><button type="button" data-ws-filter="empty">有空尾</button></div>
       <div id="wsChainList" class="ws-chain-list"></div>
-      <div class="ws-side-foot"><button id="wsManage" type="button">管理链</button><button id="wsHelp" type="button">说明</button><button id="wsCollapse" type="button" title="收起侧栏" aria-label="收起侧栏">‹</button></div>
+      <div class="ws-side-foot"><button id="wsManage" type="button">管理链</button><button id="wsHelp" type="button">说明</button><button id="wsCollapse" type="button" title="收起侧栏" aria-label="收起侧栏"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-chevron-left"></use></svg></button></div>
     </aside>
-    <button id="wsMobileInspector" class="ws-mobile-btn" type="button" aria-label="打开检查器" title="检查器">检视</button>
+    <button id="wsMobileInspector" class="ws-mobile-btn" type="button" aria-label="打开检查器" title="检查器"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-inspector"></use></svg></button>
 
     <div id="searchResults" class="search-results"></div>
 
@@ -129,15 +209,15 @@
         </div>
       </div>
       <div id="cameraPad" class="camera-pad" role="group" aria-label="摄像机平移方向键">
-        <button class="camera-pad-btn camera-pad-up" data-camera-move="up" type="button" aria-label="摄像机向上平移" title="向上平移">▲</button>
-        <button class="camera-pad-btn camera-pad-left" data-camera-move="left" type="button" aria-label="摄像机向左平移" title="向左平移">◀</button>
-        <span class="camera-pad-center" aria-hidden="true">⌖</span>
-        <button class="camera-pad-btn camera-pad-right" data-camera-move="right" type="button" aria-label="摄像机向右平移" title="向右平移">▶</button>
-        <button class="camera-pad-btn camera-pad-down" data-camera-move="down" type="button" aria-label="摄像机向下平移" title="向下平移">▼</button>
+        <button class="camera-pad-btn camera-pad-up" data-camera-move="up" type="button" aria-label="摄像机向上平移" title="向上平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-up"></use></svg></button>
+        <button class="camera-pad-btn camera-pad-left" data-camera-move="left" type="button" aria-label="摄像机向左平移" title="向左平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-left"></use></svg></button>
+        <span class="camera-pad-center" aria-hidden="true"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-crosshair"></use></svg></span>
+        <button class="camera-pad-btn camera-pad-right" data-camera-move="right" type="button" aria-label="摄像机向右平移" title="向右平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-right"></use></svg></button>
+        <button class="camera-pad-btn camera-pad-down" data-camera-move="down" type="button" aria-label="摄像机向下平移" title="向下平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"></use></svg></button>
       </div>
       <div class="usage-help-area">
         <button id="usageHelpBtn" class="usage-help-btn" type="button" title="打开完整 README 使用说明" aria-label="打开完整 README 使用说明">
-          <span class="usage-help-icon" aria-hidden="true">i</span><span>使用说明</span>
+          <span class="usage-help-icon" aria-hidden="true"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-help"></use></svg></span><span>使用说明</span>
         </button>
       </div>
     </div>
@@ -146,8 +226,8 @@
       <div class="chain-manager-head">
         <div><b>链位置</b><span>拖动链条调整顺序</span></div>
         <div class="chain-manager-head-actions">
-          <button id="chainAddBtn" class="chain-add-btn" type="button">新增链</button>
-          <button id="chainManagerClose" class="chain-manager-close" title="关闭" type="button">×</button>
+          <button id="chainAddBtn" class="chain-add-btn" type="button"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg><span>新增链</span></button>
+          <button id="chainManagerClose" class="chain-manager-close" title="关闭" aria-label="关闭" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
         </div>
       </div>
       <div id="chainManagerList" class="chain-manager-list"></div>
@@ -156,7 +236,7 @@
 
     <div id="chainAddModal" class="chain-add-modal" role="dialog" aria-modal="true" aria-labelledby="chainAddTitle" aria-hidden="true">
       <div class="chain-add-card">
-        <div class="chain-add-head"><b id="chainAddTitle">新增链</b><button id="chainAddClose" type="button" class="chain-add-close" aria-label="关闭新增链">×</button></div>
+        <div class="chain-add-head"><b id="chainAddTitle">新增链</b><button id="chainAddClose" type="button" class="chain-add-close" aria-label="关闭新增链"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
         <div class="chain-add-title">导入已有指令</div>
         <div class="chain-import-options">
           <button id="importMcstructureBtn" type="button" class="chain-import-btn"><b>导入结构文件</b><span>选择 .mcstructure，自动识别其中的命令链</span></button>
@@ -176,7 +256,7 @@
       <div class="text-editor-card">
         <div class="text-editor-head">
           <div><b id="textEditorTitle">文本模式</b><span id="textEditorSub">每行一条命令 · 点击行号切换有无条件</span></div>
-          <button id="textEditorClose" type="button" class="text-editor-close" title="关闭" aria-label="关闭文本模式">×</button>
+          <button id="textEditorClose" type="button" class="text-editor-close" title="关闭" aria-label="关闭文本模式"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
         </div>
         <div id="textEditorWork" class="text-editor-work">
           <div id="textEditorLineNumbers" class="text-line-numbers" aria-hidden="true"></div>
@@ -187,16 +267,16 @@
         </div>
         <div class="text-editor-foot">
           <span id="textEditorHint">每行一条命令 · 自动换行 · 支持 Minecraft 命令语法高亮</span>
-          <div><button id="textEditorCancel" type="button" class="text-editor-btn">取消</button><button id="textEditorApply" type="button" class="text-editor-btn primary">应用修改</button></div>
+          <div><button id="textEditorCancel" type="button" class="text-editor-btn">取消</button><button id="textEditorApply" type="button" class="text-editor-btn primary text-editor-confirm" title="确认修改" aria-label="确认修改"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12.5 4.5 4.5L19.5 6.5"/></svg></button></div>
         </div>
       </div>
     </div>
 
-    <div id="viewportHelp" class="viewport-help"><b>WASD</b> 移动<br><b>空格/Shift</b> 升降<br><b>左键</b> 旋转视角<br><b>鼠标滚轮</b> 缩放</div>
+    
 
     <aside id="inspector" class="inspector">
-      <div class="inspector-head"><b>对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭">×</button></div>
-      <div id="emptyState" class="empty-state"><div class="empty-icon">◇</div><b>尚未选择对象</b><p>选择场景中的命令方块后，在这里查看坐标、条件与标记。</p></div>
+      <div class="inspector-head"><b>对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
+      <div id="emptyState" class="empty-state"><div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#icon-cube"></use></svg></div><b>尚未选择对象</b><p>选择场景中的命令方块后，在这里查看坐标、条件与标记。</p></div>
       <div id="infoPanel" class="info">
         <div class="object-summary"><span id="infoIdx" class="idx">#—</span><b id="infoType">命令方块</b><span id="infoAuxBadge">辅助方块</span><span id="infoMarkBadge">已标记</span></div>
         <div class="inspector-select-row">
@@ -215,13 +295,13 @@
 
 <div id="diagnosticModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="diagnosticTitle" aria-hidden="true">
   <div class="feature-card diagnostic-card">
-    <div class="feature-head"><div><b id="diagnosticTitle">运行日志</b><span>记录页面运行、导入、编辑、导出以及错误信息</span></div><div class="feature-head-actions"><button id="logCopy" class="feature-btn" type="button">复制日志</button><button id="diagnosticClose" class="feature-close" type="button" aria-label="关闭运行日志">×</button></div></div>
+    <div class="feature-head"><div><b id="diagnosticTitle">运行日志</b><span>记录页面运行、导入、编辑、导出以及错误信息</span></div><div class="feature-head-actions"><button id="logCopy" class="feature-btn" type="button">复制日志</button><button id="diagnosticClose" class="feature-close" type="button" aria-label="关闭运行日志"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div></div>
     <div id="diagnosticBody" class="diagnostic-body"></div>
   </div>
 </div>
 <div id="exportFormatModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="exportFormatTitle" aria-hidden="true">
   <div class="feature-card export-format-card">
-    <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择">×</button></div>
+    <div class="feature-head"><div><b id="exportFormatTitle">选择导出格式</b></div><button id="exportFormatClose" class="feature-close" type="button" aria-label="关闭导出格式选择"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
     <div class="export-format-options">
       <button id="exportOldBtn" class="chain-import-btn" type="button"><b>导出老版本格式</b><span>网易版老/execute语法专用，可以正常使用</span></button>
       <button id="exportNewBtn" class="chain-import-btn" type="button"><b>导出新版本格式</b><span>国际版通用格式</span></button>
@@ -233,14 +313,14 @@
 </div>
 <div id="promptModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="promptModalTitle" aria-hidden="true">
   <div class="feature-card prompt-card">
-    <div class="feature-head"><div><b id="promptModalTitle">提示</b></div><button id="promptModalClose" class="feature-close" type="button" aria-label="关闭提示">×</button></div>
+    <div class="feature-head"><div><b id="promptModalTitle">提示</b></div><button id="promptModalClose" class="feature-close" type="button" aria-label="关闭提示"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
     <div id="promptModalMessage" class="prompt-modal-message"></div>
     <div class="feature-actions"><button id="promptModalCancel" class="feature-btn" type="button">取消</button><button id="promptModalConfirm" class="feature-btn primary" type="button">继续</button></div>
   </div>
 </div>
 <div id="replaceModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="replaceTitle" aria-hidden="true">
   <div class="feature-card replace-card">
-    <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换">×</button></div>
+    <div class="feature-head"><div><b id="replaceTitle">批量替换</b><span>批量修改当前结构</span></div><button id="replaceClose" class="feature-close" type="button" aria-label="关闭批量替换"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
     <label class="feature-input-label"><span>查找</span><input id="replaceFind" type="text" autocomplete="off"></label>
     <label class="feature-input-label"><span>替换为</span><input id="replaceWith" type="text" autocomplete="off"></label>
     <div class="replace-scope"><label><input type="radio" name="replaceScope" value="all" checked> 全部链</label><label><input type="radio" name="replaceScope" value="current"> 当前链</label></div>
@@ -253,7 +333,7 @@
   <div class="feature-card usage-card">
     <div class="feature-head">
       <div><b id="usageHelpTitle">使用说明</b><span>完整 README 文档 · 与发行包内 README.md 内容同步</span></div>
-      <button id="usageHelpClose" class="feature-close" type="button" aria-label="关闭使用说明">×</button>
+      <button id="usageHelpClose" class="feature-close" type="button" aria-label="关闭使用说明"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
     </div>
     <article id="usageReadmeBody" class="usage-readme-body" aria-live="polite">正在从同目录读取 README.md……</article>
   </div>
@@ -261,7 +341,6 @@
 
 <div id="resumeBar" class="resume-bar" hidden><span>发现上次未结束的编辑</span><button id="resumeBtn" type="button">恢复</button><button id="resumeDismiss" type="button">清除</button></div>
 
-<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="toastStack" class="toast-stack" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <script src="./vendor/three-offline.js"></script>
@@ -277,8 +356,8 @@
 </script>
 <script src="./src/data/skill-ids-data.js"></script>
 <script src="./src/data/ai-skill-data.js"></script>
-<script type="module" src="./src/main.js?v=r3-20261127"></script>
-<script type="module" src="./src/ai.js?v=r3-20261127"></script>
-<script type="module" src="./src/workspace.js?v=r3-20261127"></script>
+<script type="module" src="./src/main.js?v=r32-cleanup-20261128"></script>
+<script type="module" src="./src/ai.js?v=r32-cleanup-20261128"></script>
+<script type="module" src="./src/workspace.js?v=r32-cleanup-20261128"></script>
 </body>
 </html>

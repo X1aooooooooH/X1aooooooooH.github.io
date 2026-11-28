@@ -20,8 +20,8 @@ import {
   applyChainCamera, animateCameraTo, captureOverviewCamera, cycleBlock, setViewPreset,
   getPickRecord, setSceneHandlers
 } from './scene.js';
-import { initTheme } from './ui/theme.js';
-import { hideInfo } from './inspector.js';
+import { initTheme } from './ui/theme.js?v=r32-cleanup-20261128';
+import { hideInfo } from './inspector.js?v=r32-cleanup-20261128';
 
 import {
   updateChainBar, toggleChainManager, openChainAddModal, closeChainAddModal, addChainOfType,
@@ -31,7 +31,7 @@ import {
 } from './editor.js';
 import {
   openTextEditorForChain, closeTextEditor, highlightTextEditorLine, importChainFromTxt
-} from './ui/text-editor.js';
+} from './ui/text-editor.js?v=r32-cleanup-20261128';
 
 initTheme();
 
@@ -212,6 +212,7 @@ function openUsageHelp(){
   loadReadmeFromSibling();
   setTimeout(()=>document.getElementById('usageHelpClose')?.focus(),0);
 }
+window.openUsageHelp = openUsageHelp;
 function openLogs(){
   const m=document.getElementById('diagnosticModal');if(!m)return;
   const body=document.getElementById('diagnosticBody');
@@ -375,13 +376,99 @@ document.getElementById('backBtn').onclick=async()=>{
   app.savedHistoryIndex=app.historyIndex;
   syncSavedState();
 };
-dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('drag');});
-dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('drag'));
+const uploadError=document.getElementById('uploadError');
+const uploadErrorText=document.getElementById('uploadErrorText');
+const uploadSelected=document.getElementById('uploadSelected');
+const uploadSelectedName=document.getElementById('uploadSelectedName');
+const uploadSelectedSize=document.getElementById('uploadSelectedSize');
+const uploadRemove=document.getElementById('uploadRemove');
+const uploadReselect=document.getElementById('uploadReselect');
+const uploadLoad=document.getElementById('uploadLoad');
+let stagedUpload=null;
+
+function formatUploadSize(bytes){
+  if(!Number.isFinite(bytes)||bytes<0)return '';
+  if(bytes<1024)return bytes+' B';
+  const units=['KB','MB','GB'];
+  let value=bytes/1024,index=0;
+  while(value>=1024&&index<units.length-1){value/=1024;index++;}
+  return value.toFixed(value>=10?1:2)+' '+units[index];
+}
+
+function clearUploadError(){
+  uploadError?.classList.remove('is-visible');
+  dropzone.classList.remove('is-error');
+}
+
+function showUploadError(message){
+  if(uploadErrorText)uploadErrorText.textContent=message;
+  uploadError?.classList.add('is-visible');
+  dropzone.classList.add('is-error');
+}
+
+function stageUpload(file){
+  if(!file)return;
+  clearUploadError();
+  if(!/\.mcstructure$/i.test(file.name)){
+    showUploadError(`不支持的文件类型 "${file.name}"，请选择 .mcstructure 文件`);
+    return;
+  }
+  stagedUpload=file;
+  uploadSelectedName.textContent=file.name;
+  uploadSelectedSize.textContent=formatUploadSize(file.size);
+  dropzone.hidden=true;
+  uploadSelected.classList.add('is-visible');
+}
+
+function resetUploadBox(){
+  stagedUpload=null;
+  fileInput.value='';
+  clearUploadError();
+  dropzone.hidden=false;
+  dropzone.classList.remove('is-dragover');
+  uploadSelected.classList.remove('is-visible');
+  uploadSelectedName.textContent='';
+  uploadSelectedSize.textContent='';
+}
+
+async function loadStagedUpload(){
+  if(!stagedUpload)return;
+  uploadLoad.disabled=true;
+  const label=uploadLoad.textContent;
+  uploadLoad.textContent='加载中…';
+  try{
+    await handleFile(stagedUpload);
+  }finally{
+    uploadLoad.disabled=false;
+    uploadLoad.textContent=label;
+  }
+}
+
+dropzone.addEventListener('dragenter',e=>{e.preventDefault();e.stopPropagation();dropzone.classList.add('is-dragover');});
+dropzone.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();dropzone.classList.add('is-dragover');});
+dropzone.addEventListener('dragleave',e=>{e.preventDefault();e.stopPropagation();dropzone.classList.remove('is-dragover');});
 dropzone.addEventListener('drop',e=>{
-  e.preventDefault();dropzone.classList.remove('drag');
-  const f=e.dataTransfer.files[0];if(f)handleFile(f);
+  e.preventDefault();e.stopPropagation();
+  dropzone.classList.remove('is-dragover');
+  const f=e.dataTransfer?.files?.[0];
+  if(f)stageUpload(f);
 });
-fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileInput.files[0]);});
+fileInput.addEventListener('change',()=>{
+  const f=fileInput.files?.[0];
+  if(f)stageUpload(f);
+});
+uploadRemove.addEventListener('click',resetUploadBox);
+uploadReselect.addEventListener('click',()=>{
+  resetUploadBox();
+  fileInput.click();
+});
+uploadLoad.addEventListener('click',loadStagedUpload);
+const uploadView=document.getElementById('uploadView');
+if(uploadView){
+  new MutationObserver(()=>{
+    if(uploadView.classList.contains('on'))resetUploadBox();
+  }).observe(uploadView,{attributes:true,attributeFilter:['class']});
+}
 
 document.querySelectorAll('[data-preset]').forEach(b=>{b.onclick=()=>setViewPreset(b.dataset.preset);});
 document.getElementById('undoBtn').onclick=undo;
@@ -438,7 +525,6 @@ document.getElementById('infoClose').onclick=()=>deselect();
 
 (function setupFeatureBindings(){
   document.getElementById('usageHelpBtn').onclick=openUsageHelp;
-  document.getElementById('uploadReadmeBtn').onclick=openUsageHelp;
   document.getElementById('usageHelpClose').onclick=()=>closeFeatureModal('usageHelpModal');
   document.getElementById('usageHelpModal').addEventListener('click',e=>{if(e.target.id==='usageHelpModal')closeFeatureModal('usageHelpModal');});
   document.getElementById('diagnoseBtn').onclick=openLogs;

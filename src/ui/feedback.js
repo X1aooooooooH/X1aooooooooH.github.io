@@ -1,3 +1,4 @@
+import { icon } from './icons.js';
 let lastPointerElement = null;
 document.addEventListener('pointerdown', event => {
   const target = event.target?.closest?.('button,a,[role="button"],input,select,textarea');
@@ -7,8 +8,7 @@ const modalFocusStack = new Map();
 
 function toast(msg,type,duration){
   const stack=document.getElementById('toastStack');
-  const el=document.getElementById('toast');
-  if(!stack){if(el){el.textContent=msg;el.className='toast on '+(type||'');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),duration||3000);}return;}
+  if(!stack) return;
   const item=document.createElement('div');
   item.className='toast-stack-item '+(type||'');
   item.style.setProperty('--toast-life', `${duration||3000}ms`);
@@ -19,7 +19,7 @@ function toast(msg,type,duration){
   close.type='button';
   close.className='toast-stack-close';
   close.setAttribute('aria-label','关闭提示');
-  close.textContent='×';
+  close.innerHTML=icon('close','icon icon-sm');
   item.append(message,close);
   stack.prepend(item);
   while(stack.children.length>5)stack.lastElementChild.remove();
@@ -29,9 +29,35 @@ function toast(msg,type,duration){
     item.classList.add('out');
     setTimeout(()=>item.remove(),260);
   };
-  const timer=setTimeout(remove,duration||3000);
+  let timer=setTimeout(remove,duration||3000);
+  item._toastRestart=(ms=1500)=>{
+    clearTimeout(timer);
+    item.style.setProperty('--toast-life', `${ms}ms`);
+    timer=setTimeout(remove,ms);
+  };
   close.addEventListener('click',()=>{clearTimeout(timer);remove();});
   requestAnimationFrame(()=>item.classList.add('in'));
+  return item;
+}
+
+export function undoToast(message, duration = 1500) {
+  const stack = document.getElementById('toastStack');
+  if (!stack) {
+    toast(message, 'warn', duration);
+    return;
+  }
+  const active = stack.querySelector('.toast-stack-item:not(.out)');
+  if (active?._toastRestart) {
+    // Keep the action that was just undone visible, crossed out, and give it
+    // a fresh 1.5s visibility window.
+    active.classList.add('is-undone');
+    active.style.setProperty('--toast-life', duration + 'ms');
+    active._toastRestart(duration);
+    const text = active.querySelector('.toast-stack-message')?.textContent || '';
+    active.setAttribute('aria-label', '已撤销：' + text);
+    return;
+  }
+  toast(message, 'warn', duration);
 }
 
 function download(blob,name){
@@ -144,7 +170,7 @@ function showInputPopover({ title = '重命名', value = '', label = '名称', c
     modal.className = 'feature-modal notice-modal rename-modal';
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.innerHTML = '<div class="feature-card rename-card"><div class="feature-head"><div><b id="renameModalTitle">重命名</b><span>输入新的名称</span></div><button id="renameModalClose" class="feature-close" type="button" aria-label="关闭">×</button></div><label class="feature-input-label"><span id="renameModalLabel">名称</span><input id="renameModalInput" type="text" autocomplete="off"></label><div class="feature-actions"><button id="renameModalCancel" class="feature-btn" type="button">取消</button><button id="renameModalConfirm" class="feature-btn primary" type="button">保存</button></div></div>';
+    modal.innerHTML = '<div class="feature-card rename-card"><div class="feature-head"><div><b id="renameModalTitle">重命名</b><span>输入新的名称</span></div><button id="renameModalClose" class="feature-close" type="button" aria-label="关闭">' + icon('close') + '</button></div><label class="feature-input-label"><span id="renameModalLabel">名称</span><input id="renameModalInput" type="text" autocomplete="off"></label><div class="feature-actions"><button id="renameModalCancel" class="feature-btn" type="button">取消</button><button id="renameModalConfirm" class="feature-btn primary" type="button">保存</button></div></div>';
     document.body.append(modal);
   }
   document.getElementById('renameModalTitle').textContent = title;
@@ -181,5 +207,5 @@ setupModalFocusTrap();
 
 export {
   toast, download, closeFeatureModal, rememberModalFocus, restoreModalFocus,
-  setupModalFocusTrap, positionPopover, showPromptModal, showInputPopover
+  showPromptModal, showInputPopover
 };

@@ -6,7 +6,7 @@ import { isInputFocused } from './ui/dom.js';
 import { app } from './state.js';
 import { logInfo } from './log.js';
 import { dot3, easeInOutQuad } from './core/util.js';
-import { hideInfo, showInfo } from './inspector.js';
+import { hideInfo, showInfo } from './inspector.js?v=r32-cleanup-20261128';
 
 const texCache = {};
 let texLoaded = false;

@@ -118,9 +118,6 @@ export function buildExportLayouts(chains){
   finish();
   return layouts;
 }
-export function buildExportLayout(chains){
-  return buildExportLayouts(chains)[0];
-}
 // Keep whole chains' internal geometry intact while preventing exact 3D
 // coordinate collisions after reflow. Shifting X does not change a closed
 // cycle's relative coordinates or its facing directions.

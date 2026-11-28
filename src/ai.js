@@ -12,6 +12,7 @@ import { refreshChainsUI, pushHistory } from './editor.js';
 import { logInfo, logWarn, logOk, logError } from './log.js';
 import { toast, showPromptModal, showInputPopover } from './ui/feedback.js';
 import { renderMarkdown } from './ui/markdown.js';
+import { icon } from './ui/icons.js';
 import {
   CONFIG_KEY, DEFAULT_BASE, DEFAULT_MODEL, CHATS_KEY, SESSIONS_KEY,
   MAX_CONVERSATIONS, MAX_MESSAGES, SLASH_COMMANDS, SLASH_PROMPTS, MODEL_OPTIONS,
@@ -294,9 +295,10 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
     const custom = ui.modelInput.value === '__custom__';
     const model = custom ? ui.modelCustom.value.trim() : ui.modelInput.value;
     if (!key) {
-      ui.testStatus.className = 'ai-test-status err';
-      ui.testStatus.textContent = '请先填写 API Key。';
+      ui.testStatus.className = 'ai-test-status';
+      ui.testStatus.textContent = '';
       ui.keyInput.focus();
+      aiToast('请先填写 API Key。', 'warn');
       return;
     }
     if (!model) {
@@ -376,7 +378,7 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
       <div class="ai-card ai-settings-card" role="document">
         <div class="ai-card-head">
           <div><b>AI 设置</b><span>使用你自己的 API Key。Key 只保存在当前浏览器，不会上传到 BlockFlow 站点。</span></div>
-          <button class="ai-icon-btn" type="button" data-ai-close-settings aria-label="关闭">×</button>
+          <button class="ai-icon-btn" type="button" data-ai-close-settings aria-label="关闭">${icon('close')}</button>
         </div>
         <div class="ai-settings-body">
           <label class="ai-field"><span>API Key</span><input id="aiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-..."></label>
@@ -412,24 +414,24 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
             <div class="ai-chat-side-head">
               <b>对话</b>
               <div class="ai-side-head-actions">
-                <button class="ai-side-icon" type="button" data-ai-new-chat title="新建对话" aria-label="新建对话">＋</button>
-                <button class="ai-side-icon" type="button" data-ai-import title="导入会话" aria-label="导入会话">⇩</button>
-                <button class="ai-side-icon" type="button" data-ai-export title="导出会话" aria-label="导出会话">⇧</button>
-                <button class="ai-side-icon" type="button" data-ai-hide-side title="隐藏侧边栏" aria-label="隐藏侧边栏">◀</button>
+                <button class="ai-side-icon" type="button" data-ai-new-chat title="新建对话" aria-label="新建对话">${icon('plus')}</button>
+                <button class="ai-side-icon" type="button" data-ai-import title="导入会话" aria-label="导入会话">${icon('download')}</button>
+                <button class="ai-side-icon" type="button" data-ai-export title="导出会话" aria-label="导出会话">${icon('upload')}</button>
+                <button class="ai-side-icon" type="button" data-ai-hide-side title="隐藏侧边栏" aria-label="隐藏侧边栏">${icon('chevron-left')}</button>
               </div>
             </div>
             <div id="aiChatList" class="ai-chat-list"></div>
             <div class="ai-chat-side-foot">
-              <button class="ai-side-settings" type="button" data-ai-settings title="设置" aria-label="设置">⚙</button>
+              <button class="ai-side-settings" type="button" data-ai-settings title="设置" aria-label="设置">${icon('settings')}</button>
               <input id="aiImportInput" type="file" hidden>
             </div>
           </aside>
           <section class="ai-chat-main">
             <div class="ai-card-head">
-              <div><div class="ai-chat-title-row"><b id="aiChatTitle">AI 阅读</b><button class="ai-show-side-btn" type="button" data-ai-show-side title="显示侧边栏" aria-label="显示侧边栏" hidden>☰</button></div><span id="aiChatSubtitle">加载内置技能中…</span></div>
+              <div><div class="ai-chat-title-row"><b id="aiChatTitle">AI 阅读</b><button class="ai-show-side-btn" type="button" data-ai-show-side title="显示侧边栏" aria-label="显示侧边栏" hidden>${icon('menu')}</button></div><span id="aiChatSubtitle">加载内置技能中…</span></div>
               <div class="ai-chat-head-actions">
                 <button class="ai-btn ai-history-btn" type="button" data-ai-history>历史</button>
-                <button class="ai-icon-btn" type="button" data-ai-close-chat aria-label="关闭">×</button>
+                <button class="ai-icon-btn" type="button" data-ai-close-chat aria-label="关闭">${icon('close')}</button>
               </div>
             </div>
             <div id="aiChatMessages" class="ai-chat-messages" aria-live="polite"></div>
@@ -439,7 +441,7 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
               <div id="aiChatAttachments" class="ai-chat-attachments" hidden></div>
               <div class="ai-chat-input-wrap">
                 <div class="ai-chat-input-shell">
-                  <button id="aiChatAttach" class="ai-chat-attach" type="button" title="提交文本文件给 AI" aria-label="提交文件">＋</button>
+                  <button id="aiChatAttach" class="ai-chat-attach" type="button" title="提交文本文件给 AI" aria-label="提交文件">${icon('plus')}</button>
                   <textarea id="aiChatInput" class="ai-chat-input" rows="1" placeholder="继续提问，例如：这条链有什么逻辑风险？" spellcheck="false"></textarea>
                 </div>
                 <button id="aiChatCancel" class="ai-chat-cancel" type="button" hidden>取消</button>
@@ -618,7 +620,7 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
       const remove = document.createElement('button');
       remove.type = 'button';
       remove.dataset.aiAttachmentRemove = String(index);
-      remove.textContent = '×';
+      remove.innerHTML = icon('close');
       remove.title = '移除附件';
       chip.appendChild(name);
       chip.appendChild(size);
@@ -903,7 +905,7 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
         rename.className = 'ai-chat-item-rename';
         rename.title = '重命名会话';
         rename.setAttribute('aria-label', '重命名会话');
-        rename.textContent = '✎';
+        rename.innerHTML = icon('pencil');
         rename.addEventListener('click', event => {
           event.stopPropagation();
           renameConversationById(conv.id, rename);
@@ -913,7 +915,7 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
         del.className = 'ai-chat-item-del';
         del.title = '删除这个会话';
         del.setAttribute('aria-label', '删除这个会话');
-        del.textContent = '×';
+        del.innerHTML = icon('close');
         del.addEventListener('click', event => {
           event.stopPropagation();
           deleteConversationById(conv.id);

@@ -1,4 +1,6 @@
 import { createLineMetrics } from './ui/line-metrics.js';
+import { icon } from './ui/icons.js';
+import { TYPE_LABEL } from './core/constants.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const inlineMetrics = createLineMetrics();
@@ -6,8 +8,6 @@ let inlineLayoutLines = [];
 let inlineLayoutHeights = [];
 let inlineContentHeight = 0;
 let inlineLayoutToken = 0;
-
-const state = { filter: 'all', key: '' };
 
 function chainTotal(chain) {
   return (chain?.blocks || []).length;
@@ -21,14 +21,21 @@ function renderSidebar() {
   const app = window.app;
   const list = $('#wsChainList');
   if (!app?.chains || !list) return;
-  $('#wsChainCount').textContent = `${app.chains.length} 条`;
-  const items = app.chains.map((chain, index) => ({ chain, index }))
-    .filter(({ chain }) => state.filter !== 'empty' || chainEmpty(chain));
+  const count = app.chains.length;
+  const current = app.chains[app.selectedChain];
+  const currentLabel = current ? '当前：' + (current.name || '链 ' + (app.selectedChain + 1)) : '当前：未选择';
+  const countNode = $('#wsChainCount');
+  if (countNode) countNode.textContent = count + ' 条';
+  const items = app.chains.map((chain, index) => ({ chain, index }));
+  const modalCount = $('#wsChainModalCount');
+  if (modalCount) modalCount.textContent = count + ' 条';
+  const modalSelected = $('#wsChainModalSelected');
+  if (modalSelected) modalSelected.textContent = currentLabel;
   list.replaceChildren();
   if (!items.length) {
     const empty = document.createElement('p');
     empty.className = 'ws-empty';
-    empty.textContent = state.filter === 'empty' ? '没有空尾链' : '还没有命令链';
+    empty.textContent = '还没有命令链';
     list.appendChild(empty);
     return;
   }
@@ -37,44 +44,56 @@ function renderSidebar() {
     row.className = 'ws-chain-row' + (index === app.selectedChain ? ' on' : '');
     row.dataset.index = String(index);
     row.tabIndex = 0;
+    row.setAttribute('aria-current', index === app.selectedChain ? 'true' : 'false');
+    const indexBadge = document.createElement('span');
+    indexBadge.className = 'ws-chain-index';
+    indexBadge.textContent = String(index + 1).padStart(2, '0');
     const dragHandle = document.createElement('button');
     dragHandle.type = 'button';
     dragHandle.className = 'ws-chain-drag';
-    dragHandle.textContent = '⠿';
+    dragHandle.innerHTML = icon('grip', 'icon icon-sm');
     dragHandle.title = '拖动排序';
     dragHandle.setAttribute('aria-label', '拖动排序');
     dragHandle.draggable = true;
     const copy = document.createElement('span');
     copy.className = 'ws-chain-copy';
+    const titleLine = document.createElement('span');
+    titleLine.className = 'ws-chain-title-line';
     const title = document.createElement('b');
-    title.textContent = chain.name || `链 ${index + 1}`;
+    title.textContent = chain.name || '链 ' + (index + 1);
+    titleLine.appendChild(title);
+    if (index === app.selectedChain) {
+      const active = document.createElement('em');
+      active.className = 'ws-chain-current';
+      active.textContent = '当前';
+      titleLine.appendChild(active);
+    }
     const meta = document.createElement('small');
     const empty = chainEmpty(chain);
-    meta.textContent = `${chainTotal(chain)} 块${empty ? ` · ${empty} 空` : ''}`;
+    meta.textContent = chainTotal(chain) + ' 块' + (empty ? ' · ' + empty + ' 空' : '');
     const preview = document.createElement('em');
     preview.className = 'ws-chain-preview';
     preview.textContent = chain.blocks?.[0]?.cmd || '（无命令）';
-    copy.append(title, meta, preview);
+    copy.append(titleLine, meta, preview);
     const rename = document.createElement('button');
     rename.type = 'button';
     rename.className = 'ws-chain-rename';
     rename.title = '重命名链';
     rename.setAttribute('aria-label', '重命名链');
-    rename.textContent = '✎';
+    rename.innerHTML = icon('pencil');
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'ws-chain-del';
-    del.title = `删除链 ${index + 1}`;
-    del.setAttribute('aria-label', `删除链 ${index + 1}`);
-    del.textContent = '×';
+    del.title = '删除链 ' + (index + 1);
+    del.setAttribute('aria-label', '删除链 ' + (index + 1));
+    del.innerHTML = icon('close');
     const actions = document.createElement('div');
     actions.className = 'ws-chain-actions';
     actions.append(rename, del);
-    row.append(dragHandle, copy, actions);
+    row.append(dragHandle, indexBadge, copy, actions);
     list.appendChild(row);
   }
 }
-
 function sidebarRowIndex(target) {
   const row = target?.closest?.('.ws-chain-row');
   return row ? Number(row.dataset.index) : -1;
@@ -118,6 +137,11 @@ function bindSidebarEvents() {
       return;
     }
     selectChain(index);
+    const modal = document.getElementById('wsChainModal');
+    if (modal) {
+      modal.classList.remove('on');
+      modal.setAttribute('aria-hidden', 'true');
+    }
   });
   list.addEventListener('keydown', event => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -125,6 +149,11 @@ function bindSidebarEvents() {
     if (index < 0) return;
     event.preventDefault();
     selectChain(index);
+    const modal = document.getElementById('wsChainModal');
+    if (modal) {
+      modal.classList.remove('on');
+      modal.setAttribute('aria-hidden', 'true');
+    }
   });
   list.addEventListener('dragstart', event => {
     const handle = event.target.closest('.ws-chain-drag');
@@ -190,6 +219,216 @@ function selectChain(index) {
   setTimeout(renderSidebar, 0);
 }
 
+
+let previewRaf = 0;
+let previewMinimized = false;
+
+function updateSidePreviewToggle() {
+  const button = document.getElementById('wsSidePreviewToggle');
+  if (!button) return;
+  button.innerHTML = icon(previewMinimized ? 'expand' : 'minimize');
+  button.title = previewMinimized ? '展开侧视预览' : '最小化侧视预览';
+  button.setAttribute('aria-label', button.title);
+  button.setAttribute('aria-expanded', String(!previewMinimized));
+}
+
+function setSidePreviewVisible(show) {
+  const panel = document.getElementById('wsSidePreview');
+  const stage = document.querySelector('#editorView .ws-stage');
+  if (!panel) return;
+  panel.classList.toggle('on', !!show);
+  panel.classList.toggle('is-minimized', !!show && previewMinimized);
+  panel.setAttribute('aria-hidden', String(!show));
+  stage?.classList.toggle('preview-on', !!show && !previewMinimized);
+  updateSidePreviewToggle();
+  if (!show) previewRaf = 0;
+}
+
+function hideSidePreview() {
+  previewMinimized = false;
+  setSidePreviewVisible(false);
+}
+function updateSidePreview(detail) {
+  const app = window.app;
+  const chain = app?.chains?.[detail?.chain];
+  const block = chain?.blocks?.[detail?.block];
+  if (!app || !detail || !chain || !block) {
+    hideSidePreview();
+    return;
+  }
+  const panel = document.getElementById('wsSidePreview');
+  if (!panel) return;
+  const type = TYPE_LABEL[block.blockType] || block.blockType || '命令方块';
+  panel.setAttribute('aria-label', '当前链侧视图，正在编辑 #' + detail.block + ' ' + type);
+  setSidePreviewVisible(true);
+  scheduleSidePreview();
+}
+function scheduleSidePreview() {
+  if (previewRaf) return;
+  previewRaf = requestAnimationFrame(() => {
+    previewRaf = 0;
+    drawSidePreview();
+  });
+}
+
+function drawSidePreview() {
+  const panel = document.getElementById('wsSidePreview');
+  const canvas = document.getElementById('wsSidePreviewCanvas');
+  const focus = document.getElementById('wsSidePreviewFocus');
+  const app = window.app;
+  if (!panel || !canvas || !panel.classList.contains('on') || previewMinimized || !app) return;
+  const chain = app.chains?.[app.selectedChain];
+  const blocks = chain?.blocks || [];
+  const selected = app.selectedBlock;
+  if (!chain || !blocks.length || selected < 0 || selected >= blocks.length) {
+    hideSidePreview();
+    return;
+  }
+  if (focus) focus.style.display = 'none';
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight || 82;
+  if (!width) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+  }
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim() || '#8ea2ff';
+
+  // True side view: horizontal Z, vertical Y, looking along X.
+  // Each X depth layer is fanned out slightly so stacked blocks remain readable.
+  const xs = Array.from(new Set(blocks.map(block => Number(block.x) || 0))).sort((a, b) => a - b);
+  const xRank = new Map(xs.map((x, index) => [x, index]));
+  const layerStep = xs.length > 1 ? Math.min(2.2, 16 / (xs.length - 1)) : 0;
+  const layerCenter = (xs.length - 1) / 2;
+  const maxLayerOffset = layerStep * layerCenter;
+  const cells = new Map();
+  blocks.forEach((block, index) => {
+    const x = Number(block.x) || 0;
+    const y = Number(block.y) || 0;
+    const z = Number(block.z) || 0;
+    const key = x + '|' + z + '|' + y;
+    const existing = cells.get(key);
+    if (!existing || index === selected || (!existing.selected && index > existing.index)) {
+      cells.set(key, {
+        block, index, x, y, z,
+        rank: xRank.get(x) || 0,
+        selected: index === selected
+      });
+    }
+  });
+  const list = Array.from(cells.values());
+  if (!list.length) return;
+  const minZ = Math.min(...list.map(cell => cell.z));
+  const maxZ = Math.max(...list.map(cell => cell.z));
+  const minY = Math.min(...list.map(cell => cell.y));
+  const maxY = Math.max(...list.map(cell => cell.y));
+  const spanZ = Math.max(1, maxZ - minZ + 1);
+  const spanY = Math.max(1, maxY - minY + 1);
+  const padding = 5 + maxLayerOffset;
+  const tile = Math.min(52, (width - padding * 2) / spanZ, (height - padding * 2) / spanY);
+  const gridW = tile * spanZ;
+  const gridH = tile * spanY;
+  const originX = (width - gridW) / 2;
+  const originY = (height - gridH) / 2;
+  const colors = { command: '#f59e0b', chain: '#10b981', repeating: '#8b5cf6' };
+  const selectedCell = list.find(cell => cell.selected);
+  const selectedRank = selectedCell?.rank ?? 0;
+  const ordered = list
+    .filter(cell => !cell.selected && cell.rank !== selectedRank)
+    .sort((a, b) => (a.rank - b.rank) || (a.z + a.y) - (b.z + b.y))
+    .concat(list
+      .filter(cell => !cell.selected && cell.rank === selectedRank)
+      .sort((a, b) => (a.z + a.y) - (b.z + b.y)));
+  if (selectedCell) ordered.push(selectedCell);
+  ctx.imageSmoothingEnabled = false;
+  for (const cell of ordered) {
+    const layerOffset = (cell.rank - layerCenter) * layerStep;
+    const sx = width - (originX + (cell.z - minZ) * tile + layerOffset) - tile;
+    const sy = originY + (maxY - cell.y) * tile;
+    const drawSize = Math.max(1, tile);
+    ctx.globalAlpha = cell.rank === selectedRank ? 1 : 0.4;
+    if (cell.block.isAirPlaceholder) {
+      ctx.save();
+      ctx.setLineDash([2, 2]);
+      ctx.strokeStyle = 'rgba(127,140,160,.55)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx + 0.5, sy + 0.5, Math.max(1, drawSize - 1), Math.max(1, drawSize - 1));
+      ctx.restore();
+    } else {
+      ctx.fillStyle = colors[cell.block.blockType] || colors.chain;
+      ctx.fillRect(sx, sy, drawSize, drawSize);
+      ctx.strokeStyle = 'rgba(127,140,160,.42)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(sx + 0.5, sy + 0.5, Math.max(1, drawSize - 1), Math.max(1, drawSize - 1));
+    }
+    if (cell.selected) {
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = drawSize > 5 ? 2 : 1.5;
+      ctx.strokeRect(sx + 1, sy + 1, Math.max(1, drawSize - 2), Math.max(1, drawSize - 2));
+      if (focus) {
+        focus.style.display = 'block';
+        focus.style.left = sx + 'px';
+        focus.style.top = sy + 'px';
+        focus.style.width = drawSize + 'px';
+        focus.style.height = drawSize + 'px';
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+function buildSidePreview(stage) {
+  if (!stage || document.getElementById('wsSidePreview')) return;
+  const panel = document.createElement('aside');
+  panel.id = 'wsSidePreview';
+  panel.className = 'ws-side-preview';
+  panel.setAttribute('role', 'status');
+  panel.setAttribute('aria-hidden', 'true');
+  panel.setAttribute('aria-label', '当前命令方块侧视预览');
+  panel.innerHTML = '<div class="ws-side-preview-canvas-wrap"><canvas id="wsSidePreviewCanvas" class="ws-side-preview-canvas" aria-hidden="true"></canvas><span id="wsSidePreviewFocus" class="ws-side-preview-focus" aria-hidden="true"></span></div><button id="wsSidePreviewToggle" class="ws-side-preview-toggle" type="button"></button>';
+  const toggle = panel.querySelector('#wsSidePreviewToggle');
+  toggle.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    previewMinimized = !previewMinimized;
+    setSidePreviewVisible(true);
+    if (!previewMinimized) scheduleSidePreview();
+  });
+  stage.append(panel);
+  window.addEventListener('blockflow:block-edit', event => updateSidePreview(event.detail));
+  document.getElementById('infoCmd')?.addEventListener('input', () => {
+    const app = window.app;
+    if (app?.mode === 'chain' && app.selectedBlock >= 0) {
+      updateSidePreview({ chain: app.selectedChain, block: app.selectedBlock });
+    }
+  });
+  window.addEventListener('resize', scheduleSidePreview);
+  new MutationObserver(scheduleSidePreview).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  const inspector = document.getElementById('inspector');
+  if (inspector) {
+    new MutationObserver(() => {
+      if (inspector.classList.contains('open')) {
+        const current = window.app;
+        if (current?.selectedBlock >= 0) {
+          updateSidePreview({ chain: current.selectedChain, block: current.selectedBlock });
+        }
+      } else {
+        hideSidePreview();
+      }
+    }).observe(inspector, { attributes: true, attributeFilter: ['class'] });
+  }
+  const app = window.app;
+  if (app?.selectedBlock >= 0) {
+    updateSidePreview({ chain: app.selectedChain, block: app.selectedBlock });
+  }
+}
+
 function buildFrame() {
   const shell = $('#editorView .editor-shell');
   if (!shell || shell.querySelector('.ws-stage')) return;
@@ -207,46 +446,36 @@ function buildFrame() {
   if (!header || !canvas || !sidebar || !inspector || !chainBar) return;
 
   // Top bar: exit file, file identity, counts; theme/log/help/export on the right.
-  const uploadReadme = $('#uploadReadmeBtn');
-  if (uploadReadme) {
-    uploadReadme.textContent = '?';
-    uploadReadme.title = '阅读 README 使用说明';
-    uploadReadme.setAttribute('aria-label', '阅读 README 使用说明');
-  }
   const back = $('#backBtn');
   if (back) {
     back.classList.remove('bar-brand');
     back.classList.add('ws-exit-btn');
-    back.textContent = '←';
+    back.innerHTML = icon('arrow-left');
     back.title = '退出当前文件';
     back.setAttribute('aria-label', '退出当前文件');
   }
   const actions = $('.bar-actions');
   if (usageBtn) {
     usageBtn.classList.add('ws-top-utility');
-    usageBtn.textContent = '?';
+    usageBtn.innerHTML = icon('help');
     usageBtn.title = '使用说明';
     usageBtn.setAttribute('aria-label', '使用说明');
     const save = $('#saveBtn');
     if (save) actions.insertBefore(usageBtn, save);
     else actions.append(usageBtn);
   }
+  // The theme module owns the sun/moon glyph so workspace setup won't reset it.
   const themeBtn = $('#themeBtn');
-  if (themeBtn) {
-    themeBtn.textContent = '◐';
-    themeBtn.title = '切换主题';
-    themeBtn.setAttribute('aria-label', '切换主题');
-  }
   const diagnoseBtn = $('#diagnoseBtn');
   if (diagnoseBtn) {
-    diagnoseBtn.textContent = '▤';
+    diagnoseBtn.innerHTML = icon('log');
     diagnoseBtn.title = '运行日志';
     diagnoseBtn.setAttribute('aria-label', '运行日志');
   }
   if (themeBtn && diagnoseBtn) actions.insertBefore(themeBtn, diagnoseBtn);
   const save = $('#saveBtn');
   if (save) {
-    save.textContent = '⇧';
+    save.innerHTML = icon('export');
     save.title = '导出结构';
     save.setAttribute('aria-label', '导出结构');
     const exportMenu = document.createElement('div');
@@ -289,7 +518,7 @@ function buildFrame() {
     exitBtn.remove();
     exitBtn.classList.remove('top-home-btn');
     exitBtn.classList.add('ws-back-btn');
-    exitBtn.textContent = '←';
+    exitBtn.innerHTML = icon('home');
     exitBtn.title = '返回主视图';
     exitBtn.setAttribute('aria-label', '返回主视图');
     stageTools.append(exitBtn);
@@ -298,26 +527,26 @@ function buildFrame() {
   const redoBtn = $('#redoBtn');
   if (undoBtn) {
     undoBtn.classList.remove('ws-hidden');
-    undoBtn.textContent = '↶';
+    undoBtn.innerHTML = icon('undo');
     undoBtn.title = '上一步';
     undoBtn.setAttribute('aria-label', '上一步');
     actions.prepend(undoBtn);
   }
   if (redoBtn) {
     redoBtn.classList.remove('ws-hidden');
-    redoBtn.textContent = '↷';
+    redoBtn.innerHTML = icon('redo');
     redoBtn.title = '下一步';
     redoBtn.setAttribute('aria-label', '下一步');
     actions.insertBefore(redoBtn, undoBtn?.nextSibling || null);
   }
   if (viewGrid) {
     viewGrid.remove();
-    const viewSymbols = { front: '▣', side: '◧', top: '⬒' };
+    const viewSymbols = { front: 'view-front', side: 'view-side', top: 'view-top' };
     const viewLabels = { front: '正视图', side: '侧视图', top: '俯视图' };
     viewGrid.querySelectorAll('.view-btn').forEach(button => {
       const preset = button.dataset.preset;
       if (!preset) return;
-      button.textContent = viewSymbols[preset] || button.textContent;
+      button.innerHTML = icon(viewSymbols[preset] || 'view-side');
       button.title = viewLabels[preset] || button.title;
       button.setAttribute('aria-label', viewLabels[preset] || '视图');
     });
@@ -325,6 +554,7 @@ function buildFrame() {
   }
   stage.append(inspector);
   inspector.classList.add('ws-block-popup');
+  buildSidePreview(stage);
   const inspectorHead = inspector.querySelector('.inspector-head');
   const inspectorActions = document.createElement('div');
   inspectorActions.className = 'ws-inspector-actions';
@@ -332,19 +562,19 @@ function buildFrame() {
   const insertBtn = $('#infoInsAfter');
   const deleteBtn = $('#infoDel');
   if (markBtn) {
-    markBtn.textContent = '⚑';
+    markBtn.innerHTML = icon('block-mark');
     markBtn.title = '标记';
     markBtn.setAttribute('aria-label', '标记');
     inspectorActions.append(markBtn);
   }
   if (insertBtn) {
-    insertBtn.textContent = '＋';
+    insertBtn.innerHTML = icon('block-insert');
     insertBtn.title = '后插命令方块';
     insertBtn.setAttribute('aria-label', '后插命令方块');
     inspectorActions.append(insertBtn);
   }
   if (deleteBtn) {
-    deleteBtn.textContent = '⌫';
+    deleteBtn.innerHTML = icon('block-delete');
     deleteBtn.title = '删除这个命令方块';
     deleteBtn.setAttribute('aria-label', '删除这个命令方块');
     inspectorActions.append(deleteBtn);
@@ -353,7 +583,7 @@ function buildFrame() {
   aiBlockBtn.id = 'infoAi';
   aiBlockBtn.type = 'button';
   aiBlockBtn.className = 'ws-symbol-btn';
-  aiBlockBtn.textContent = '✦';
+  aiBlockBtn.innerHTML = icon('block-ai');
   aiBlockBtn.title = '问 AI 这个命令方块';
   aiBlockBtn.setAttribute('aria-label', '问 AI 这个命令方块');
   aiBlockBtn.addEventListener('click', () => {
@@ -390,7 +620,7 @@ function buildFrame() {
   seekBtn.id = 'wsSeekOpen';
   seekBtn.type = 'button';
   seekBtn.className = 'ws-lower-btn ws-icon-only';
-  seekBtn.textContent = '⌕';
+  seekBtn.innerHTML = icon('search');
   seekBtn.title = '搜索';
   seekBtn.setAttribute('aria-label', '搜索');
   lower.append(seekBtn);
@@ -404,7 +634,7 @@ function buildFrame() {
   seekClose.id = 'wsSeekClose';
   seekClose.type = 'button';
   seekClose.className = 'ws-symbol-btn';
-  seekClose.textContent = '×';
+  seekClose.innerHTML = icon('close');
   seekClose.title = '关闭搜索';
   seekClose.setAttribute('aria-label', '关闭搜索');
   const seekWrap = searchDock?.querySelector('.search-wrap');
@@ -415,7 +645,7 @@ function buildFrame() {
   if (replaceBtn) {
     replaceBtn.remove();
     replaceBtn.classList.add('ws-lower-btn');
-    replaceBtn.textContent = '⇄';
+    replaceBtn.innerHTML = icon('replace');
     replaceBtn.title = '批量替换';
     lower.append(replaceBtn);
   }
@@ -423,7 +653,7 @@ function buildFrame() {
   manageBtn.id = 'wsManageChains';
   manageBtn.type = 'button';
   manageBtn.className = 'ws-lower-btn ws-icon-only';
-  manageBtn.textContent = '☰';
+  manageBtn.innerHTML = icon('menu');
   manageBtn.title = '管理链排序';
   manageBtn.setAttribute('aria-label', '管理链排序');
   lower.append(manageBtn);
@@ -432,7 +662,7 @@ function buildFrame() {
   aiAssist.id = 'aiAssistBtn';
   aiAssist.type = 'button';
   aiAssist.className = 'ws-lower-btn ws-ai-assist ws-icon-only';
-  aiAssist.textContent = '✦';
+  aiAssist.innerHTML = icon('sparkle');
   aiAssist.title = 'AI 辅助';
   aiAssist.setAttribute('aria-label', 'AI 辅助');
   lower.append(aiAssist);
@@ -443,8 +673,15 @@ function buildFrame() {
   modal.className = 'ws-chain-modal';
   modal.setAttribute('aria-hidden', 'true');
   modal.innerHTML = `<div class="ws-chain-modal-card" role="dialog" aria-modal="true" aria-labelledby="wsChainModalTitle">
-    <header class="ws-chain-modal-head"><div class="ws-chain-modal-title"><b id="wsChainModalTitle">管理链</b><span>拖动卡片排序</span></div><div class="ws-chain-modal-actions"><button id="wsAddChainTop" class="ws-chain-add-btn" type="button" title="新增链" aria-label="新增链">＋</button><button id="wsChainModalClose" class="ws-chain-close-btn" type="button" title="关闭" aria-label="关闭">×</button></div></header>
+    <header class="ws-chain-modal-head">
+      <div class="ws-chain-modal-title"><div class="ws-chain-title-line"><b id="wsChainModalTitle">管理链</b><span id="wsChainModalCount" class="ws-chain-count">0 条</span></div></div>
+      <div class="ws-chain-modal-actions">
+        <button id="wsAddChainTop" class="ws-chain-add-btn" type="button" title="新增链" aria-label="新增链">${icon('plus')}</button>
+        <button id="wsChainModalClose" class="ws-chain-close-btn" type="button" title="关闭" aria-label="关闭">${icon('close')}</button>
+      </div>
+    </header>
     <div class="ws-chain-modal-body" id="wsChainBody"></div>
+    <footer class="ws-chain-modal-foot"><span id="wsChainModalSelected">当前：未选择</span></footer>
   </div>`;
   document.body.append(modal);
   const body = modal.querySelector('#wsChainBody');
@@ -458,7 +695,7 @@ function buildFrame() {
   currentChain.hidden = true;
   const currentHead = document.createElement('div');
   currentHead.className = 'ws-current-head';
-  currentHead.innerHTML = '<b id="wsCurrentChainName">链 1</b><span id="wsCurrentStatus" class="ws-current-status" hidden></span><button id="wsInlineApply" class="ws-inline-apply" type="button">确认修改</button>';
+  currentHead.innerHTML = `<b id="wsCurrentChainName">链 1</b><span id="wsCurrentStatus" class="ws-current-status" hidden></span><button id="wsInlineApply" class="ws-inline-apply" type="button" title="确认修改" aria-label="确认修改">${icon('check')}</button>`;
   const work = document.createElement('div');
   work.className = 'ws-inline-editor text-editor-work';
   const numbers = document.createElement('div');
@@ -486,8 +723,6 @@ function buildFrame() {
 
   chainBar.classList.add('ws-hidden');
   shell.append(header, stage, deck, currentChain);
-  const help = document.getElementById('viewportHelp');
-  if (help) help.remove();
 
   bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain });
 }
@@ -599,6 +834,16 @@ window.syncWorkspaceMode = () => {
   shell?.classList.toggle('ws-overview', window.app?.mode !== 'chain');
 };
 
+function animateInlineApply(state) {
+  const button = $('#wsInlineApply');
+  if (!button) return;
+  button.classList.remove('is-confirmed', 'is-error');
+  // Restart the confirmation pulse each time the chain text is synced.
+  void button.offsetWidth;
+  button.classList.add(state);
+  window.setTimeout(() => button.classList.remove(state), 900);
+}
+
 function applyInlineText() {
   const app = window.app;
   const input = $('#wsInlineText');
@@ -648,8 +893,10 @@ function applyInlineText() {
     inlineDirty = false;
     renderInlineText(true);
     $('#wsCurrentStatus').textContent = '已同步';
+    animateInlineApply('is-confirmed');
   } catch (error) {
     $('#wsCurrentStatus').textContent = '同步失败';
+    animateInlineApply('is-error');
     window.toast?.(error.message || String(error), 'err');
     window.logError?.(error?.stack || error?.message || String(error), '文本模式');
   }
@@ -812,16 +1059,20 @@ if (document.fonts?.ready) {
 function bindUploadEyes() {
   const view = $('#uploadView');
   const eyes = $('#uploadEyes');
-  const quote = $('#uploadEyesQuote');
-  if (!view || !eyes || !quote) return;
-  const pupils = [...eyes.querySelectorAll('.upload-eye i')];
-  const quotes = ['关注X1aooooooooH谢谢喵', 'MCBE可视化网页指令编辑器', 'BlockFlow太好用了喵'];
-  let index = 0;
+  if (!view || !eyes) return;
+
+  // Each pupil is treated as a point on a sphere. Rotating the sphere
+  // changes both its projected position and its apparent width near the rim.
+  const pupils = [...eyes.querySelectorAll('.upload-eye i')].map((element, index) => ({
+    element,
+    x0: index === 0 ? -0.22 : 0.22,
+    y0: 0
+  }));
   let raf = 0;
-  let rotateTimer = 0;
-  let textTimer = 0;
   let active = false;
   let pointerEvent = null;
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const move = event => {
     pointerEvent = event;
     if (raf) return;
@@ -831,38 +1082,54 @@ function bindUploadEyes() {
       const pill = eyes.querySelector('.upload-eyes-pill');
       if (!pill) return;
       const rect = pill.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = Math.max(-1, Math.min(1, (pointerEvent.clientX - cx) / Math.max(80, rect.width)));
-      const dy = Math.max(-1, Math.min(1, (pointerEvent.clientY - cy) / Math.max(80, rect.height)));
-      pupils.forEach(pupil => { pupil.style.transform = `translate(${dx * 5}px, ${dy * 4}px)`; });
-      quote.style.transform = `translateY(${dy * 2}px)`;
+      // Map the pointer across the whole viewport, not just the small eye
+      // widget. Using the widget's width here makes the response saturate
+      // as soon as the pointer leaves the eye, so distant cursor movement
+      // appears to have no effect. The atan mapping keeps far-away motion
+      // responsive while easing naturally near the extremes.
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const focalX = Math.max(1, window.innerWidth * 0.72);
+      const focalY = Math.max(1, window.innerHeight * 0.72);
+      const nx = Math.atan((pointerEvent.clientX - centerX) / focalX) / (Math.PI / 4);
+      const ny = Math.atan((pointerEvent.clientY - centerY) / focalY) / (Math.PI / 4);
+      const yaw = clamp(nx, -1, 1) * 0.9;
+      const pitch = -clamp(ny, -1, 1) * 0.68;
+      const radius = Math.min(rect.width, rect.height) * 0.52;
+      const cosYaw = Math.cos(yaw);
+      const sinYaw = Math.sin(yaw);
+      const cosPitch = Math.cos(pitch);
+      const sinPitch = Math.sin(pitch);
+
+      pupils.forEach(({ element, x0, y0 }) => {
+        const z0 = Math.sqrt(Math.max(0, 1 - x0 * x0 - y0 * y0));
+        const x1 = x0 * cosYaw + z0 * sinYaw;
+        const z1 = -x0 * sinYaw + z0 * cosYaw;
+        const y2 = y0 * cosPitch - z1 * sinPitch;
+        const z2 = y0 * sinPitch + z1 * cosPitch;
+        const foreshortening = 0.35 + 0.65 * clamp(z2, 0, 1);
+        element.style.transform = `translate(${(x1 - x0) * radius}px, ${y2 * radius}px) scaleX(${foreshortening})`;
+      });
     });
   };
-  const rotate = () => {
-    if (!active) return;
-    quote.classList.add('changing');
-    textTimer = setTimeout(() => {
-      index = (index + 1) % quotes.length;
-      quote.textContent = quotes[index];
-      quote.classList.remove('changing');
-    }, 220);
-  };
+
+  // The mascot opens the README directly; no rotating easter-egg text is shown.
+  eyes.addEventListener('click', () => window.openUsageHelp?.());
+
   const start = () => {
     if (active || !view.classList.contains('on')) return;
     active = true;
-    quote.textContent = quotes[index];
     window.addEventListener('pointermove', move, { passive: true });
-    rotateTimer = setInterval(rotate, 4200);
   };
   const stop = () => {
     active = false;
     window.removeEventListener('pointermove', move);
-    clearInterval(rotateTimer);
-    clearTimeout(textTimer);
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
+    pointerEvent = null;
+    pupils.forEach(({ element }) => { element.style.transform = ''; });
   };
+
   new MutationObserver(() => {
     if (view.classList.contains('on')) start();
     else stop();
