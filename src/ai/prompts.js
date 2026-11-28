@@ -9,13 +9,13 @@ export const SKILL_PATHS = [
   './be-cmd/SKILL.md'
 ];
 // The user explicitly needs full-chain understanding: never truncate context.
-// If the selected model's window is smaller than the structure, the provider
-// error is surfaced instead of silently dropping commands.
-export const CONTEXT_LIMIT = Number.POSITIVE_INFINITY;
+// Large structures are split into bounded requests instead of dropping commands.
+export const CONTEXT_CHUNK = 30000;
 export const CHATS_KEY = 'BlockFlow.ai.chats.v1';
 export const SESSIONS_KEY = 'BlockFlow.ai.sessions.v1';
 export const MAX_CONVERSATIONS = 30;
 export const MAX_MESSAGES = 80;
+export const HISTORY_MESSAGES = 20;
 export const SLASH_COMMANDS = [
   { command: '检查语法', hint: '检查当前范围的命令语法' },
   { command: '检查逻辑', hint: '检查循环、条件、时序与状态逻辑' },

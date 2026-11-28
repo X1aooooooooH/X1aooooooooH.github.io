@@ -210,7 +210,7 @@ export function rotateRelativeCoordinateTriples(cmd, facing) {
 }
 
 export function normalizeBrokenChainBlocks(blocks, {
-  kind = null, direction = 2, facingMap = new Map(), applyCondition = false, preserveCommands = false,
+  kind = null, direction = 2, facingMap = new Map(), applyCondition = true, preserveCommands = false,
 } = {}) {
   if (!blocks.length) return false;
   for (const block of blocks) {
@@ -288,7 +288,11 @@ export function detectSelfClosedCycles(blockMap, maxCycleSize = 4, brokenKeys = 
   }
   const cycleKeys = new Set();
   for (const cycle of cycles) for (const k of cycle) cycleKeys.add(k);
-  return [cycles, cycleKeys, oversized];
+  const result = [cycles, cycleKeys, oversized];
+  result.cycles = cycles;
+  result.keys = cycleKeys;
+  result.oversized = oversized;
+  return result;
 }
 
 /* ---------------- 链对象 ---------------- */

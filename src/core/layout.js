@@ -1,5 +1,5 @@
-import { MAX_STRUCTURE_SIZE, STD_Z } from './constants.js?v=r42-font-cache-20261129';
-import { blockKey, getOffsetPosition, isAirPlaceholderBlock } from './blocks.js?v=r42-font-cache-20261129';
+import { MAX_STRUCTURE_SIZE, STD_Z } from './constants.js?v=r49-cleanup-20261129';
+import { blockKey, getOffsetPosition, isAirPlaceholderBlock } from './blocks.js?v=r49-cleanup-20261129';
 import {
   detectSelfClosedCycles,
   getBrokenHeadKind,
@@ -7,8 +7,8 @@ import {
   isBrokenChainPlaceholder,
   isBrokenHeadMarkerBlock,
   normalizeBrokenChainBlocks
-} from './broken-chain.js?v=r42-font-cache-20261129';
-import { relayoutBlocks } from './trace.js?v=r42-font-cache-20261129';
+} from './broken-chain.js?v=r49-cleanup-20261129';
+import { relayoutBlocks } from './trace.js?v=r49-cleanup-20261129';
 
 function getStructureDimensions(chains) {
   if (!Array.isArray(chains) || chains.length === 0) return { X: 0, Y: 0, Z: 0 };
@@ -93,14 +93,10 @@ export function buildExportLayouts(chains) {
   const layouts = [];
   let current = [];
   let minX = Infinity,
-    maxX = -Infinity,
-    maxY = -Infinity,
-    maxZ = -Infinity;
+    maxX = -Infinity;
   const boundsOf = (chain) => {
     let lo = Infinity,
-      hi = -Infinity,
-      topY = -Infinity,
-      topZ = -Infinity;
+      hi = -Infinity;
     for (const b of chain.blocks) {
       const x = Number(b.x),
         y = Number(b.y),
@@ -109,10 +105,8 @@ export function buildExportLayouts(chains) {
         throw new Error(`导出失败：链中存在无效坐标 (${b.x}, ${b.y}, ${b.z})`);
       lo = Math.min(lo, x);
       hi = Math.max(hi, x);
-      topY = Math.max(topY, y);
-      topZ = Math.max(topZ, z);
     }
-    return { minX: lo, maxX: hi, maxY: topY, maxZ: topZ };
+    return { minX: lo, maxX: hi };
   };
   const finish = () => {
     if (!current.length) return;
@@ -136,8 +130,6 @@ export function buildExportLayouts(chains) {
     current = [];
     minX = Infinity;
     maxX = -Infinity;
-    maxY = -Infinity;
-    maxZ = -Infinity;
   };
   for (let i = 0; i < nonEmpty.length; i++) {
     const chain = nonEmpty[i],
@@ -153,8 +145,6 @@ export function buildExportLayouts(chains) {
     current.push(chain);
     minX = Math.min(minX, bounds.minX);
     maxX = Math.max(maxX, bounds.maxX);
-    maxY = Math.max(maxY, bounds.maxY);
-    maxZ = Math.max(maxZ, bounds.maxZ);
   }
   finish();
   return layouts;

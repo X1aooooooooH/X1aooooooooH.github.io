@@ -1,14 +1,14 @@
-import { TYPE_LABEL } from './core/constants.js?v=r42-font-cache-20261129';
-import { cloneNBT } from './core/nbt.js?v=r42-font-cache-20261129';
-import { isAirPlaceholderBlock } from './core/blocks.js?v=r42-font-cache-20261129';
-import { detectChainType, processCommands } from './core/trace.js?v=r42-font-cache-20261129';
-import { ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r42-font-cache-20261129';
-import { parseMcstructure } from './core/structure.js?v=r42-font-cache-20261129';
-import { cloneChains, countPhysicalBlocks, snapshotChains } from './core/model.js?v=r42-font-cache-20261129';
-import { app } from './state.js?v=r42-font-cache-20261129';
-import { storageGet, storageSet, storageRemove } from './core/storage.js?v=r42-font-cache-20261129';
-import { toast, undoToast, rememberModalFocus, restoreModalFocus, showPromptModal } from './ui/feedback.js?v=r42-font-cache-20261129';
-import { logInfo, logOk, logWarn, logError, setCurrentAction } from './log.js?v=r42-font-cache-20261129';
+import { TYPE_LABEL } from './core/constants.js?v=r49-cleanup-20261129';
+import { cloneNBT } from './core/nbt.js?v=r49-cleanup-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r49-cleanup-20261129';
+import { detectChainType, processCommands } from './core/trace.js?v=r49-cleanup-20261129';
+import { ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r49-cleanup-20261129';
+import { parseMcstructure } from './core/structure.js?v=r49-cleanup-20261129';
+import { cloneChains, countPhysicalBlocks, snapshotChains } from './core/model.js?v=r49-cleanup-20261129';
+import { app } from './state.js?v=r49-cleanup-20261129';
+import { storageGet, storageSet, storageRemove } from './core/storage.js?v=r49-cleanup-20261129';
+import { toast, undoToast, rememberModalFocus, restoreModalFocus, showPromptModal } from './ui/feedback.js?v=r49-cleanup-20261129';
+import { logInfo, logOk, logWarn, logError, setCurrentAction } from './log.js?v=r49-cleanup-20261129';
 import {
   renderAllBlocks,
   reselectCurrent,
@@ -24,9 +24,9 @@ import {
   applyChainCamera,
   setViewPreset,
   deselect
-} from './scene.js?v=r42-font-cache-20261129';
-import { hideInfo } from './inspector.js?v=r42-font-cache-20261129';
-import { setTheme } from './ui/theme.js?v=r42-font-cache-20261129';
+} from './scene.js?v=r49-cleanup-20261129';
+import { hideInfo } from './inspector.js?v=r49-cleanup-20261129';
+import { setTheme } from './ui/theme.js?v=r49-cleanup-20261129';
 
 const AUTOSAVE_NBT_TYPE = '__blockflow_autosave_nbt_type__';
 

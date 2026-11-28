@@ -1,4 +1,4 @@
-import { DEFAULT_SKILL, SKILL_PATHS } from './prompts.js?v=r42-font-cache-20261129';
+import { DEFAULT_SKILL, SKILL_PATHS } from './prompts.js?v=r49-cleanup-20261129';
 
 let skillCache = null;
 let skillSource = '';

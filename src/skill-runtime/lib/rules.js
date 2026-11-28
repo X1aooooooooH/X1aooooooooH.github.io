@@ -5,4 +5,4 @@
 //
 // 浏览器侧的 node:fs / node:path / node:url / node:zlib 由 index.html
 // 的 importmap 映射到 src/skill-runtime/node-*.js，转发后依然生效。
-export * from '../../../skills/be-cmd/scripts/lib/rules.js?v=r42-font-cache-20261129';
+export * from '../../../skills/be-cmd/scripts/lib/rules.js?v=r49-cleanup-20261129';

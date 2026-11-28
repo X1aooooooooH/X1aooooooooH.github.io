@@ -1,37 +1,12 @@
 /* BlockFlow UX shell: 4 frames — top bar, 3D view, lower controls, text mode. */
-#editorView .editor-shell {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 52px minmax(0, 1.8fr) minmax(0, 0.8fr);
-  grid-template-areas: 'top' 'stage' 'deck';
-  background: var(--bg);
-}
-#editorView .command-bar,
-#editorView .ws-stage,
-#editorView .ws-deck {
-  width: 66.6667%;
-  margin-left: auto;
-  margin-right: auto;
-}
+
+
 #editorView .ws-hidden {
   display: none !important;
 }
 
 /* 1. top bar */
-#editorView .command-bar {
-  grid-area: top;
-  position: relative;
-  inset: auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 0 10px;
-  border: 1px solid var(--glass-border);
-  border-radius: 10px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-}
+
 #editorView .bar-main-row,
 #editorView .bar-actions {
   display: flex;
@@ -43,37 +18,23 @@
   flex: 0 1 auto;
   justify-content: flex-start;
 }
-#editorView .bar-file {
-  margin-left: 0 !important;
-  flex: 0 1 auto;
-}
+
 #editorView .bar-file-stats {
   margin-left: 0;
 }
 #editorView .bar-actions {
   justify-content: flex-end;
 }
-#editorView .ws-exit-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 28px;
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text);
-  font: 10px/1 var(--font-ui);
-  white-space: nowrap;
-}
+
 #editorView .ws-exit-btn:hover {
   background: rgba(127, 140, 160, 0.12);
 }
-#editorView .bar-file {
+#editorView .bar-file {margin-left: 0 !important;
+  flex: 0 1 auto;
   border-left: 1px solid var(--glass-border);
   padding-left: 9px;
   margin-left: 2px;
-  gap: 8px;
-}
+  gap: 8px;}
 #editorView .bar-file-name {
   gap: 6px;
   border: 0;
@@ -86,10 +47,7 @@
   opacity: 0.5;
   letter-spacing: 0;
 }
-#editorView .bar-file-name b {
-  font: 11px/1.4 var(--mono);
-  max-width: 210px;
-}
+
 #editorView .bar-file-stats span {
   padding: 3px 5px;
   border-radius: 4px;
@@ -99,9 +57,7 @@
   font-size: 9px;
   opacity: 0.55;
 }
-#editorView .bar-file-stats b {
-  font: 10px/1 var(--mono);
-}
+
 #editorView .bar-actions .icon-btn {
   height: 28px;
   min-width: 28px;
@@ -133,15 +89,7 @@
 }
 
 /* 2. 3D frame */
-#editorView .ws-stage {
-  grid-area: stage;
-  position: relative;
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  background: #0b0e12;
-}
+
 [data-theme='light'] #editorView .ws-stage {
   background: #dfe7ef;
 }
@@ -235,16 +183,7 @@
 }
 
 /* block editor popup, over the top of the 3D frame */
-#editorView .inspector.ws-block-popup {
-  position: absolute;
-  z-index: 18;
-  bottom: auto;
-  display: none;
-  flex-direction: column;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-}
+
 #editorView .inspector.ws-block-popup.open {
   display: flex;
 }
@@ -257,9 +196,7 @@
   padding: 0 10px;
   border-bottom: 1px solid var(--glass-border);
 }
-#editorView .inspector-head b {
-  letter-spacing: 0.04em;
-}
+
 #editorView .inspector-close {
   width: 23px;
   height: 23px;
@@ -267,9 +204,6 @@
 }
 #editorView .info {
   padding: 10px;
-}
-#editorView .object-summary {
-  padding: 0 0 8px;
 }
 #editorView .inspector-select-row {
   gap: 5px;
@@ -295,29 +229,9 @@
   padding: 7px 8px;
   min-height: 54px;
 }
-#editorView .edit-grid {
-  display: flex;
-  gap: 4px;
-  margin-top: 7px;
-}
-#editorView .edit-grid button {
-  flex: 1;
-  height: 26px;
-  border-radius: 4px;
-}
 
 /* 3. lower control frame */
-#editorView .ws-deck {
-  grid-area: deck;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-}
+
 #editorView .ws-lower-tools {
   display: flex;
   align-items: center;
@@ -352,23 +266,13 @@
   border-color: rgba(127, 140, 160, 0.4);
 }
 
-#editorView .ws-current-chain {
-  border-bottom: 1px solid var(--glass-border);
-}
+
 #editorView .ws-current-chain[hidden] {
   display: none !important;
 }
-#editorView .ws-current-head {
-  gap: 6px;
-  min-width: 0;
-}
 
-#editorView .ws-current-head b {
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+
+
 
 #editorView .ws-current-status {
   margin-left: auto;
@@ -377,63 +281,9 @@
   white-space: nowrap;
 }
 
-#editorView .ws-chain-panel {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border: 0;
-  background: transparent;
-  backdrop-filter: none;
-}
-#editorView .ws-side-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 34px;
-  flex: 0 0 34px;
-  padding: 0 8px 0 10px;
-  border-bottom: 1px solid var(--glass-border);
-}
-#editorView .ws-side-head > div {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-}
-#editorView .ws-side-head b {
-  font-size: 10px;
-}
-#editorView .ws-side-head span {
-  font: 8.5px/1 var(--mono);
-  opacity: 0.55;
-}
-#editorView .ws-side-head button {
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text);
-  font-size: 13px;
-  line-height: 1;
-}
-#editorView .ws-side-filter {
-  display: flex;
-  gap: 3px;
-  padding: 5px 7px;
-}
-#editorView .ws-side-filter button {
-  height: 21px;
-  font-size: 9px;
-}
-#editorView .ws-chain-list {
-  display: flex;
-  flex-direction: column;
-}
-#editorView .ws-chain-row {
-  color: var(--text);
-}
+
+
+
 #editorView .ws-chain-drag {
   width: 24px;
   height: 28px;
@@ -461,27 +311,9 @@
   flex: 1;
   min-width: 0;
 }
-#editorView .ws-chain-copy b {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#editorView .ws-chain-copy small {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-#editorView .ws-chain-rename,
-#editorView .ws-chain-del {
-  padding: 0;
-  border: 1px solid var(--glass-border);
-  background: rgba(127, 140, 160, 0.06);
-  color: var(--text);
-  opacity: 0.62;
-  line-height: 1;
-}
+
+
+
 #editorView .ws-chain-row:hover .ws-chain-rename,
 #editorView .ws-chain-row.on .ws-chain-rename {
   opacity: 0.65;
@@ -499,34 +331,8 @@
   background: rgba(190, 80, 80, 0.18);
   color: #d66;
 }
-#editorView .ws-chain-row.drop-target {
-  background: rgba(127, 140, 160, 0.16);
-}
 
-#editorView .ws-side-foot {
-  display: none;
-}
-#editorView .ws-empty {
-  padding: 12px 8px;
-}
 
-/* 4. text mode frame */
-#editorView .chain-text-mode-btn {
-  height: 28px;
-  padding: 0 11px;
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text);
-  font: 10px/1 var(--font-ui);
-}
-#editorView .chain-text-mode-btn:hover:not(:disabled) {
-  background: rgba(127, 140, 160, 0.13);
-}
-#editorView .chain-text-mode-btn.on {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 /* Unified type scale, readable controls, no scrollbars. */
 * {
@@ -560,12 +366,7 @@
 #editorView .view-btn,
 #editorView .ws-back-btn {
   font-size: 14px !important;
-}
-
-#editorView .ws-current-status,
-#editorView .ws-side-head span,
-#editorView .ws-side-filter button,
-#editorView .ws-chain-copy small {
+}#editorView .ws-current-status, #editorView .ws-chain-copy small{
   font-size: 12px !important;
 }
 
@@ -573,54 +374,37 @@
 #editorView .bar-file-stats i {
   font-size: 12px !important;
 }
-#editorView .bar-file-name b {
-  font-size: 14px !important;
-}
-#editorView .bar-file-stats b {
-  font-size: 14px !important;
-}
-#editorView .ws-current-head b {
-  font-size: 16px !important;
-}
-#editorView .ws-chain-copy b {
-  font-size: 14px !important;
-}
-#editorView .ws-side-head b,
-#editorView .ws-side-filter button {
-  font-size: 14px !important;
-}
-
-#editorView .export-btn,
-#editorView .edit-grid button,
-#editorView .inspector-close {
+#editorView .bar-file-name b {font: 11px/1.4 var(--mono);
+  max-width: 210px;
+  font-size: 14px !important;}
+#editorView .bar-file-stats b {font: 10px/1 var(--mono);
+  font-size: 14px !important;}
+#editorView .ws-current-head b {font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px !important;}
+#editorView .export-btn, #editorView .inspector-close{
   font-size: 14px !important;
 }
 #editorView .search-empty {
   font-size: 12px !important;
 }
-#editorView .ws-empty {
-  font-size: 12px !important;
-}
+#editorView .ws-empty {padding: 12px 8px;
+  font-size: 12px !important;}
 .ws-seek-overlay .search-result-meta,
 .ws-seek-overlay .search-result-text {
   font-size: 14px !important;
 }
 
-#editorView .inspector-head b {
-  font-size: 14px !important;
-}
-#editorView .object-summary {
-  font-size: 14px !important;
-}
+#editorView .inspector-head b {letter-spacing: 0.04em;
+  font-size: 14px !important;}
 #editorView .inspector-select-card span,
 #editorView .inspector-field-head {
   font-size: 12px !important;
 }
 #editorView .inspector-select-card select,
 #editorView .inspector-field textarea {
-  font-size: 14px !important;
-}
-#editorView .edit-grid button {
   font-size: 14px !important;
 }
 #editorView .empty-state b {
@@ -636,12 +420,8 @@
 #uploadView .brand-copy span {
   font-size: 12px !important;
 }
-#uploadView .upload-copy h1 {
-  font-size: 36px !important;
-}
-#uploadView .upload-copy p {
-  font-size: 16px !important;
-}
+
+
 
 .ai-modal .ai-card {
   font-size: 14px;
@@ -685,57 +465,84 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
-#editorView .editor-shell {
+#editorView .editor-shell {grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 52px minmax(0, 1.8fr) minmax(0, 0.8fr);
+  grid-template-areas: 'top' 'stage' 'deck';
+  background: var(--bg);
   display: flex;
   flex-direction: column;
   height: auto;
   min-height: 100%;
   overflow: visible;
   gap: 8px;
-  padding: 8px 0;
-}
+  padding: 8px 0;}
 #editorView .command-bar,
 #editorView .ws-stage,
-#editorView .ws-deck {
+#editorView .ws-deck {width: 66.6667%;
+  margin-left: auto;
+  margin-right: auto;
   flex: 0 0 auto;
   width: 66.6667%;
   max-width: none;
   margin-left: auto;
-  margin-right: auto;
-}
-#editorView .command-bar {
-  height: 52px;
-}
-#editorView .ws-stage {
+  margin-right: auto;}
+#editorView .command-bar {grid-area: top;
+  position: relative;
+  inset: auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  height: 52px;}
+#editorView .ws-stage {grid-area: stage;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: #0b0e12;
   height: 60vh;
   min-height: 360px;
-  max-height: 640px;
-}
-#editorView .ws-deck {
+  max-height: 640px;}
+#editorView .ws-deck {grid-area: deck;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
   min-height: 0;
-  overflow: visible;
-}
+  overflow: visible;}
 
-#editorView .ws-chain-panel {
+#editorView .ws-chain-panel {display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
   height: auto;
-  overflow: visible;
-}
-#editorView .ws-chain-list {
-  overflow: visible;
-  max-height: none;
-}
-#editorView .ws-current-chain {
-  flex: 0 0 auto;
-}
+  overflow: visible;}
+
+
 
 /* management row */
 
 /* chain cards */
-#editorView .ws-chain-list {
+#editorView .ws-chain-list {display: flex;
+  flex-direction: column;
+  overflow: visible;
+  max-height: none;
   padding: 8px;
-  gap: 6px;
-}
-#editorView .ws-chain-row {
+  gap: 6px;}
+#editorView .ws-chain-row {color: var(--text);
   display: flex;
   align-items: center;
   width: 100%;
@@ -746,8 +553,7 @@
   border-radius: 9px;
   background: rgba(127, 140, 160, 0.055);
   text-align: left;
-  cursor: grab;
-}
+  cursor: grab;}
 #editorView .ws-chain-row:hover {
   background: rgba(127, 140, 160, 0.1);
   border-color: rgba(127, 140, 160, 0.14);
@@ -759,17 +565,21 @@
 #editorView .ws-chain-row.dragging {
   opacity: 0.45;
 }
-#editorView .ws-chain-row.drop-target {
-  border-color: var(--accent);
-}
-#editorView .ws-chain-copy b {
+#editorView .ws-chain-row.drop-target {background: rgba(127, 140, 160, 0.16);
+  border-color: var(--accent);}
+#editorView .ws-chain-copy b {display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px !important;
   font-size: 14px;
-  font-weight: 600;
-}
-#editorView .ws-chain-copy small {
+  font-weight: 600;}
+#editorView .ws-chain-copy small {display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
-  opacity: 0.55;
-}
+  opacity: 0.55;}
 #editorView .ws-chain-preview {
   display: block;
   margin-top: 3px;
@@ -780,24 +590,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-#editorView .ws-chain-rename,
-#editorView .ws-chain-del {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  border-radius: 6px;
-  font-size: 14px;
-}
+
 
 /* inline line-number editor */
-#editorView .ws-inline-editor {
-  min-height: 0;
-  margin: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 8px;
-  background: rgba(127, 140, 160, 0.055);
-  overflow: hidden;
-}
+
 #editorView .ws-inline-editor .text-line-numbers {
   flex: 0 0 52px;
   min-width: 52px;
@@ -881,33 +677,13 @@
 }
 
 /* horizontal block editor, 2/3 of the 3D frame */
-#editorView .inspector.ws-block-popup {
-  left: 50%;
-  right: auto;
-  width: 66.6667%;
-  transform: translateX(-50%) !important;
-}
-#editorView .ws-block-popup .info {
-  display: grid;
-  max-width: none;
-}
-#editorView .ws-block-popup .object-summary,
-#editorView .ws-block-popup .inspector-select-row,
-#editorView .ws-block-popup .edit-grid {
-  grid-column: 1/-1;
-}
-#editorView .ws-block-popup .inspector-select-row {
-  display: grid;
-}
-#editorView .ws-block-popup .edit-grid {
-  margin-top: 0;
-}
-#editorView .ws-block-popup .edit-grid button {
-  height: 30px;
-}
+
+
+
 
 /* standalone current-chain card, 25 lines tall */
-#editorView .ws-current-chain {
+#editorView .ws-current-chain {border-bottom: 1px solid var(--glass-border);
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -917,63 +693,30 @@
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-}
-#editorView .ws-current-head {
-  display: flex;
-  align-items: center;
-  padding: 0 2px;
-}
+  backdrop-filter: var(--glass-blur);}
 
-#editorView .ws-inline-apply {
-  height: 30px;
-  padding: 0 14px;
-  border: 1px solid var(--accent);
-  border-radius: 7px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
+
+
 #editorView .ws-inline-apply:hover {
   filter: brightness(1.05);
 }
-#editorView .ws-inline-editor {
+#editorView .ws-inline-editor {min-height: 0;
+  margin: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: rgba(127, 140, 160, 0.055);
+  overflow: hidden;
   flex: 0 0 620px;
   height: 620px;
-  max-height: 620px;
-}
+  max-height: 620px;}
 
 /* chain sorting modal */
-.ws-chain-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 130;
-  display: none;
-  place-items: center;
-  padding: 24px;
-  background: rgba(7, 10, 14, 0.48);
-  backdrop-filter: blur(6px);
-}
+
 .ws-chain-modal.on {
   display: grid;
 }
-.ws-chain-modal-card {
-  max-height: min(84vh, 760px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-}
-.ws-chain-modal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  border-bottom: 1px solid var(--glass-border);
-}
+
+
 .ws-chain-modal-head b {
   font-size: 16px;
 }
@@ -996,22 +739,25 @@
 .ws-symbol-btn:hover {
   background: rgba(127, 140, 160, 0.13);
 }
-.ws-chain-modal-body {
-  min-height: 0;
-}
-.ws-chain-modal .ws-side-head,
-.ws-chain-modal .ws-side-filter,
-.ws-chain-modal .ws-side-foot {
-  display: none !important;
-}
+
 
 /* flat, scrollable horizontal block editor */
-#editorView .inspector.ws-block-popup {
+#editorView .inspector.ws-block-popup {position: absolute;
+  z-index: 18;
+  bottom: auto;
+  display: none;
+  flex-direction: column;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  left: 50%;
+  right: auto;
+  width: 66.6667%;
+  transform: translateX(-50%) !important;
   top: 54px;
   max-height: calc(100% - 66px);
   overflow: auto;
-  border-radius: 10px;
-}
+  border-radius: 10px;}
 #editorView .ws-block-popup .inspector-head {
   height: 38px;
   flex: 0 0 38px;
@@ -1024,51 +770,28 @@
   margin: 0;
   font-size: 16px !important;
 }
-#editorView .ws-inspector-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 3px;
-}
+
 #editorView .ws-block-popup .inspector-close {
   margin-left: auto;
 }
-#editorView .ws-inspector-actions button {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text);
-  font-size: 14px;
-  line-height: 1;
-}
-#editorView .ws-inspector-actions button:hover {
-  background: rgba(127, 140, 160, 0.13);
-}
+
+
 #editorView .ws-inspector-actions button.active,
 #editorView #infoMark.active {
   border-color: var(--accent);
   color: var(--accent);
   background: rgba(127, 140, 160, 0.16);
 }
-#editorView .ws-inspector-actions button.danger:hover {
-  background: rgba(190, 80, 80, 0.18);
-  color: #d66;
-}
-#editorView .ws-block-popup .info {
+
+#editorView .ws-block-popup .info {display: grid;
+  max-width: none;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 7px;
-  padding: 8px 10px 10px;
-}
-#editorView .ws-block-popup .object-summary {
-  padding: 0 0 2px;
-}
-#editorView .ws-block-popup .inspector-select-row {
+  padding: 8px 10px 10px;}
+#editorView .ws-block-popup .inspector-select-row {grid-column: 1/-1;
+  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
-}
+  gap: 5px;}
 #editorView .ws-block-popup .inspector-select-card {
   padding: 0;
   border: 0;
@@ -1166,25 +889,8 @@
 .ws-seek-top .search-input::placeholder {
   font-size: 14px !important;
 }
-.ws-seek-top .search-clear {
-  display: none !important;
-}
-.ws-seek-top #wsSeekClose {
-  position: absolute;
-  right: 7px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font-size: 16px;
-  line-height: 1;
-  color: var(--text);
-  opacity: 0.65;
-  z-index: 4;
-}
+
+
 .ws-seek-top #wsSeekClose:hover {
   opacity: 1;
   background: rgba(127, 140, 160, 0.16);
@@ -1245,8 +951,7 @@
     opacity 0.2s ease,
     transform 0.34s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.2s,
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.2s;
   backdrop-filter: blur(18px);
 }
 .ws-export-menu.on {
@@ -1513,13 +1218,8 @@
   display: flex;
   flex-direction: column;
 }
-.feature-modal.notice-modal .prompt-modal-message {
-  min-height: 0;
-  overflow: auto;
-}
-.feature-modal.notice-modal .feature-actions {
-  flex: 0 0 auto;
-}
+
+
 .feature-modal.notice-modal .feature-head {
   height: 46px;
   padding: 0 9px 0 14px;
@@ -1528,18 +1228,17 @@
 .feature-modal.notice-modal .feature-head b {
   font-size: 16px;
 }
-.feature-modal.notice-modal .prompt-modal-message {
+.feature-modal.notice-modal .prompt-modal-message {min-height: 0;
+  overflow: auto;
   padding: 14px;
   font-size: 14px;
-  line-height: 1.6;
-}
-.feature-modal.notice-modal .feature-actions {
+  line-height: 1.6;}
+.feature-modal.notice-modal .feature-actions {flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
   gap: 7px;
   padding: 10px 13px;
-  border-top: 1px solid var(--glass-border);
-}
+  border-top: 1px solid var(--glass-border);}
 .rename-modal .feature-head span {
   display: block;
   margin-top: 2px;
@@ -1645,12 +1344,10 @@ body.ws-mode-fallback #editorView .ws-stage {
 #uploadView .upload-eyes {
   animation-delay: 0.04s;
 }
-#uploadView .upload-copy h1 {
-  animation-delay: 0.1s;
-}
-#uploadView .upload-copy p {
-  animation-delay: 0.16s;
-}
+#uploadView .upload-copy h1 {font-size: 36px !important;
+  animation-delay: 0.1s;}
+#uploadView .upload-copy p {font-size: 16px !important;
+  animation-delay: 0.16s;}
 @keyframes blurViewIn {
   from {
     opacity: 0;
@@ -1665,22 +1362,11 @@ body.ws-mode-fallback #editorView .ws-stage {
 }
 #editorView.screen.on .ws-stage {
   animation: blurViewIn 0.82s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-html.theme-switching,
-html.theme-switching body,
-html.theme-switching .screen,
-html.theme-switching .command-bar,
-html.theme-switching .ws-stage,
-html.theme-switching .ws-deck,
-html.theme-switching .ws-current-chain,
-html.theme-switching .inspector,
-html.theme-switching .upload-card,
-html.theme-switching .chain-dock {
+}html.theme-switching, html.theme-switching body, html.theme-switching .screen, html.theme-switching .command-bar, html.theme-switching .ws-stage, html.theme-switching .ws-deck, html.theme-switching .ws-current-chain, html.theme-switching .inspector, html.theme-switching .upload-card{
   transition:
     background-color 0.42s ease,
     color 0.32s ease,
-    border-color 0.42s ease,
-    box-shadow 0.42s ease;
+    border-color 0.42s ease;
 }
 #themeBtn {
   position: relative;
@@ -1711,10 +1397,13 @@ html.theme-switching .chain-dock {
     opacity: 0;
   }
 }
-#editorView .ws-current-head {
+#editorView .ws-current-head {gap: 6px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
   justify-content: space-between;
-  width: 100%;
-}
+  width: 100%;}
 
 @media (prefers-reduced-motion: reduce) {
   #uploadView .upload-eyes,
@@ -1730,13 +1419,21 @@ html.theme-switching .chain-dock {
 }
 
 /* symbol-only core buttons */
-#editorView .ws-exit-btn {
+#editorView .ws-exit-btn {display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font: 10px/1 var(--font-ui);
+  white-space: nowrap;
   width: 34px;
   min-width: 34px;
   padding: 0;
   justify-content: center;
-  font-size: 16px !important;
-}
+  font-size: 16px !important;}
 #editorView .ws-lower-btn.ws-icon-only {
   flex: 0 0 36px;
   width: 36px;
@@ -1756,20 +1453,9 @@ html.theme-switching .chain-dock {
 /* flat surfaces: no box shadows on application frames and cards */
 
 /* management: final authoritative card layout */
-.ws-chain-modal-card {
-  width: min(600px, calc(100vw - 32px)) !important;
-  border-radius: 16px !important;
-}
-.ws-chain-modal-head {
-  height: 52px !important;
-  padding: 0 10px 0 14px !important;
-}
-.ws-chain-modal-title {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
+
+
+
 .ws-chain-modal-title b {
   font-size: 16px !important;
   line-height: 1.2;
@@ -1779,101 +1465,21 @@ html.theme-switching .chain-dock {
   opacity: 0.55;
   line-height: 1.2;
 }
-.ws-chain-modal-actions {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-}
-.ws-chain-add-btn,
-.ws-chain-close-btn {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid var(--glass-border);
-  border-radius: 7px;
-  background: rgba(127, 140, 160, 0.06);
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1;
-}
-.ws-chain-add-btn {
-  color: var(--accent);
-  border-color: rgba(127, 140, 160, 0.32);
-  background: rgba(127, 140, 160, 0.1);
-}
-.ws-chain-add-btn:hover {
-  background: rgba(127, 140, 160, 0.18);
-}
-.ws-chain-close-btn {
-  opacity: 0.7;
-}
-.ws-chain-close-btn:hover {
-  opacity: 1;
-  background: rgba(190, 80, 80, 0.16);
-  border-color: rgba(190, 80, 80, 0.35);
-  color: #d66;
-}
-.ws-chain-modal-body {
-  padding: 12px !important;
-  overflow: auto;
-}
-.ws-chain-modal .ws-chain-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0;
-  margin: 0;
-}
-.ws-chain-modal .ws-chain-row {
-  display: grid !important;
-  grid-template-columns: 24px minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 10px !important;
-  min-height: 72px !important;
-  padding: 11px 12px !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 12px !important;
-  background: rgba(127, 140, 160, 0.055) !important;
-  cursor: default !important;
-}
-.ws-chain-modal .ws-chain-row:hover {
-  background: rgba(127, 140, 160, 0.09) !important;
-  border-color: rgba(127, 140, 160, 0.22) !important;
-}
-.ws-chain-modal .ws-chain-row.on {
-  border-color: var(--accent) !important;
-  background: rgba(127, 140, 160, 0.13) !important;
-}
-.ws-chain-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-self: end;
-}
-.ws-chain-modal .ws-chain-drag {
-  width: 24px !important;
-  height: 34px !important;
-  border: 1px dashed var(--glass-border) !important;
-  border-radius: 6px !important;
-  background: transparent !important;
-  color: var(--text) !important;
-  opacity: 0.5 !important;
-  font-size: 14px !important;
-  cursor: grab !important;
-}
-.ws-chain-modal .ws-chain-drag:hover {
-  opacity: 1 !important;
-  background: rgba(127, 140, 160, 0.12) !important;
-}
-.ws-chain-modal .ws-chain-copy {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 2px !important;
-  min-width: 0 !important;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .ws-chain-modal .ws-chain-copy b {
   font-size: 16px !important;
   font-weight: 600 !important;
@@ -1881,83 +1487,31 @@ html.theme-switching .chain-dock {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ws-chain-modal .ws-chain-copy small {
-  font-size: 12px !important;
-  opacity: 0.55 !important;
-}
-.ws-chain-modal .ws-chain-preview {
-  display: block !important;
-  font: 12px/1.4 var(--mono) !important;
-  opacity: 0.58 !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 2px;
-}
-.ws-chain-modal .ws-chain-rename,
-.ws-chain-modal .ws-chain-del {
-  width: 30px !important;
-  height: 30px !important;
-  flex: 0 0 30px !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 7px !important;
-  background: rgba(127, 140, 160, 0.06) !important;
-  color: var(--text) !important;
-  opacity: 0.7 !important;
-  font-size: 14px !important;
-}
+
+
+
 .ws-chain-modal .ws-chain-rename:hover,
 .ws-chain-modal .ws-chain-del:hover {
   opacity: 1 !important;
   background: rgba(127, 140, 160, 0.14) !important;
 }
-.ws-chain-modal .ws-chain-del:hover {
-  background: rgba(190, 80, 80, 0.16) !important;
-  color: #d66 !important;
-}
+
 .ws-chain-modal .ws-symbol-btn {
   border: 1px solid var(--glass-border) !important;
   background: rgba(127, 140, 160, 0.06) !important;
-}
-
-/* Upload/file-selection screen: remove every decorative shadow. */
+}/* Upload/file-selection screen: remove every decorative shadow. */
 
 /* Upload drop target: neutral gray surface with a clear upload affordance. */
 
 /* Icon-only controls */
-#editorView .icon-btn,
-#editorView .export-btn,
-#editorView .view-btn,
-#editorView .feature-close,
-#editorView .inspector-close,
-#editorView .text-editor-close,
-#editorView .chain-manager-close,
-#editorView .chain-add-close,
-#editorView .ws-side-head button,
-#editorView .ws-symbol-btn,
-#editorView .ws-chain-add-btn,
-#editorView .ws-chain-close-btn,
-#editorView .ws-lower-btn,
-#editorView .chain-add-btn {
+#editorView .icon-btn, #editorView .export-btn, #editorView .view-btn, #editorView .feature-close, #editorView .inspector-close, #editorView .chain-add-close, #editorView .ws-symbol-btn, #editorView .ws-chain-add-btn, #editorView .ws-chain-close-btn, #editorView .ws-lower-btn, #editorView .chain-add-btn{
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 #editorView .chain-add-btn {
   gap: 5px;
-}
-#editorView .icon-btn .icon,
-#editorView .export-btn .icon,
-#editorView .view-btn .icon,
-#editorView .feature-close .icon,
-#editorView .inspector-close .icon,
-#editorView .text-editor-close .icon,
-#editorView .chain-manager-close .icon,
-#editorView .chain-add-close .icon,
-#editorView .ws-symbol-btn .icon,
-#editorView .ws-chain-add-btn .icon,
-#editorView .ws-chain-close-btn .icon,
-#editorView .ws-lower-btn .icon {
+}#editorView .icon-btn .icon, #editorView .export-btn .icon, #editorView .view-btn .icon, #editorView .feature-close .icon, #editorView .inspector-close .icon, #editorView .chain-add-close .icon, #editorView .ws-symbol-btn .icon, #editorView .ws-chain-add-btn .icon, #editorView .ws-chain-close-btn .icon, #editorView .ws-lower-btn .icon{
   width: 16px;
   height: 16px;
 }
@@ -1966,23 +1520,7 @@ html.theme-switching .chain-dock {
   height: 17px;
   margin: auto;
 }
-#editorView .search-clear .icon {
-  width: 12px;
-  height: 12px;
-  margin: auto;
-}
-#editorView .ws-side-head button .icon {
-  width: 14px;
-  height: 14px;
-}
-#editorView .usage-help-icon .icon {
-  width: 14px;
-  height: 14px;
-  margin: auto;
-}
-#editorView .chain-add-btn::before,
-#editorView .chain-manager-close::before,
-#editorView .chain-add-close::before {
+#editorView .chain-add-btn::before, #editorView .chain-add-close::before{
   content: none !important;
   display: none !important;
 }
@@ -1991,20 +1529,20 @@ html.theme-switching .chain-dock {
 #editorView .ws-chain-drag .icon {
   width: 14px;
   height: 14px;
-}
-#editorView .chain-item-copy,
-#editorView .chain-item-delete,
-#editorView .ws-chain-rename,
-#editorView .ws-chain-del {
+}#editorView .ws-chain-rename, #editorView .ws-chain-del{padding: 0;
+  border: 1px solid var(--glass-border);
+  background: rgba(127, 140, 160, 0.06);
+  color: var(--text);
+  opacity: 0.62;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 6px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-}
-#editorView .chain-item-copy .icon,
-#editorView .chain-item-delete .icon {
-  width: 14px;
-  height: 14px;
-}
+  justify-content: center;}
 #editorView .ws-chain-rename .icon,
 #editorView .ws-chain-del .icon {
   width: 12px;
@@ -2019,11 +1557,21 @@ html.theme-switching .chain-dock {
 }
 
 /* Refined single-command inspector controls. */
-#editorView .ws-inspector-actions {
+#editorView .ws-inspector-actions {display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 3px;
   gap: 6px;
-  margin-left: 8px;
-}
-#editorView .ws-inspector-actions button {
+  margin-left: 8px;}
+#editorView .ws-inspector-actions button {width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1;
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -2035,12 +1583,10 @@ html.theme-switching .chain-dock {
     background 0.18s ease,
     border-color 0.18s ease,
     color 0.18s ease,
-    transform 0.18s ease;
-}
-#editorView .ws-inspector-actions button:hover {
+    transform 0.18s ease;}
+#editorView .ws-inspector-actions button:hover {background: rgba(127, 140, 160, 0.13);
   transform: translateY(-1px);
-  background: rgba(127, 140, 160, 0.16);
-}
+  background: rgba(127, 140, 160, 0.16);}
 #editorView .ws-inspector-actions button:active {
   transform: scale(0.94);
 }
@@ -2053,11 +1599,11 @@ html.theme-switching .chain-dock {
   stroke-linejoin: round;
   fill: none;
 }
-#editorView .ws-inspector-actions button.danger:hover {
+#editorView .ws-inspector-actions button.danger:hover {background: rgba(190, 80, 80, 0.18);
+  color: #d66;
   border-color: rgba(220, 90, 90, 0.55);
   color: #e47b7b;
-  background: rgba(190, 80, 80, 0.12);
-}
+  background: rgba(190, 80, 80, 0.12);}
 #editorView #themeBtn .icon {
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -2139,7 +1685,14 @@ html.theme-switching .chain-dock {
 }
 
 /* Inline text confirmation: check-only button with a short success pulse. */
-#editorView .ws-inline-apply {
+#editorView .ws-inline-apply {height: 30px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
   width: 32px;
   min-width: 32px;
   height: 30px;
@@ -2147,8 +1700,7 @@ html.theme-switching .chain-dock {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-}
+  overflow: hidden;}
 #editorView .ws-inline-apply .icon {
   width: 16px;
   height: 16px;
@@ -2220,12 +1772,13 @@ html.theme-switching .chain-dock {
   justify-content: center;
   line-height: 1;
 }
-#editorView .search-clear .icon {
+#editorView .search-clear .icon {width: 12px;
+  height: 12px;
+  margin: auto;
   width: 13px;
   height: 13px;
   margin: auto;
-  stroke-width: 2.2;
-}
+  stroke-width: 2.2;}
 #editorView #wsSeekClose {
   display: flex;
   align-items: center;
@@ -2239,33 +1792,26 @@ html.theme-switching .chain-dock {
 }
 
 /* Chain manager, rebuilt around a clear list-first layout. */
-.ws-chain-modal {
+.ws-chain-modal {position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background: rgba(7, 10, 14, 0.48);
+  backdrop-filter: blur(6px);
   padding: 18px;
-  background: rgba(7, 10, 14, 0.46);
-}
-.ws-chain-modal-card {
-  width: min(780px, calc(100vw - 32px)) !important;
-  max-height: min(84vh, 780px) !important;
-  border-radius: 16px !important;
-  border-color: var(--glass-border) !important;
-  background: var(--glass-bg) !important;
-  overflow: hidden;
-}
-.ws-chain-modal-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 20px 22px 16px;
-  border-bottom: 1px solid var(--glass-border);
-  background: rgba(127, 140, 160, 0.035);
-}
-.ws-chain-modal-title {
+  background: rgba(7, 10, 14, 0.46);}
+
+
+.ws-chain-modal-title {display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  min-width: 0;
-}
+  min-width: 0;}
 .ws-chain-title-line {
   display: flex;
   align-items: center;
@@ -2289,15 +1835,19 @@ html.theme-switching .chain-dock {
   text-align: center;
   opacity: 0.72;
 }
-.ws-chain-modal-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-  padding-top: 2px;
-}
+
 .ws-chain-add-btn,
-.ws-chain-close-btn {
+.ws-chain-close-btn {display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 7px;
+  background: rgba(127, 140, 160, 0.06);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2315,38 +1865,21 @@ html.theme-switching .chain-dock {
   transition:
     background 0.15s,
     border-color 0.15s,
-    color 0.15s;
-}
-.ws-chain-add-btn {
-  padding: 0 12px;
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
-}
-.ws-chain-add-btn:hover {
-  filter: brightness(1.08);
-}
-.ws-chain-add-btn .icon {
-  width: 14px;
-  height: 14px;
-}
-.ws-chain-close-btn {
-  width: 32px;
-  padding: 0;
-  color: var(--text);
-  opacity: 0.7;
-}
-.ws-chain-close-btn:hover {
-  background: rgba(127, 140, 160, 0.15);
-  opacity: 1;
-}
-.ws-chain-modal-body {
+    color 0.15s;}
+
+.ws-chain-add-btn:hover {background: rgba(127, 140, 160, 0.18);
+  filter: brightness(1.08);}
+
+
+
+.ws-chain-modal-body {min-height: 0;
+  padding: 12px !important;
+  overflow: auto;
   flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 10px 12px 12px !important;
-  overscroll-behavior: contain;
-}
+  overscroll-behavior: contain;}
 .ws-chain-modal .ws-chain-panel {
   display: block;
   height: auto;
@@ -2354,15 +1887,27 @@ html.theme-switching .chain-dock {
   border: 0;
   background: transparent;
 }
-.ws-chain-modal .ws-chain-list {
+.ws-chain-modal .ws-chain-list {display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
   padding: 0;
   overflow: visible;
-  max-height: none;
-}
-.ws-chain-modal .ws-chain-row {
+  max-height: none;}
+.ws-chain-modal .ws-chain-row {display: grid !important;
+  grid-template-columns: 24px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 72px !important;
+  padding: 11px 12px !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  background: rgba(127, 140, 160, 0.055) !important;
+  cursor: default !important;
   display: grid !important;
   grid-template-columns: 22px 30px minmax(0, 1fr) auto !important;
   align-items: center !important;
@@ -2377,16 +1922,15 @@ html.theme-switching .chain-dock {
   cursor: grab !important;
   transition:
     background 0.15s,
-    border-color 0.15s;
-}
-.ws-chain-modal .ws-chain-row:hover {
+    border-color 0.15s;}
+.ws-chain-modal .ws-chain-row:hover {background: rgba(127, 140, 160, 0.09) !important;
+  border-color: rgba(127, 140, 160, 0.22) !important;
   background: rgba(127, 140, 160, 0.09) !important;
-  border-color: rgba(127, 140, 160, 0.2) !important;
-}
-.ws-chain-modal .ws-chain-row.on {
+  border-color: rgba(127, 140, 160, 0.2) !important;}
+.ws-chain-modal .ws-chain-row.on {border-color: var(--accent) !important;
+  background: rgba(127, 140, 160, 0.13) !important;
   border-color: var(--accent) !important;
-  background: rgba(127, 140, 160, 0.11) !important;
-}
+  background: rgba(127, 140, 160, 0.11) !important;}
 .ws-chain-modal .ws-chain-row.dragging {
   opacity: 0.42;
 }
@@ -2402,7 +1946,15 @@ html.theme-switching .chain-dock {
   text-align: center;
   letter-spacing: 0.02em;
 }
-.ws-chain-modal .ws-chain-drag {
+.ws-chain-modal .ws-chain-drag {width: 24px !important;
+  height: 34px !important;
+  border: 1px dashed var(--glass-border) !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  opacity: 0.5 !important;
+  font-size: 14px !important;
+  cursor: grab !important;
   width: 22px !important;
   height: 30px !important;
   display: grid;
@@ -2413,18 +1965,19 @@ html.theme-switching .chain-dock {
   background: transparent !important;
   color: var(--text) !important;
   opacity: 0.36 !important;
-  cursor: grab !important;
-}
-.ws-chain-modal .ws-chain-drag:hover {
+  cursor: grab !important;}
+.ws-chain-modal .ws-chain-drag:hover {opacity: 1 !important;
+  background: rgba(127, 140, 160, 0.12) !important;
   opacity: 0.9;
-  background: rgba(127, 140, 160, 0.1);
-}
-.ws-chain-modal .ws-chain-copy {
+  background: rgba(127, 140, 160, 0.1);}
+.ws-chain-modal .ws-chain-copy {display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
-}
+  min-width: 0;}
 .ws-chain-modal .ws-chain-title-line {
   display: flex;
   align-items: center;
@@ -2448,12 +2001,18 @@ html.theme-switching .chain-dock {
   font-style: normal;
   letter-spacing: 0.02em;
 }
-.ws-chain-modal .ws-chain-copy small {
+.ws-chain-modal .ws-chain-copy small {font-size: 12px !important;
+  opacity: 0.55 !important;
   font: 11px/1.35 var(--mono) !important;
   color: var(--text);
-  opacity: 0.5 !important;
-}
-.ws-chain-modal .ws-chain-preview {
+  opacity: 0.5 !important;}
+.ws-chain-modal .ws-chain-preview {display: block !important;
+  font: 12px/1.4 var(--mono) !important;
+  opacity: 0.58 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
   display: block !important;
   margin-top: 2px;
   color: var(--text);
@@ -2461,9 +2020,11 @@ html.theme-switching .chain-dock {
   font: 11px/1.45 var(--mono) !important;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ws-chain-actions {
+  text-overflow: ellipsis;}
+.ws-chain-actions {display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -2471,15 +2032,22 @@ html.theme-switching .chain-dock {
   transform: none;
   transition:
     opacity 0.15s,
-    transform 0.15s;
-}
+    transform 0.15s;}
 .ws-chain-modal .ws-chain-row:hover .ws-chain-actions,
 .ws-chain-modal .ws-chain-row.on .ws-chain-actions {
   opacity: 1;
   transform: translateX(0);
 }
 .ws-chain-modal .ws-chain-rename,
-.ws-chain-modal .ws-chain-del {
+.ws-chain-modal .ws-chain-del {width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 7px !important;
+  background: rgba(127, 140, 160, 0.06) !important;
+  color: var(--text) !important;
+  opacity: 0.7 !important;
+  font-size: 14px !important;
   width: 28px !important;
   height: 28px !important;
   display: inline-flex;
@@ -2491,19 +2059,18 @@ html.theme-switching .chain-dock {
   background: transparent !important;
   color: var(--text);
   opacity: 0.55 !important;
-  cursor: pointer;
-}
+  cursor: pointer;}
 .ws-chain-modal .ws-chain-rename:hover {
   background: rgba(127, 140, 160, 0.13);
   border-color: var(--glass-border);
   opacity: 1;
 }
-.ws-chain-modal .ws-chain-del:hover {
+.ws-chain-modal .ws-chain-del:hover {background: rgba(190, 80, 80, 0.16) !important;
+  color: #d66 !important;
   background: rgba(190, 80, 90, 0.14);
   border-color: rgba(190, 80, 90, 0.3);
   color: #d66;
-  opacity: 1;
-}
+  opacity: 1;}
 .ws-chain-modal .ws-chain-rename .icon,
 .ws-chain-modal .ws-chain-del .icon {
   width: 13px;
@@ -2518,17 +2085,7 @@ html.theme-switching .chain-dock {
   color: var(--text);
   opacity: 0.45;
 }
-.ws-chain-modal-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 22px;
-  border-top: 1px solid var(--glass-border);
-  font: 10px/1.4 var(--mono);
-  color: var(--text);
-  opacity: 0.48;
-}
+
 .ws-chain-modal-foot span:last-child {
   max-width: 55%;
   white-space: nowrap;
@@ -2538,20 +2095,7 @@ html.theme-switching .chain-dock {
 }
 
 /* Canvas-only side view: the whole chain, no labels, never over the block editor. */
-#editorView .ws-side-preview {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 34;
-  width: 300px;
-  display: none;
-  padding: 5px;
-  border: 1px solid var(--glass-border);
-  border-radius: 9px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  pointer-events: none;
-}
+
 #editorView .ws-side-preview.on {
   display: block;
   animation: wsSidePreviewIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -2591,11 +2135,23 @@ html.theme-switching .chain-dock {
   margin: auto;
   stroke-width: 2.2;
 }
-.ws-seek-top #wsSeekClose {
+.ws-seek-top #wsSeekClose {position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text);
+  opacity: 0.65;
+  z-index: 4;
   display: flex !important;
   align-items: center;
-  justify-content: center;
-}
+  justify-content: center;}
 .ws-seek-top #wsSeekClose .icon {
   position: static;
   left: auto;
@@ -2605,26 +2161,35 @@ html.theme-switching .chain-dock {
   height: 14px;
   margin: auto;
 }
-.ws-seek-top .search-clear {
-  right: 8px;
-}
+.ws-seek-top .search-clear {display: none !important;
+  right: 8px;}
 
-.ws-chain-add-btn {
+.ws-chain-add-btn {color: var(--accent);
+  border-color: rgba(127, 140, 160, 0.32);
+  background: rgba(127, 140, 160, 0.1);
+  padding: 0 12px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
   width: 32px !important;
   min-width: 32px;
   padding: 0 !important;
-  gap: 0 !important;
-}
-.ws-chain-add-btn .icon {
+  gap: 0 !important;}
+.ws-chain-add-btn .icon {width: 14px;
+  height: 14px;
   width: 16px !important;
-  height: 16px !important;
-}
-.ws-chain-modal-head {
-  padding: 16px 20px !important;
-}
-.ws-chain-modal-foot {
-  justify-content: flex-end !important;
-}
+  height: 16px !important;}
+
+.ws-chain-modal-foot {display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 22px;
+  border-top: 1px solid var(--glass-border);
+  font: 10px/1.4 var(--mono);
+  color: var(--text);
+  opacity: 0.48;
+  justify-content: flex-end !important;}
 
 /* Undo feedback: strike through the action that was just rolled back. */
 .toast-stack-item.is-undone,
@@ -2641,31 +2206,71 @@ html.theme-switching .chain-dock {
 }
 
 /* Match the chain manager surface to the single-block inspector. */
-.ws-chain-modal-card {
+.ws-chain-modal-card {max-height: min(84vh, 760px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  width: min(600px, calc(100vw - 32px)) !important;
+  border-radius: 16px !important;
+  width: min(780px, calc(100vw - 32px)) !important;
+  max-height: min(84vh, 780px) !important;
+  border-radius: 16px !important;
+  border-color: var(--glass-border) !important;
+  background: var(--glass-bg) !important;
+  overflow: hidden;
   background: var(--glass-bg) !important;
   border-color: var(--glass-border) !important;
   border-radius: 10px !important;
-  backdrop-filter: var(--glass-blur);
-}
-.ws-chain-modal-head {
+  backdrop-filter: var(--glass-blur);}
+.ws-chain-modal-head {display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--glass-border);
+  height: 52px !important;
+  padding: 0 10px 0 14px !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(127, 140, 160, 0.035);
+  padding: 16px 20px !important;
   background: transparent !important;
-  border-bottom: 1px solid var(--glass-border) !important;
-}
+  border-bottom: 1px solid var(--glass-border) !important;}
 .ws-chain-modal-body,
 .ws-chain-modal-foot {
   background: transparent !important;
 }
-.ws-chain-modal-actions {
-  transform: translateY(-10px);
-}
-.ws-chain-close-btn {
+.ws-chain-modal-actions {display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding-top: 2px;
+  transform: translateY(-10px);}
+.ws-chain-close-btn {opacity: 0.7;
+  width: 32px;
+  padding: 0;
+  color: var(--text);
+  opacity: 0.7;
   border: 0 !important;
-  background: transparent !important;
-}
-.ws-chain-close-btn:hover {
+  background: transparent !important;}
+.ws-chain-close-btn:hover {opacity: 1;
+  background: rgba(190, 80, 80, 0.16);
+  border-color: rgba(190, 80, 80, 0.35);
+  color: #d66;
+  background: rgba(127, 140, 160, 0.15);
+  opacity: 1;
   background: rgba(127, 140, 160, 0.14) !important;
-  border: 0 !important;
-}
+  border: 0 !important;}
 
 /* Use the same field surface as the single-block inspector for draggable chain rows. */
 [data-theme='light'] .ws-chain-modal .ws-chain-row {
@@ -2712,9 +2317,19 @@ html.theme-switching .chain-dock {
 }
 
 /* Minimize control for the side-view thumbnail. */
-#editorView .ws-side-preview {
+#editorView .ws-side-preview {position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 34;
+  width: 300px;
+  display: none;
+  padding: 5px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
   pointer-events: none;
-}
+  pointer-events: none;}
 #editorView .ws-side-preview-toggle {
   position: absolute;
   top: -11px;
@@ -2848,7 +2463,6 @@ body.bf-pc-only .pc-only-gate {
   border: 1px solid var(--glass-border);
   border-radius: 22px;
   background: var(--glass-bg);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
 }
 .pc-only-gate-icon {
   width: 124px;
@@ -2857,7 +2471,6 @@ body.bf-pc-only .pc-only-gate {
   place-items: center;
   margin-bottom: 2px;
   color: var(--text);
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.35));
 }
 .pc-only-gate-icon svg {
   display: block;
@@ -2893,7 +2506,6 @@ body.bf-pc-only .pc-only-gate {
 [data-theme='light'] .pc-only-gate-card {
   background: rgba(255, 255, 255, 0.9);
   border-color: #cbd6e2;
-  box-shadow: 0 24px 70px rgba(40, 58, 82, 0.18);
 }
 [data-theme='light'] .pc-only-gate-card p {
   color: #5d6d82;

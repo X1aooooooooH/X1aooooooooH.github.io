@@ -1,4 +1,4 @@
-import { DEFAULT_BASE } from './prompts.js?v=r42-font-cache-20261129';
+import { DEFAULT_BASE } from './prompts.js?v=r49-cleanup-20261129';
 
 export function endpointFor(baseUrl) {
   const base = String(baseUrl || DEFAULT_BASE)
@@ -64,7 +64,7 @@ export async function callChatApi(request, systemPrompt, messages, options = {})
     const parsed = extractResponseText(data);
     if (!parsed.text && !parsed.reasoning) {
       const finish = parsed.finish ? `，finish_reason=${parsed.finish}` : '';
-      throw new Error(`API 返回了空内容${finish}。`);
+      throw new Error(`API 返回了空内容${finish}${raw ? `；响应片段：${raw.replace(/\s+/g, ' ').slice(0, 200)}` : ''}。`);
     }
     options.onDelta && options.onDelta({ content: parsed.text, reasoning: parsed.reasoning });
     return {
@@ -95,19 +95,22 @@ export async function callChatApi(request, systemPrompt, messages, options = {})
   let reasoning = '';
   let usage = null;
   let finish = '';
+  let rawPreview = '';
+  let invalidFrames = 0;
+  let frame = [];
   const handleData = (rawData) => {
     const text = String(rawData || '').trim();
-    if (!text || text === '[DONE]') return;
+    if (!text || text === '[DONE]') return true;
     let data = null;
     try {
       data = JSON.parse(text);
     } catch {
-      return;
+      return false;
     }
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
     if (data.usage) usage = data.usage;
     const choice = data.choices && data.choices[0];
-    if (!choice) return;
+    if (!choice) return true;
     finish = choice.finish_reason || finish;
     const delta = choice.delta || choice.message || {};
     const c = contentToText(delta.content);
@@ -115,27 +118,53 @@ export async function callChatApi(request, systemPrompt, messages, options = {})
     if (c) content += c;
     if (r) reasoning += r;
     options.onDelta && options.onDelta({ content, reasoning });
+    return true;
+  };
+  const flushFrame = (force = false) => {
+    if (!frame.length) return;
+    const payload = frame.join('\n').trim();
+    frame = [];
+    if (!payload) return;
+    if (!handleData(payload) && force) invalidFrames++;
   };
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+    const chunk = decoder.decode(value, { stream: true });
+    if (rawPreview.length < 500) rawPreview += chunk.slice(0, 500 - rawPreview.length);
+    buffer += chunk;
     const lines = buffer.split(/\r?\n/);
     buffer = lines.pop() || '';
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed) continue;
-      if (trimmed.startsWith('data:')) handleData(trimmed.slice(5).trim());
-      else if (trimmed.startsWith('{')) handleData(trimmed);
+      if (!trimmed) {
+        flushFrame(true);
+        continue;
+      }
+      if (trimmed.startsWith('data:')) {
+        frame.push(trimmed.slice(5).trim());
+        flushFrame();
+      } else if (trimmed.startsWith('{')) {
+        flushFrame(true);
+        handleData(trimmed);
+      }
     }
   }
   if (buffer.trim()) {
     const trimmed = buffer.trim();
-    if (trimmed.startsWith('data:')) handleData(trimmed.slice(5).trim());
+    if (trimmed.startsWith('data:')) frame.push(trimmed.slice(5).trim());
     else if (trimmed.startsWith('{')) handleData(trimmed);
   }
+  flushFrame(true);
   if (!content.trim() && !reasoning.trim()) {
-    throw new Error(`API 返回了空内容${finish ? `，finish_reason=${finish}` : ''}。`);
+    const details = [
+      finish ? `finish_reason=${finish}` : '',
+      invalidFrames ? `${invalidFrames} 个流事件无法解析` : '',
+      rawPreview ? `响应片段：${rawPreview.replace(/\s+/g, ' ').slice(0, 200)}` : ''
+    ]
+      .filter(Boolean)
+      .join('；');
+    throw new Error(`API 返回了空内容${details ? `（${details}）` : ''}。`);
   }
   return { content, reasoning, usage };
 }
@@ -168,9 +197,13 @@ export function stripDisplayBlocks(text) {
 }
 export function mergeUsage(total, result) {
   if (!result || !result.usage) return total;
-  const usage = total || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
-  usage.prompt_tokens += Number(result.usage.prompt_tokens) || 0;
-  usage.completion_tokens += Number(result.usage.completion_tokens) || 0;
-  usage.total_tokens += Number(result.usage.total_tokens) || 0;
+  const usage = total
+    ? { ...total }
+    : { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+  const prompt = Number(result.usage.prompt_tokens ?? result.usage.input_tokens) || 0;
+  const completion = Number(result.usage.completion_tokens ?? result.usage.output_tokens) || 0;
+  usage.prompt_tokens += prompt;
+  usage.completion_tokens += completion;
+  usage.total_tokens += Number(result.usage.total_tokens) || prompt + completion;
   return usage;
 }

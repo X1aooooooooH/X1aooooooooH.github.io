@@ -335,8 +335,7 @@
   transition:
     width 0.2s ease,
     background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color 0.2s ease;
 }
 .search-input::placeholder {
   color: #8993a1;
@@ -508,26 +507,6 @@
   color: #69778a;
   font-size: 14.4px;
 }
-/* ============================================================
-   5. 链式停靠栏 / 视口帮助
-   ============================================================ */
-.chain-dock {
-  position: absolute;
-  z-index: 25;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  height: 46px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 7px;
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-}
 .chain-manage-btn {
   height: 34px;
   padding: 0 15px;
@@ -536,25 +515,6 @@
   background: #182130;
   color: var(--text);
   font-size: 14.4px;
-}
-.chain-text-mode-btn {
-  display: none;
-  height: 34px;
-  padding: 0 15px;
-  border: 1px solid #465674;
-  border-radius: 9px;
-  background: linear-gradient(180deg, #1b2431, #151c27);
-  color: #dbe5f4;
-  font-size: 14.4px;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    transform 0.15s;
-}
-.chain-text-mode-btn:hover {
-  background: linear-gradient(180deg, #243149, #1b2533);
-  border-color: #667da4;
-  transform: translateY(-1px);
 }
 .chain-delete-btn {
   display: none;
@@ -575,15 +535,6 @@
   border-color: #a65460;
   transform: translateY(-1px);
 }
-.chain-dock.chain-view .chain-manage-btn {
-  display: none;
-}
-.chain-dock.chain-view .chain-text-mode-btn,
-.chain-dock.chain-view .chain-delete-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 [data-theme='light'] .chain-manage-btn {
   background: #e9eef5;
   color: #263241;
@@ -592,15 +543,6 @@
 [data-theme='light'] .chain-manage-btn:hover {
   background: #dfe7f0;
   border-color: #9aa9ba;
-}
-[data-theme='light'] .chain-text-mode-btn {
-  background: linear-gradient(180deg, #eef3f8, #e0e7ef);
-  color: #263241;
-  border-color: #bec9d6;
-}
-[data-theme='light'] .chain-text-mode-btn:hover {
-  background: linear-gradient(180deg, #e4ebf2, #d7e0ea);
-  border-color: #93a3b7;
 }
 [data-theme='light'] .chain-delete-btn {
   background: #fbefef;
@@ -712,16 +654,6 @@
 .info.on {
   display: block;
 }
-.object-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 10px 6px;
-}
-.object-summary b {
-  font-size: 14px;
-  color: #eef2f7;
-}
 .idx {
   font-family: var(--mono);
   font-size: 12px;
@@ -801,7 +733,6 @@
   overflow: hidden;
   transition:
     border-color 0.18s ease,
-    box-shadow 0.18s ease,
     background 0.18s ease;
 }
 .inspector-field + .inspector-field {
@@ -856,47 +787,8 @@
 }
 .inspector-field textarea::placeholder {
   color: #6c788a;
-}
-.inspector-select-row[hidden],
-.inspector-field[hidden],
-.edit-grid[hidden] {
+}.inspector-select-row[hidden], .inspector-field[hidden]{
   display: none;
-}
-.edit-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-}
-.edit-grid button {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #eef2f7;
-  font-size: 14px;
-}
-.edit-grid button:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-.edit-grid button.active {
-  background: rgba(126, 145, 177, 0.18);
-  border-color: rgba(145, 160, 182, 0.36);
-}
-.edit-grid .danger {
-  color: #ff9aa3;
-  border-color: rgba(118, 64, 74, 0.55);
-  background: rgba(60, 25, 31, 0.42);
-}
-.edit-grid .danger:hover {
-  background: rgba(85, 31, 39, 0.56);
-  border-color: rgba(145, 74, 86, 0.68);
-  color: #ffb0b7;
 }
 [data-theme='light'] .inspector {
   background: rgba(248, 250, 253, 0.88);
@@ -928,9 +820,6 @@
 }
 [data-theme='light'] .empty-state p {
   color: #6f7c8e;
-}
-[data-theme='light'] .object-summary b {
-  color: #263241;
 }
 [data-theme='light'] .idx {
   color: #5368d8;
@@ -973,30 +862,6 @@
 [data-theme='light'] .inspector-field textarea::placeholder {
   color: #8995a5;
 }
-[data-theme='light'] .edit-grid button {
-  background: #edf2f7;
-  color: #2a3645;
-  border-color: #c8d2de;
-}
-[data-theme='light'] .edit-grid button:hover {
-  background: #e2e9f0;
-  border-color: #acb8c7;
-}
-[data-theme='light'] .edit-grid button.active {
-  background: #dbe4ff;
-  border-color: #9aa8dc;
-  color: #3d51a5;
-}
-[data-theme='light'] .edit-grid .danger {
-  background: #f9eeee;
-  color: #bf4f5a;
-  border-color: #e4bdc2;
-}
-[data-theme='light'] .edit-grid .danger:hover {
-  background: #f6e4e7;
-  border-color: #d998a1;
-  color: #a83d4b;
-}
 [data-theme='dark'] .inspector-select-card {
   background: rgba(7, 10, 14, 0.72);
   border-color: rgba(105, 118, 138, 0.36);
@@ -1018,93 +883,9 @@
   background: #101620;
   border-color: #7184aa;
 }
-/* ============================================================
-   7. 链式管理器
-   ============================================================ */
-.chain-manager {
-  position: absolute;
-  z-index: 45;
-  right: 24px;
-  top: 78px;
-  width: 460px;
-  max-height: calc(100% - 118px);
-  display: none;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-}
-.chain-manager.on {
-  display: flex;
-}
-.chain-manager-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(105, 118, 138, 0.32);
-}
-.chain-manager-head b {
-  font-size: 15px;
-  color: #eef2f7;
-}
-.chain-manager-head span {
-  display: block;
-  margin-top: 3px;
-  font-size: 12px;
-  color: #a0acbc;
-}
-.chain-manager-head-actions {
-  display: flex;
-  align-items: center;
-}
 .chain-add-btn:hover {
   background: rgba(31, 38, 49, 0.96);
   border-color: #7c8da8;
-}
-.chain-manager-list {
-  overflow: auto;
-  padding: 10px;
-}
-.chain-manager-list::-webkit-scrollbar-thumb {
-  background: #394556;
-  border-radius: 10px;
-  border: 2px solid rgba(12, 16, 23, 0.97);
-}
-.chain-manager-list::-webkit-scrollbar-thumb:hover {
-  background: #56657a;
-}
-.chain-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 10px;
-  margin-bottom: 7px;
-  border: 1px solid #293444;
-  border-radius: 11px;
-  background: #151c27;
-  color: var(--text);
-  cursor: grab;
-  user-select: none;
-  transition: 0.15s ease;
-}
-.chain-item:last-child {
-  margin-bottom: 0;
-}
-.chain-item:hover {
-  background: #1a2330;
-  border-color: #405069;
-}
-.chain-item.dragging {
-  opacity: 0.45;
-}
-.chain-item.drop-target {
-  border-color: #8196c8;
-  background: #1a2434;
-  transform: none;
 }
 .chain-drag {
   width: 28px;
@@ -1123,107 +904,11 @@
   background: #243044;
   color: #dce5f2;
 }
-.chain-order {
-  min-width: 28px;
-  color: #9ba8ba;
-  font-size: 14.4px;
-  text-align: center;
-}
-.chain-item-main {
-  min-width: 0;
-  flex: 1;
-}
-.chain-item-title {
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.chain-item-sub {
-  margin-top: 3px;
-  font-size: 12px;
-  color: #8e9bad;
-}
-.chain-item-command {
-  margin-top: 7px;
-  color: #dfe6f0;
-  font-size: 13.2px;
-  line-height: 1.45;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-family: var(--mono);
-}
-.chain-item.active {
-  border-color: #8ea2ff;
-  background: #1d2637;
-}
-.chain-item-copy {
-  flex: 0 0 auto;
-  height: 30px;
-  padding: 0 9px;
-  border: 1px solid #34445a;
-  border-radius: 8px;
-  background: #172233;
-  color: #cbd9ed;
-  font-size: 12px;
-}
-.chain-item-copy:hover {
-  background: #203149;
-  border-color: #58719a;
-}
-.chain-item-delete {
-  flex: 0 0 auto;
-  height: 30px;
-  padding: 0 10px;
-  border: 1px solid #4a2f37;
-  border-radius: 8px;
-  background: #24171b;
-  color: #ff9aa3;
-  font-size: 12px;
-}
-.chain-item-delete:hover {
-  background: #351c22;
-  border-color: #78404a;
-  color: #ffb0b7;
-}
 .chain-sort-hint {
   padding: 9px 15px 12px;
   color: #8793a5;
   font-size: 12px;
   border-top: 1px solid rgba(105, 118, 138, 0.32);
-}
-[data-theme='light'] .chain-manager {
-  background: rgba(248, 250, 253, 0.96);
-  border-color: #c6d0dc;
-}
-[data-theme='light'] .chain-manager-head {
-  border-bottom-color: #d1d8e2;
-}
-[data-theme='light'] .chain-manager-head b {
-  color: #263241;
-  font-size: 15px;
-}
-[data-theme='light'] .chain-manager-head span {
-  color: #6c798b;
-  font-size: 13.2px;
-}
-[data-theme='light'] .chain-manager-list::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb);
-  border-color: var(--scroll-thumb-border);
-}
-[data-theme='light'] .chain-item {
-  background: #f0f4f8;
-  color: #263241;
-  border-color: #c8d2de;
-}
-[data-theme='light'] .chain-item:hover {
-  background: #e8eef4;
-  border-color: #aab7c7;
-}
-[data-theme='light'] .chain-item.drop-target {
-  background: #e5ecf7;
-  border-color: #8195c2;
 }
 [data-theme='light'] .chain-drag {
   background: #e5ebf2;
@@ -1233,32 +918,6 @@
 [data-theme='light'] .chain-drag:hover {
   background: #dbe3eb;
   color: #344154;
-}
-[data-theme='light'] .chain-order {
-  color: #637084;
-  font-size: 14.4px;
-}
-[data-theme='light'] .chain-item-sub {
-  color: #697789;
-  font-size: 12.6px;
-}
-[data-theme='light'] .chain-item-command {
-  color: #344154;
-  font-size: 13.8px;
-}
-[data-theme='light'] .chain-item.active {
-  background: #e5eaff;
-  border-color: #8292d4;
-}
-[data-theme='light'] .chain-item-delete {
-  background: #fbefef;
-  color: #c0525c;
-  border-color: #e2bec3;
-}
-[data-theme='light'] .chain-item-delete:hover {
-  background: #f6e2e5;
-  color: #a83e4a;
-  border-color: #d79da5;
 }
 [data-theme='light'] .chain-sort-hint {
   border-top-color: #d1d8e2;
@@ -1392,24 +1051,6 @@
 [data-theme='light'] .chain-add-options span {
   color: #6c798b;
 }
-/* ============================================================
-   9. 文本编辑器
-   ============================================================ */
-.text-editor-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 95;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-  background: rgba(5, 8, 12, 0.58);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-.text-editor-overlay.on {
-  display: flex;
-}
 .text-editor-card {
   width: min(1240px, calc(100vw - 40px));
   height: min(92vh, 940px);
@@ -1439,20 +1080,6 @@
   margin-top: 4px;
   color: #8996a9;
   font-size: 13.2px;
-}
-.text-editor-close {
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(116, 130, 149, 0.34);
-  border-radius: 9px;
-  background: rgba(28, 34, 43, 0.72);
-  color: #d8e0eb;
-  font-size: 22px;
-  line-height: 1;
-}
-.text-editor-close:hover {
-  background: rgba(72, 86, 108, 0.42);
-  color: #fff;
 }
 .text-editor-work {
   position: relative;
@@ -1657,9 +1284,6 @@
 .text-editor-btn.primary:hover {
   background: #3d4d70;
 }
-[data-theme='light'] .text-editor-overlay {
-  background: rgba(61, 75, 94, 0.24);
-}
 [data-theme='light'] .text-editor-card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 245, 249, 0.99));
   border-color: #bec9d6;
@@ -1673,15 +1297,6 @@
 [data-theme='light'] .text-editor-head span {
   color: #6d7a8c;
   font-size: 13.8px;
-}
-[data-theme='light'] .text-editor-close {
-  background: #edf2f7;
-  color: #536174;
-  border-color: #c5cfda;
-}
-[data-theme='light'] .text-editor-close:hover {
-  background: #e1e8ef;
-  color: #263241;
 }
 [data-theme='light'] .text-editor-work {
   background: rgba(245, 248, 251, 0.96);
@@ -1756,13 +1371,6 @@
 [data-theme='light'] .text-editor-btn.primary:hover {
   background: #5268bd;
 }
-
-/* ============================================================
-   10. 管理链标题操作按钮（统一、清晰的现代按钮样式）
-   ============================================================ */
-.chain-manager-head-actions {
-  gap: 9px;
-}
 .chain-add-btn {
   position: relative;
   display: inline-flex;
@@ -1783,7 +1391,6 @@
   cursor: pointer;
   transition:
     transform 0.16s ease,
-    box-shadow 0.16s ease,
     filter 0.16s ease;
 }
 .chain-add-btn::before {
@@ -1799,47 +1406,9 @@
 .chain-add-btn:active {
   transform: translateY(0);
   filter: brightness(0.98);
-}
-.chain-add-btn:focus-visible,
-.chain-manager-close:focus-visible {
+}.chain-add-btn:focus-visible{
   outline: 3px solid rgba(126, 157, 235, 0.48);
   outline-offset: 2px;
-}
-.chain-manager-close {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 10px;
-  background: rgba(148, 163, 184, 0.09);
-  color: #aeb9c9;
-  font-size: 0;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    border-color 0.16s ease,
-    color 0.16s ease,
-    transform 0.16s ease;
-}
-.chain-manager-close::before {
-  content: '×';
-  font-size: 23px;
-  font-weight: 400;
-  line-height: 1;
-  transform: translateY(-1px);
-}
-.chain-manager-close:hover {
-  background: rgba(220, 85, 99, 0.14);
-  border-color: rgba(220, 105, 117, 0.42);
-  color: #ff9ca6;
-  transform: rotate(4deg);
-}
-.chain-manager-close:active {
-  transform: scale(0.95);
 }
 [data-theme='light'] .chain-add-btn {
   background: linear-gradient(135deg, #647fce 0%, #526bb2 100%);
@@ -1849,16 +1418,6 @@
 [data-theme='light'] .chain-add-btn:hover {
   background: linear-gradient(135deg, #718bd7 0%, #5d77bf 100%);
   border-color: #7189ca;
-}
-[data-theme='light'] .chain-manager-close {
-  background: #f1f4f8;
-  border-color: #d5dde7;
-  color: #718096;
-}
-[data-theme='light'] .chain-manager-close:hover {
-  background: #fff0f1;
-  border-color: #edc1c5;
-  color: #c44e5b;
 }
 
 /* 新增链弹窗提升到 body 顶层，避免被管理链面板及其层叠上下文覆盖 */

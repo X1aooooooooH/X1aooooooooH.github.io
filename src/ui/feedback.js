@@ -1,4 +1,4 @@
-import { icon } from './icons.js?v=r42-font-cache-20261129';
+import { icon } from './icons.js?v=r49-cleanup-20261129';
 let lastPointerElement = null;
 document.addEventListener(
   'pointerdown',

@@ -1,7 +1,7 @@
-import { app } from '../state.js?v=r42-font-cache-20261129';
-import { cloneChains } from '../core/model.js?v=r42-font-cache-20261129';
-import { reflowChainsForSize, ensureStructureSize } from '../core/layout.js?v=r42-font-cache-20261129';
-import { refreshChainsUI, pushHistory } from '../editor.js?v=r42-font-cache-20261129';
+import { app } from '../state.js?v=r49-cleanup-20261129';
+import { cloneChains } from '../core/model.js?v=r49-cleanup-20261129';
+import { reflowChainsForSize, ensureStructureSize } from '../core/layout.js?v=r49-cleanup-20261129';
+import { refreshChainsUI, pushHistory } from '../editor.js?v=r49-cleanup-20261129';
 
 function newChainUid() {
   return 'chain-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
@@ -67,7 +67,7 @@ export function makeActionBlocks(commands, type, blockTypes) {
   });
 }
 
-export function executeActionOps(ops, chainRemap = null) {
+export function executeActionOps(ops) {
   if (!Array.isArray(ops) || !ops.length) throw new Error('操作列表为空');
   const next = cloneChainsForAction();
   let summary = [];
@@ -93,14 +93,8 @@ export function executeActionOps(ops, chainRemap = null) {
         op = { ...op, blocks: Array.from({ length: to - from + 1 }, (_, i) => from + i) };
       }
     }
-    if (chainRemap && Number(op.chain) === Number(chainRemap.from)) {
-      op = { ...op, chain: chainRemap.to };
-    }
     if (chainOps.includes(op.op) && (op.chain === undefined || op.chain === null || op.chain === '')) {
       throw new Error(`操作 ${op.op} 缺少链号，且当前无法确定目标链`);
-    }
-    if (chainRemap && op.op === 'move_chain' && Number(op.from) === Number(chainRemap.from)) {
-      op = { ...op, from: chainRemap.to };
     }
     if (op.op === 'replace') {
       const find = String(op.find ?? '');

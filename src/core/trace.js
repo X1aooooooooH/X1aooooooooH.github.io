@@ -1,5 +1,5 @@
-import { STD_Z } from './constants.js?v=r42-font-cache-20261129';
-import { blockKey, getOffsetPosition } from './blocks.js?v=r42-font-cache-20261129';
+import { STD_Z } from './constants.js?v=r49-cleanup-20261129';
+import { blockKey, getOffsetPosition } from './blocks.js?v=r49-cleanup-20261129';
 import {
   detectSelfClosedCycles,
   findBrokenChainSetblockIndexes,
@@ -10,10 +10,10 @@ import {
   isExecuteRunRelativeCommand,
   isTestforCommand,
   normalizeBrokenChainBlocks
-} from './broken-chain.js?v=r42-font-cache-20261129';
+} from './broken-chain.js?v=r49-cleanup-20261129';
 
 export function traceChain(root, context, owner) {
-  const { blockMap, discarded, blockedKeys, rootKeys } = context;
+  const { blockMap, rootKeys } = context;
   const ordered = [];
   const orderedIndex = new Map();
   const local = new Set();
@@ -39,8 +39,6 @@ export function traceChain(root, context, owner) {
       const nestedBrokenRoot =
         rootKeys?.has(k) && !!identifyBrokenHeadGeometry(candidate, getExact, isBrokenHeadMarkerBlock);
       if (
-        discarded?.has(k) ||
-        blockedKeys?.has(k) ||
         owner.has(k) ||
         (rootKeys?.has(k) && !nestedBrokenRoot) ||
         seen.has(k)
@@ -50,12 +48,7 @@ export function traceChain(root, context, owner) {
         if (skippedEmpty.length) {
           const terminal = skippedEmpty[skippedEmpty.length - 1];
           const terminalKey = blockKey(terminal.x, terminal.y, terminal.z);
-          if (
-            !discarded?.has(terminalKey) &&
-            !blockedKeys?.has(terminalKey) &&
-            !owner.has(terminalKey) &&
-            !rootKeys?.has(terminalKey)
-          ) {
+          if (!owner.has(terminalKey) && !rootKeys?.has(terminalKey)) {
             if (skippedEmpty.length > 1) rememberSkippedEmpty(terminal, skippedEmpty.slice(0, -1));
             return terminal;
           }
@@ -82,7 +75,7 @@ export function traceChain(root, context, owner) {
   const claim = (b, includeEmpty = false) => {
     if (!b || b.type === 'air' || (isEmptyChain(b) && !includeEmpty)) return false;
     const k = blockKey(b.x, b.y, b.z);
-    if (local.has(k) || blockedKeys?.has(k) || owner.has(k) || discarded?.has(k)) return false;
+    if (local.has(k) || owner.has(k)) return false;
     owner.set(k, root);
     local.add(k);
     const copy = { ...b, cmd: String(b.cmd || '') };
@@ -97,7 +90,7 @@ export function traceChain(root, context, owner) {
     const k = blockKey(b.x, b.y, b.z);
     for (const empty of emptyPathByTarget.get(k) || []) {
       const ek = blockKey(empty.x, empty.y, empty.z);
-      if (local.has(ek) || owner.has(ek) || discarded?.has(ek) || blockedKeys?.has(ek)) continue;
+      if (local.has(ek) || owner.has(ek)) continue;
       claim(empty, true);
     }
     return claim(b, isEmptyChain(b));
@@ -164,7 +157,6 @@ export function traceChain(root, context, owner) {
       return true;
     };
     if (!addBrokenPattern(brokenHead, root)) {
-      ordered._repeatingSplit = true;
       return ordered;
     }
     let current = ordered[ordered.length - 1] || root;
@@ -174,7 +166,7 @@ export function traceChain(root, context, owner) {
       const next = getLogical(current, currentDirection, 1);
       if (!next) break;
       const nk = blockKey(next.x, next.y, next.z);
-      if (owner.has(nk) || discarded?.has(nk) || blockedKeys?.has(nk)) break;
+      if (owner.has(nk)) break;
       const nestedPattern = identifyBrokenHeadGeometry(next, getExact, isBrokenHeadMarkerBlock);
       if (nestedPattern) {
         const nestedRepeating =
@@ -182,8 +174,7 @@ export function traceChain(root, context, owner) {
           nestedPattern.blocks.some((b) => b?.blockType === 'repeating');
         if (nestedRepeating && hasRepeatingBlock()) {
           if (context) context.repeatingSplits = (context.repeatingSplits || 0) + 1;
-          ordered._repeatingSplit = true;
-          break;
+              break;
         }
         if (!claim(next)) break;
         addBrokenPattern(nestedPattern, next);
@@ -214,11 +205,10 @@ export function traceChain(root, context, owner) {
       const next = getLogical(current, direction, 1);
       if (!next || next.type !== 'chain') break;
       const nk = blockKey(next.x, next.y, next.z);
-      if (owner.has(nk) || discarded?.has(nk) || blockedKeys?.has(nk) || !claimLogical(next)) break;
+      if (owner.has(nk) || !claimLogical(next)) break;
       current = next;
     }
     ordered._brokenCandidate = true;
-    ordered._fallbackGroup = true;
     return ordered;
   }
 
@@ -235,7 +225,7 @@ export function traceChain(root, context, owner) {
     const next = getLogical(current, direction, 1);
     if (!next || next.type !== 'chain') break;
     const nk = blockKey(next.x, next.y, next.z);
-    if (owner.has(nk) || discarded?.has(nk) || blockedKeys?.has(nk) || !claimLogical(next)) break;
+    if (owner.has(nk) || !claimLogical(next)) break;
     current = orderedIndex.get(nk) || next;
   }
   return ordered;
@@ -375,8 +365,7 @@ export function processCommands(commands, context = {}, hooks = {}) {
   }
   const selfClosedDetection = detectSelfClosedCycles(blockMap, 4, brokenPatternKeys);
   const selfClosedCycleKeys = selfClosedDetection.keys;
-  const discarded = new Set();
-  const graphContext = { ...context, blockMap, discarded, selfClosedCycleKeys };
+  const graphContext = { ...context, blockMap, selfClosedCycleKeys };
   const roots = [...commands];
   const owner = new Map();
   const rootKeys = new Set(
@@ -385,7 +374,6 @@ export function processCommands(commands, context = {}, hooks = {}) {
       .map((b) => blockKey(b.x, b.y, b.z))
   );
   graphContext.rootKeys = rootKeys;
-  const blockedKeys = new Set();
   // Detect canonical broken heads before tracing any roots. Their second
   // marker intentionally has a different facing. Only the command block that
   // marker actually points at is excluded; we do not blindly discard its
@@ -468,12 +456,11 @@ export function processCommands(commands, context = {}, hooks = {}) {
   // Broken-head recognition never deletes or blocks the command block that a
   // misoriented marker happens to point at. Physical nodes are resolved later
   // by normal chain ownership and the orphan-preservation pass.
-  graphContext.blockedKeys = blockedKeys;
   const chains = [];
   for (const root of roots) {
     if (root.blockType === 'chain' && !rootMeta.get(root)?.brokenPattern) continue;
     const k = blockKey(root.x, root.y, root.z);
-    if (owner.has(k) || discarded.has(k) || blockedKeys.has(k)) continue;
+    if (owner.has(k)) continue;
     const ordered = traceChain(root, graphContext, owner);
     if (!ordered.length) continue;
     let type = detectChainType(ordered);
@@ -509,7 +496,7 @@ export function processCommands(commands, context = {}, hooks = {}) {
   // A self-closed chain can have no repeating/impulse root at all. Preserve such
   // supported 2–4 block cycles as physical loops instead of dropping them.
   for (const cycle of selfClosedDetection.cycles) {
-    if (cycle.some((k) => represented.has(k) || blockedKeys.has(k) || discarded.has(k))) continue;
+    if (cycle.some((k) => represented.has(k))) continue;
     const cycleBlocks = cycle
       .map((k) => blockMap.get(k))
       .filter(Boolean)
@@ -535,7 +522,7 @@ export function processCommands(commands, context = {}, hooks = {}) {
   for (const b of blockMap.values()) {
     if (!b || !['command', 'repeating', 'chain'].includes(b.type || b.blockType)) continue;
     const k = blockKey(b.x, b.y, b.z);
-    if (represented.has(k) || blockedKeys.has(k) || discarded.has(k)) continue;
+    if (represented.has(k)) continue;
     const blockType = b.blockType || b.type;
     filtered.push({
       type: 'repeat',

@@ -1,6 +1,7 @@
-import { createLineMetrics } from './ui/line-metrics.js?v=r42-font-cache-20261129';
-import { icon } from './ui/icons.js?v=r42-font-cache-20261129';
-import { TYPE_LABEL } from './core/constants.js?v=r42-font-cache-20261129';
+import { createLineMetrics } from './ui/line-metrics.js?v=r49-cleanup-20261129';
+import { icon } from './ui/icons.js?v=r49-cleanup-20261129';
+import { rememberModalFocus, restoreModalFocus } from './ui/feedback.js?v=r49-cleanup-20261129';
+import { TYPE_LABEL } from './core/constants.js?v=r49-cleanup-20261129';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const inlineMetrics = createLineMetrics();
@@ -674,8 +675,11 @@ function buildFrame() {
   const modal = document.createElement('div');
   modal.id = 'wsChainModal';
   modal.className = 'ws-chain-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('aria-labelledby', 'wsChainModalTitle');
   modal.setAttribute('aria-hidden', 'true');
-  modal.innerHTML = `<div class="ws-chain-modal-card" role="dialog" aria-modal="true" aria-labelledby="wsChainModalTitle">
+  modal.innerHTML = `<div class="ws-chain-modal-card">
     <header class="ws-chain-modal-head">
       <div class="ws-chain-modal-title"><div class="ws-chain-title-line"><b id="wsChainModalTitle">管理链</b><span id="wsChainModalCount" class="ws-chain-count">0 条</span></div></div>
       <div class="ws-chain-modal-actions">
@@ -984,10 +988,8 @@ function bindFrame({
 }) {
   inlineText.addEventListener('input', () => {
     const currentChain = window.app?.chains?.[window.app?.selectedChain];
-    if (inlineText.value !== chainToText(currentChain)) {
-      inlineDirty = true;
-      $('#wsCurrentStatus').textContent = '待同步';
-    }
+    inlineDirty = inlineText.value !== chainToText(currentChain);
+    $('#wsCurrentStatus').textContent = inlineDirty ? '待同步' : '自动同步';
     renderInlineVisuals();
   });
   // README 要求「失焦同步」：光标离开文本框时把尚未确认的改动落盘。
@@ -1019,15 +1021,27 @@ function bindFrame({
   codeMain.addEventListener('scroll', () => {
     numbers.scrollTop = codeMain.scrollTop;
   });
-  $('#wsInlineApply')?.addEventListener('click', () => {
-    // 点按钮一定会先触发 textarea 的 blur，那里已经同步过；
-    // 这里不再强制标记 dirty，避免一次编辑写两条撤销记录。
+  const inlineApply = $('#wsInlineApply');
+  let pendingAtPointerDown = false;
+  inlineApply?.addEventListener('pointerdown', () => {
+    pendingAtPointerDown = inlineDirty;
+  });
+  inlineApply?.addEventListener('click', () => {
+    // 点按钮会先触发 textarea 的 blur；blur 已经同步过时不能再提示“未改动”。
+    if (!pendingAtPointerDown && !inlineDirty) {
+      $('#wsCurrentStatus').textContent = '未改动';
+      window.toast?.('文本没有改动，无需同步', 'warn');
+      return;
+    }
+    pendingAtPointerDown = false;
     applyInlineText();
   });
   bindSidebarEvents();
   renderInlineText();
 
   const setChainModal = (show) => {
+    if (show) rememberModalFocus('wsChainModal');
+    else restoreModalFocus('wsChainModal');
     modal.classList.toggle('on', !!show);
     modal.setAttribute('aria-hidden', String(!show));
     if (show) {

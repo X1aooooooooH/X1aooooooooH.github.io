@@ -1,8 +1,8 @@
-import { app } from '../state.js?v=r42-font-cache-20261129';
-import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-chain.js?v=r42-font-cache-20261129';
-import { getTextEditChain } from '../ui/text-editor.js?v=r42-font-cache-20261129';
-import { CONTEXT_LIMIT } from './prompts.js?v=r42-font-cache-20261129';
-import { loadSkillRuntime, searchSkillIds } from './skill.js?v=r42-font-cache-20261129';
+import { app } from '../state.js?v=r49-cleanup-20261129';
+import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-chain.js?v=r49-cleanup-20261129';
+import { getTextEditChain } from '../ui/text-editor.js?v=r49-cleanup-20261129';
+import { CONTEXT_CHUNK } from './prompts.js?v=r49-cleanup-20261129';
+import { loadSkillRuntime, searchSkillIds } from './skill.js?v=r49-cleanup-20261129';
 
 function typeLabel(type) {
   return type === 'snake' ? '断链' : type === 'repeat' ? '循环链' : '脉冲链';
@@ -12,32 +12,19 @@ export function blockTypeLabel(type) {
   return type === 'repeating' ? '循环' : type === 'command' ? '脉冲' : '链式';
 }
 
-export function appendLimited(lines, text, budget) {
-  if (budget.used + text.length > budget.limit) {
-    budget.truncated = true;
-    return false;
-  }
+function pushLine(lines, text) {
   lines.push(text);
-  budget.used += text.length + 1;
-  return true;
 }
 
-export function formatChain(ci, lines, budget) {
+export function formatChain(ci, lines) {
   const chain = app.chains[ci];
-  if (!chain) return false;
+  if (!chain) return;
   const blocks = Array.isArray(chain.blocks) ? chain.blocks : [];
-  if (
-    !appendLimited(
-      lines,
-      `\n## 链 ${ci + 1}：${typeLabel(chain.type)}（${blocks.length} 个命令方块）`,
-      budget
-    )
-  )
-    return false;
+  pushLine(lines, `\n## 链 ${ci + 1}：${typeLabel(chain.type)}（${blocks.length} 个命令方块）`);
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i] || {};
     if (b.isAirPlaceholder) {
-      if (!appendLimited(lines, `[${i}] （空气辅助占位）`, budget)) return false;
+      pushLine(lines, `[${i}] （空气辅助占位）`);
       continue;
     }
     const flags = [];
@@ -45,9 +32,8 @@ export function formatChain(ci, lines, budget) {
     if (b.auto === 0) flags.push('红石触发');
     if (b.isAuxiliary) flags.push('辅助方块');
     const line = `[${i}] ${blockTypeLabel(b.blockType)}${flags.length ? ' / ' + flags.join(' / ') : ''} | ${String(b.cmd || '（空命令）')}`;
-    if (!appendLimited(lines, line, budget)) return false;
+    pushLine(lines, line);
   }
-  return true;
 }
 
 export function buildContext(scope) {
@@ -55,55 +41,48 @@ export function buildContext(scope) {
     return null;
   }
   const lines = [];
-  const budget = { used: 0, limit: CONTEXT_LIMIT, truncated: false };
   const totalCommandCount = app.chains.reduce((n, c) => n + (c.blocks ? c.blocks.length : 0), 0);
   let commandCount = totalCommandCount;
-  appendLimited(lines, `# BlockFlow 结构上下文`, budget);
-  appendLimited(lines, `文件：${app.fileName || '未命名结构'}`, budget);
-  appendLimited(lines, `链数量：${app.chains.length}；命令方块总数：${totalCommandCount}`, budget);
+  pushLine(lines, `# BlockFlow 结构上下文`);
+  pushLine(lines, `文件：${app.fileName || '未命名结构'}`);
+  pushLine(lines, `链数量：${app.chains.length}；命令方块总数：${totalCommandCount}`);
 
   let ci = -1;
   if (scope === 'all') {
-    appendLimited(lines, `范围：全部链`, budget);
-    for (let i = 0; i < app.chains.length; i++) {
-      if (!formatChain(i, lines, budget)) {
-        budget.truncated = true;
-        break;
-      }
-    }
+    pushLine(lines, `范围：全部链`);
+    for (let i = 0; i < app.chains.length; i++) formatChain(i, lines);
   } else {
     if (scope === 'text') {
       const inlineChain = getTextEditChain();
       if (Number.isInteger(inlineChain) && inlineChain >= 0) ci = inlineChain;
     }
     if (ci < 0 && typeof app.selectedChain === 'number' && app.selectedChain >= 0) ci = app.selectedChain;
-    if (ci < 0 && app.chains.length === 1) ci = 0;
     if (ci < 0) ci = 0;
     if (ci >= app.chains.length) ci = 0;
     commandCount = app.chains[ci] && Array.isArray(app.chains[ci].blocks) ? app.chains[ci].blocks.length : 0;
-    appendLimited(lines, `范围：链 ${ci + 1}；该链命令方块数：${commandCount}`, budget);
+    pushLine(lines, `范围：链 ${ci + 1}；该链命令方块数：${commandCount}`);
     if (scope === 'text') {
       const inline = typeof window !== 'undefined' ? window.getInlineEditState?.() : null;
-      const isOpen = inline && Number.isInteger(inline.chain) && inline.chain === ci;
+      // Only inject the editor buffer when it contains unapplied edits; an idle panel
+      // still holds the selected chain index and would otherwise duplicate stale text.
+      const isOpen = inline && Number.isInteger(inline.chain) && inline.chain === ci && inline.dirty;
       if (isOpen) {
-        appendLimited(lines, `\n## 内联编辑器当前内容（每行一条命令，可能包含未应用的修改）`, budget);
+        pushLine(lines, `\n## 内联编辑器当前内容（每行一条命令，可能包含未应用的修改）`);
         const values = String(inline.text || '')
           .replace(/\r/g, '')
           .split('\n');
         const conditions = Array.isArray(inline.conditions) ? inline.conditions : [];
         for (let i = 0; i < values.length; i++) {
           const cond = conditions[i] ? ' [有条件]' : '';
-          if (!appendLimited(lines, `第 ${i + 1} 行${cond} | ${values[i] || '（空命令）'}`, budget)) break;
+          pushLine(lines, `第 ${i + 1} 行${cond} | ${values[i] || '（空命令）'}`);
         }
-        if (!budget.truncated && app.chains[ci]) {
-          appendLimited(lines, `\n## 该链的当前结构信息`, budget);
-          formatChain(ci, lines, budget);
-        }
+        pushLine(lines, `\n## 该链的当前结构信息`);
+        formatChain(ci, lines);
       } else {
-        formatChain(ci, lines, budget);
+        formatChain(ci, lines);
       }
     } else {
-      formatChain(ci, lines, budget);
+      formatChain(ci, lines);
     }
   }
   return {
@@ -115,7 +94,7 @@ export function buildContext(scope) {
   };
 }
 
-export function splitContextText(text, limit = 45000) {
+export function splitContextText(text, limit = CONTEXT_CHUNK) {
   const source = String(text || '');
   if (!source) return [''];
   if (source.length <= limit) return [source];
@@ -179,8 +158,12 @@ function searchBrowserCommands(args) {
   return `匹配 ${total} 次：\n${rows.join('\n')}${more}`;
 }
 
-async function sectionFromPrecheck(name, scope) {
-  const full = await runSkillPrecheck(scope);
+async function sectionFromPrecheck(name, scope, cache = null) {
+  let full = cache?.get(scope);
+  if (!full) {
+    full = await runSkillPrecheck(scope);
+    cache?.set(scope, full);
+  }
   const header = '## ' + name;
   const start = full.indexOf(header);
   if (start < 0) return full;
@@ -188,7 +171,7 @@ async function sectionFromPrecheck(name, scope) {
   return full.slice(start, next < 0 ? undefined : next).trim();
 }
 
-export async function executeReadTool(name, args, scope) {
+export async function executeReadTool(name, args, scope, precheckCache = null) {
   if (['check_syntax', 'check_chain', 'inspect', 'verify'].includes(name)) {
     const map = {
       check_syntax: 'check --only syntax',
@@ -196,7 +179,11 @@ export async function executeReadTool(name, args, scope) {
       inspect: 'inspect',
       verify: 'verify'
     };
-    return sectionFromPrecheck(map[name], ['all', 'chain', 'text'].includes(args.scope) ? args.scope : scope);
+    return sectionFromPrecheck(
+      map[name],
+      ['all', 'chain', 'text'].includes(args.scope) ? args.scope : scope,
+      precheckCache
+    );
   }
   if (name === 'search_commands') return searchBrowserCommands(args);
   if (name === 'lookup_id') return await searchSkillIds(args.query || '');

@@ -2,9 +2,9 @@ import {
   getBrokenHeadKind,
   isBrokenChainPlaceholder,
   normalizeBrokenChainBlocks
-} from '../core/broken-chain.js?v=r42-font-cache-20261129';
-import { escapeHtml } from './dom.js?v=r42-font-cache-20261129';
-import { appendImportedChains } from '../editor.js?v=r42-font-cache-20261129';
+} from '../core/broken-chain.js?v=r49-cleanup-20261129';
+import { escapeHtml } from './dom.js?v=r49-cleanup-20261129';
+import { appendImportedChains } from '../editor.js?v=r49-cleanup-20261129';
 
 // 这里的工具供两处使用：工作区的内联文本编辑器，以及 TXT 文件导入。
 // 旧的整屏文本编辑弹窗已经删除，链文本现在只在 workspace.js 的内联编辑器里编辑。
@@ -158,13 +158,12 @@ function buildTxtChains(commands) {
   const type = classifyTxtChain(parsed.map((item) => item.cmd));
   if (type === 'snake') normalizeBrokenChainBlocks(parsed, { applyCondition: true });
 
-  const firstBlockType = type === 'impulse' ? 'command' : 'repeating';
   const blocks = parsed.map((item, index) => ({
     cmd: item.cmd,
     cond: item.cond ? 1 : 0,
     auto: 1,
     facing: 2,
-    blockType: index === 0 ? firstBlockType : 'chain',
+    blockType: index === 0 ? 'repeating' : 'chain',
     isBrokenNormalized: !!item.isBrokenNormalized,
     marked: false,
     note: ''

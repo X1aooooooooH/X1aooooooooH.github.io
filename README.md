@@ -72,7 +72,7 @@ blockflow/
 
 本项目没有根目录 `package.json`；本地用任意静态服务器打开即可，不需要 `npm install`。
 
-修改断链逻辑后，可运行 `node tools/check-skill-chain.mjs` 验证技能侧坐标旋转、标记识别和分类没有被改坏；修改缓存版本后，运行 `node tools/check-release.mjs` 检查所有内部 import 与 meta 是否一致。
+修改断链逻辑后，可运行 `node tools/check-skill-chain.mjs` 验证技能侧坐标旋转、标记识别和分类没有被改坏；修改缓存版本后，运行 `node tools/check-release.mjs` 检查所有内部 import 与 meta 是否一致；修改 AI 流式请求后，可运行 `node tools/check-ai-api.mjs` 验证非 SSE 响应会带出响应片段；修改技能转发层后，运行 `node tools/check-runtime.mjs` 验证 7 个转发模块与真实实现导出一致。
 
 
 ## 1. 断链头的详细规则

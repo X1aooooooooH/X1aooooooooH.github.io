@@ -1,5 +1,5 @@
-import { FACING_VEC } from './constants.js?v=r42-font-cache-20261129';
-import { blockKey, getOffsetPosition } from './blocks.js?v=r42-font-cache-20261129';
+import { FACING_VEC } from './constants.js?v=r49-cleanup-20261129';
+import { blockKey, getOffsetPosition } from './blocks.js?v=r49-cleanup-20261129';
 
 /**
  * 断链（broken chain）识别与归一化的**唯一实现**。
@@ -51,11 +51,18 @@ import { blockKey, getOffsetPosition } from './blocks.js?v=r42-font-cache-202611
 // Detect intentional self-closed command-block loops. Only cycles of 2–4
 // chain-command blocks are treated as supported loops; larger loops are left
 // to the normal validation path because they are considered malformed layouts.
+function cycleResult(cycles, keys, oversized) {
+  const result = [cycles, keys, oversized];
+  result.cycles = cycles;
+  result.keys = keys;
+  result.oversized = oversized;
+  return result;
+}
 export function detectSelfClosedCycles(blockMap, maxCycleSize = 4, brokenKeys = new Set()) {
   const cycles = [];
   const signatures = new Set();
-  if (!(blockMap instanceof Map)) return { cycles, keys: new Set(), oversized: [] };
   const oversized = [];
+  if (!(blockMap instanceof Map)) return cycleResult(cycles, new Set(), oversized);
   for (const start of blockMap.values()) {
     if (!start || start.type !== 'chain') continue;
     const path = [];
@@ -98,15 +105,16 @@ export function detectSelfClosedCycles(blockMap, maxCycleSize = 4, brokenKeys = 
       if (current && current.type !== 'chain') break;
     }
   }
-  return { cycles, keys: new Set(cycles.flat()), oversized };
+  return cycleResult(cycles, new Set(cycles.flat()), oversized);
 }
 // ─────────────────────────────────────────────────────────────
 // 1. 命令行识别
 // ─────────────────────────────────────────────────────────────
 
+const escapeRe = (text) => String(text).replace(/[.*+?^$(){}|[\]\\]/g, '\\$&');
 // Minecraft command text may include the leading slash or omit it.
 export function startsCommand(cmd, name) {
-  return new RegExp('^\\s*\\/?' + name + '\\b', 'i').test(String(cmd ?? '').trim());
+  return new RegExp('^\\s*\\/?' + escapeRe(name) + '\\b', 'i').test(String(cmd ?? '').trim());
 }
 export function isTestforCommand(cmd) {
   return startsCommand(cmd, 'testfor');

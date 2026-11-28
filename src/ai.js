@@ -5,14 +5,14 @@
  * - Key stays in this browser; no BlockFlow server is involved.
  * - The bundled skills/be-cmd/SKILL.md is injected as the system prompt.
  */
-import { app } from './state.js?v=r42-font-cache-20261129';
-import { getTextEditChain } from './ui/text-editor.js?v=r42-font-cache-20261129';
-import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js?v=r42-font-cache-20261129';
-import { refreshChainsUI, pushHistory } from './editor.js?v=r42-font-cache-20261129';
-import { logInfo, logWarn, logOk, logError } from './log.js?v=r42-font-cache-20261129';
-import { toast, showPromptModal, showInputPopover } from './ui/feedback.js?v=r42-font-cache-20261129';
-import { renderMarkdown } from './ui/markdown.js?v=r42-font-cache-20261129';
-import { icon } from './ui/icons.js?v=r42-font-cache-20261129';
+import { app } from './state.js?v=r49-cleanup-20261129';
+import { getTextEditChain } from './ui/text-editor.js?v=r49-cleanup-20261129';
+import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js?v=r49-cleanup-20261129';
+import { refreshChainsUI, pushHistory } from './editor.js?v=r49-cleanup-20261129';
+import { logInfo, logWarn, logOk, logError } from './log.js?v=r49-cleanup-20261129';
+import { toast, showPromptModal, showInputPopover } from './ui/feedback.js?v=r49-cleanup-20261129';
+import { renderMarkdown } from './ui/markdown.js?v=r49-cleanup-20261129';
+import { icon } from './ui/icons.js?v=r49-cleanup-20261129';
 import {
   CONFIG_KEY,
   DEFAULT_BASE,
@@ -21,22 +21,22 @@ import {
   SESSIONS_KEY,
   MAX_CONVERSATIONS,
   MAX_MESSAGES,
+  HISTORY_MESSAGES,
   SLASH_COMMANDS,
   SLASH_PROMPTS,
   MODEL_OPTIONS,
   BROWSER_ADDENDUM,
   BLOCKFLOW_TOOL_GUIDE
-} from './ai/prompts.js?v=r42-font-cache-20261129';
+} from './ai/prompts.js?v=r49-cleanup-20261129';
 import {
   callChatApi,
-  endpointFor,
-  extractResponseText,
+
   extractToolRequests,
   stripToolBlocks,
   stripDisplayBlocks,
   mergeUsage
-} from './ai/api.js?v=r42-font-cache-20261129';
-import { loadSkill, searchSkillIds, getSkillSource } from './ai/skill.js?v=r42-font-cache-20261129';
+} from './ai/api.js?v=r49-cleanup-20261129';
+import { loadSkill, searchSkillIds, getSkillSource } from './ai/skill.js?v=r49-cleanup-20261129';
 import {
   buildContext,
   runSkillPrecheck,
@@ -44,7 +44,7 @@ import {
   toolStatusSummary,
   splitContextText,
   blockTypeLabel
-} from './ai/context.js?v=r42-font-cache-20261129';
+} from './ai/context.js?v=r49-cleanup-20261129';
 
 const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
 let config = loadConfig();
@@ -66,6 +66,7 @@ let chat = {
   chainUid: '',
   queue: [],
   cancelled: false,
+  timedOut: false,
   scrollStick: true,
   rendering: false,
   attachments: []
@@ -103,7 +104,9 @@ function loadConfig() {
 function persistConfig() {
   try {
     localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  } catch {}
+  } catch (error) {
+    console.warn('[BlockFlow] AI 设置保存失败：localStorage 不可用或已满', error);
+  }
 }
 
 function normalizeConversations(parsed) {
@@ -156,7 +159,9 @@ function loadSessionMap() {
 function saveSessionMap(map) {
   try {
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(map));
-  } catch {}
+  } catch (error) {
+    console.warn('[BlockFlow] AI 会话索引保存失败：localStorage 不可用或已满', error);
+  }
 }
 
 function serializeConversations() {
@@ -183,7 +188,9 @@ function persistConversations() {
       map[aiFileKey] = data;
       saveSessionMap(map);
     }
-  } catch {}
+  } catch (error) {
+    console.warn('[BlockFlow] AI 历史保存失败：localStorage 不可用或已满', error);
+  }
 }
 
 function switchAiFileContext(nextKey) {
@@ -278,22 +285,22 @@ function conversationAnchorIndex(scope) {
 }
 
 function ensureConversationChain(conv, create = true) {
-  if (typeof app === 'undefined' || !app || !Array.isArray(app.chains)) return { index: -1, created: false };
+  if (typeof app === 'undefined' || !app || !Array.isArray(app.chains)) return { index: -1 };
   ensureChainIds();
   let index = conv && conv.chainUid ? app.chains.findIndex((c) => c.uid === conv.chainUid) : -1;
   if (index >= 0)
-    return { index, created: false, oldNumber: Number(conv.chainNumber) || index + 1, newNumber: index + 1 };
+    return { index };
   if (conv && !conv.chainUid) {
     const fallback = conversationAnchorIndex(conv.scope || 'chain');
     if (fallback >= 0 && app.chains[fallback]) {
       conv.chainUid = app.chains[fallback].uid;
       conv.chainNumber = fallback + 1;
       persistConversations();
-      return { index: fallback, created: false, oldNumber: conv.chainNumber, newNumber: fallback + 1 };
+      return { index: fallback };
     }
   }
   const oldNumber = conv ? Number(conv.chainNumber) || 0 : 0;
-  if (!create || !app.chains.length) return { index: -1, created: false, oldNumber };
+  if (!create || !app.chains.length) return { index: -1 };
   // Never invent a replacement chain. A deleted chain changes the structure;
   // rebind the conversation to a real chain instead of creating an empty one,
   // which would make stale block indexes fail with "没有有效方块".
@@ -309,7 +316,7 @@ function ensureConversationChain(conv, create = true) {
   } else {
     fallback = 0;
   }
-  if (fallback < 0) return { index: -1, created: false, oldNumber };
+  if (fallback < 0) return { index: -1 };
   if (conv) {
     conv.chainUid = app.chains[fallback].uid || '';
     conv.chainNumber = fallback + 1;
@@ -317,7 +324,7 @@ function ensureConversationChain(conv, create = true) {
   }
   if (ui) aiToast('会话绑定的链已不存在，已改绑到当前链', 'warn');
   logWarn(`AI 会话原绑定的链已删除，改绑到链 ${fallback + 1}；不会自动新建空链`, 'AI 结构同步');
-  return { index: fallback, created: false, oldNumber, newNumber: fallback + 1 };
+  return { index: fallback };
 }
 
 function newConversationId() {
@@ -404,43 +411,28 @@ async function testConnection() {
     } catch {}
   }, 30000);
   try {
-    const testMax = Math.floor(Number(ui.maxTokens.value) || 0);
-    const body = {
+    const testConfig = {
+      ...config,
+      key,
+      baseUrl: base,
       model,
-      messages: [{ role: 'user', content: '只回复 OK' }],
-      temperature: 0,
-      stream: false,
-      ...(testMax > 0 ? { max_tokens: testMax } : {}),
-      ...(ui.reasoning.checked ? { reasoning_effort: ui.reasoningLevel.value || 'high' } : {})
+      reasoning: !!ui.reasoning.checked,
+      reasoningLevel: ui.reasoningLevel.value || 'high',
+      maxTokens: Math.floor(Number(ui.maxTokens.value) || 0)
     };
-    const res = await fetch(endpointFor(base), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-    const raw = await res.text();
-    let data = null;
-    try {
-      data = raw ? JSON.parse(raw) : null;
-    } catch {}
-    if (!res.ok) {
-      const detail =
-        data && data.error ? data.error.message || JSON.stringify(data.error) : raw.slice(0, 500);
-      throw new Error(`API ${res.status}：${detail || res.statusText}`);
-    }
-    const parsed = extractResponseText(data);
-    if (!parsed.text && !parsed.reasoning) {
-      const finish = parsed.finish ? `，finish_reason=${parsed.finish}` : '';
-      throw new Error(`API 返回了空内容${finish}。请提高最大输出 Token 或检查模型返回格式。`);
-    }
-    const usage = data && data.usage;
+    const result = await callChatApi(
+      { config: testConfig, signal: controller.signal },
+      '你是连通性测试助手。',
+      [{ role: 'user', content: '只回复 OK' }],
+      { stream: false }
+    );
+    const usage = result.usage;
     const usageText = usage
       ? ` · Token ${Number(usage.total_tokens) || (Number(usage.prompt_tokens) || 0) + (Number(usage.completion_tokens) || 0)}`
       : '';
-    const shown = parsed.text || parsed.reasoning;
+    const shown = result.content || result.reasoning;
     ui.testStatus.className = 'ai-test-status ok';
-    ui.testStatus.textContent = `连接成功：${model} · ${parsed.text ? '回复' : '推理'} ${shown.slice(0, 80)}${usageText}`;
+    ui.testStatus.textContent = `连接成功：${model} · ${result.content ? '回复' : '推理'} ${shown.slice(0, 80)}${usageText}`;
   } catch (err) {
     let message = err && err.message ? err.message : String(err);
     if (err && err.name === 'AbortError') message = '连接超时（30 秒）。';
@@ -900,8 +892,17 @@ function saveSettings() {
     ui.maxTokens.focus();
     return;
   }
+  const baseUrl = ui.baseInput.value.trim() || DEFAULT_BASE;
+  try {
+    const parsed = new URL(baseUrl);
+    if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('unsupported protocol');
+  } catch {
+    aiToast('Base URL 必须是有效的 http(s) 地址', 'err');
+    ui.baseInput.focus();
+    return;
+  }
   config.key = nextKey;
-  config.baseUrl = ui.baseInput.value.trim() || DEFAULT_BASE;
+  config.baseUrl = baseUrl;
   config.model = model;
   config.reasoning = !!ui.reasoning.checked;
   config.reasoningLevel = ['low', 'high', 'max'].includes(ui.reasoningLevel.value)
@@ -949,7 +950,7 @@ function refresh() {
   ensureAiFileContext();
 }
 
-async function callChatWithTools(systemPrompt, messages, scope, onDelta = null) {
+async function callChatWithTools(systemPrompt, messages, scope, onDelta = null, precheckCache = null) {
   const apiMessages = messages.slice();
   let usage = null;
   let last = null;
@@ -969,7 +970,7 @@ async function callChatWithTools(systemPrompt, messages, scope, onDelta = null) 
     for (const request of requests) {
       let output = '';
       try {
-        output = await executeReadTool(request.name, request.arguments || {}, scope);
+        output = await executeReadTool(request.name, request.arguments || {}, scope, precheckCache);
       } catch (err) {
         output = '工具执行错误：' + String((err && err.message) || err);
       }
@@ -1531,17 +1532,15 @@ function executeTotalAction(messageIndex) {
     message.beforeState = before;
     const ops = message.actions.flatMap((action) => (Array.isArray(action.ops) ? action.ops : []));
     if (!ops.length) throw new Error('没有可执行的操作');
-    let chainRemap = null;
     const onlyCreate = ops.every((op) => op && op.op === 'create_chain');
     if (conv && !onlyCreate) {
       const bound = ensureConversationChain(conv, true);
       if (bound.index >= 0) {
         app.selectedChain = bound.index;
         chat.chainUid = conv.chainUid || chat.chainUid;
-        if (bound.created && bound.oldNumber) chainRemap = { from: bound.oldNumber, to: bound.newNumber };
       }
     }
-    const result = executeActionOps(ops, chainRemap);
+    const result = executeActionOps(ops);
     if (conv && Number.isInteger(result.selected) && app.chains[result.selected]) {
       conv.chainUid = app.chains[result.selected].uid;
       conv.chainNumber = result.selected + 1;
@@ -1608,6 +1607,7 @@ async function sendChat(text, forcedAttachments = null) {
   ensureAiFileContext();
   if (!chat.open) return;
   chat.cancelled = false;
+  chat.timedOut = false;
   const requestConvId = activeChatId;
   const requestMessages = chat.messages;
   chat.attachments = [];
@@ -1635,6 +1635,7 @@ async function sendChat(text, forcedAttachments = null) {
   setBusy(true);
   chat.controller = new AbortController();
   const timer = setTimeout(() => {
+    chat.timedOut = true;
     try {
       chat.controller.abort();
     } catch {}
@@ -1664,16 +1665,23 @@ async function sendChat(text, forcedAttachments = null) {
     const context = buildContext(chat.scope);
     const rawContextText = context ? context.text : '[当前没有可读取的结构上下文；请只根据历史对话回答。]';
     const precheck = await runSkillPrecheck(chat.scope);
+    const precheckCache = new Map([[chat.scope, precheck]]);
     const toolState = toolStatusSummary(precheck);
     chat.notice = precheck.startsWith('# 已执行技能操作')
       ? '已执行技能工具：check --only syntax / check --only chain / inspect / verify。'
       : '技能运行时未完全加载，AI 仍会基于当前结构分析。';
     renderChat();
     const contextText = `${rawContextText}\n\n${precheck}`;
-    const chunks = splitContextText(contextText, 30000);
+    const chunks = splitContextText(contextText);
+    if (chunks.length > 1) {
+      chat.notice = [chat.notice, `结构较大，将分 ${chunks.length} 段阅读，共 ${chunks.length + 1} 次请求。`]
+        .filter(Boolean)
+        .join(' ');
+      renderChat();
+    }
     const history = requestMessages
       .filter((m) => m.role === 'user' || m.role === 'assistant')
-      .slice(-20)
+      .slice(-HISTORY_MESSAGES)
       .map((m) => {
         const copy = { ...m };
         if (m.role === 'user' && Array.isArray(m.attachments) && m.attachments.length) {
@@ -1709,7 +1717,8 @@ async function sendChat(text, forcedAttachments = null) {
         `${toolState}\n\n${skill}\n${BROWSER_ADDENDUM}\n${BLOCKFLOW_TOOL_GUIDE}\n\n${contextText}`,
         history,
         chat.scope,
-        onDelta
+        onDelta,
+        precheckCache
       );
       if (chat.cancelled) throw Object.assign(new Error('cancelled'), { name: 'AbortError' });
       answer = result.content;
@@ -1738,7 +1747,8 @@ async function sendChat(text, forcedAttachments = null) {
         finalSystem,
         [...history.slice(0, -1), { role: 'user', content: finalPrompt }],
         chat.scope,
-        onDelta
+        onDelta,
+        precheckCache
       );
       if (chat.cancelled) throw Object.assign(new Error('cancelled'), { name: 'AbortError' });
       answer = finalResult.content;
@@ -1752,7 +1762,8 @@ async function sendChat(text, forcedAttachments = null) {
     assistantMessage.streaming = false;
     if (parsedAction.actions.length) assistantMessage.actions = parsedAction.actions;
   } catch (err) {
-    const aborted = !!(err && err.name === 'AbortError');
+    const timedOut = chat.timedOut;
+    const aborted = !!(err && err.name === 'AbortError') || timedOut;
     if (assistantMessage) {
       assistantMessage.streaming = false;
       if (aborted) {
@@ -1764,10 +1775,10 @@ async function sendChat(text, forcedAttachments = null) {
     }
     if (aborted) {
       if (chat.open && activeChatId === requestConvId) {
-        chat.notice = '已取消本次生成。';
-        if (ui) ui.status.textContent = '已取消';
+        chat.notice = timedOut ? '请求超时（20 分钟），已停止生成。' : '已取消本次生成。';
+        if (ui) ui.status.textContent = timedOut ? '超时' : '已取消';
       }
-      aiToast('已取消 AI 生成', 'warn');
+      aiToast(timedOut ? 'AI 请求超时，已停止' : '已取消 AI 生成', timedOut ? 'err' : 'warn');
     } else {
       let message = err && err.message ? err.message : String(err);
       if (err instanceof TypeError)
@@ -1779,6 +1790,7 @@ async function sendChat(text, forcedAttachments = null) {
   } finally {
     clearTimeout(timer);
     chat.controller = null;
+    chat.timedOut = false;
     if (assistantMessage) assistantMessage.streaming = false;
     if (
       assistantMessage &&
@@ -2100,7 +2112,7 @@ window.BlockFlowAI = {
   open: openChat,
   openBlock,
   openSettings,
-  getConfig: () => ({ ...config }),
+  getConfig: () => ({ ...config, key: '', hasKey: hasKey() }),
   getChatState: () => ({
     busy: chat.busy,
     open: chat.open,

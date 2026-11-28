@@ -17,6 +17,22 @@ for (const [cmd, facing] of rotations) {
 }
 
 assert.equal(skill.isSetblockMarker('/setblock ~~~-1 Chain_Command_Block', 'first'), true);
+assert.equal(core.startsCommand('/fooXbar', 'foo.bar'), false, 'core command regex must escape dots');
+assert.equal(core.startsCommand('/foo.bar', 'foo.bar'), true);
+for (const impl of [core, skill]) {
+  const empty = impl.detectSelfClosedCycles(new Map());
+  assert.ok(Array.isArray(empty), 'cycle detection must return a tuple');
+  assert.deepEqual(empty.cycles, []);
+  assert.equal(empty.keys.size, 0);
+}
+const conditions = [
+  { key: 'head', cmd: '/testfor @a', cond: 0, facing: 2 },
+  { key: 'first', cmd: '/setblock ~~~-1 chain_command_block', cond: 0, facing: 2 },
+  { key: 'second', cmd: '/setblock ~~~ chain_command_block', cond: 0, facing: 2 }
+];
+skill.normalizeBrokenChainBlocks(conditions, { kind: 'testfor', direction: 2, facingMap: new Map() });
+assert.equal(conditions[1].cond, 1, 'default applyCondition must set the testfor marker');
+assert.equal(conditions[2].cond, 0);
 assert.doesNotThrow(() => skill.findBrokenSetblockIndexes([null, '/setblock ~~~ chain_command_block']));
 assert.equal(
   skill.brokenKindFromBlocks([
