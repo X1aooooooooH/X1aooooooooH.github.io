@@ -1,14 +1,14 @@
-import { TYPE_LABEL } from './core/constants.js';
-import { cloneNBT } from './core/nbt.js';
-import { isAirPlaceholderBlock } from './core/blocks.js';
-import { detectChainType, processCommands } from './core/trace.js';
-import { ensureStructureSize, reflowChainsForSize } from './core/layout.js';
-import { parseMcstructure } from './core/structure.js';
-import { cloneChains, countPhysicalBlocks, snapshotChains } from './core/model.js';
-import { app } from './state.js';
-import { storageGet, storageSet, storageRemove } from './core/storage.js';
-import { toast, undoToast, rememberModalFocus, restoreModalFocus, showPromptModal } from './ui/feedback.js';
-import { logInfo, logOk, logWarn, logError, setCurrentAction } from './log.js';
+import { TYPE_LABEL } from './core/constants.js?v=r42-font-cache-20261129';
+import { cloneNBT } from './core/nbt.js?v=r42-font-cache-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r42-font-cache-20261129';
+import { detectChainType, processCommands } from './core/trace.js?v=r42-font-cache-20261129';
+import { ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r42-font-cache-20261129';
+import { parseMcstructure } from './core/structure.js?v=r42-font-cache-20261129';
+import { cloneChains, countPhysicalBlocks, snapshotChains } from './core/model.js?v=r42-font-cache-20261129';
+import { app } from './state.js?v=r42-font-cache-20261129';
+import { storageGet, storageSet, storageRemove } from './core/storage.js?v=r42-font-cache-20261129';
+import { toast, undoToast, rememberModalFocus, restoreModalFocus, showPromptModal } from './ui/feedback.js?v=r42-font-cache-20261129';
+import { logInfo, logOk, logWarn, logError, setCurrentAction } from './log.js?v=r42-font-cache-20261129';
 import {
   renderAllBlocks,
   reselectCurrent,
@@ -24,9 +24,9 @@ import {
   applyChainCamera,
   setViewPreset,
   deselect
-} from './scene.js';
-import { hideInfo } from './inspector.js?v=r40-broken-chain-20261129';
-import { setTheme } from './ui/theme.js?v=r40-broken-chain-20261129';
+} from './scene.js?v=r42-font-cache-20261129';
+import { hideInfo } from './inspector.js?v=r42-font-cache-20261129';
+import { setTheme } from './ui/theme.js?v=r42-font-cache-20261129';
 
 const AUTOSAVE_NBT_TYPE = '__blockflow_autosave_nbt_type__';
 
@@ -106,10 +106,10 @@ function appendImportedChains(chains, label, options = {}) {
   ensureStructureSize(nextChains, `${label}导入后结构`);
   saveCamera();
   app.chains = nextChains;
-  app.selectedChain = -1;
+  app.selectedChain = app.chains.length === 1 ? 0 : -1;
   app.selectedBlock = -1;
   app.singleChain = app.chains.length === 1;
-  app.mode = 'overview';
+  app.mode = app.singleChain ? 'chain' : 'overview';
   pushHistory();
   refreshChainsUI();
   if (closeModal) closeChainAddModal();
@@ -149,8 +149,7 @@ function addChainOfType(type) {
     app.selectedChain = app.chains.length - 1;
     app.selectedBlock = -1;
     app.singleChain = app.chains.length === 1;
-    if (app.chains.length > 1) app.singleChain = false;
-    app.mode = 'overview';
+    app.mode = app.singleChain ? 'chain' : 'overview';
     pushHistory();
     refreshChainsUI();
     closeChainAddModal();
@@ -525,6 +524,7 @@ async function restoreAutosave() {
       // Chain metadata is also whitelisted to discard stale schema fields.
       return {
         uid: typeof chain.uid === 'string' ? chain.uid : '',
+        name: typeof chain.name === 'string' ? chain.name : '',
         type,
         blocks,
         selfClosed: !!chain.selfClosed,

@@ -1,4 +1,4 @@
-import { DEFAULT_BASE } from './prompts.js';
+import { DEFAULT_BASE } from './prompts.js?v=r42-font-cache-20261129';
 
 export function endpointFor(baseUrl) {
   const base = String(baseUrl || DEFAULT_BASE)

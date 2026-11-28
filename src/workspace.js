@@ -1,6 +1,6 @@
-import { createLineMetrics } from './ui/line-metrics.js';
-import { icon } from './ui/icons.js';
-import { TYPE_LABEL } from './core/constants.js';
+import { createLineMetrics } from './ui/line-metrics.js?v=r42-font-cache-20261129';
+import { icon } from './ui/icons.js?v=r42-font-cache-20261129';
+import { TYPE_LABEL } from './core/constants.js?v=r42-font-cache-20261129';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const inlineMetrics = createLineMetrics();
@@ -167,6 +167,7 @@ function bindSidebarEvents() {
   });
   list.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
+    if (event.target.closest('button,a,input,select,textarea')) return;
     const index = sidebarRowIndex(event.target);
     if (index < 0) return;
     event.preventDefault();
@@ -1071,6 +1072,7 @@ function bindFrame({
   addTop?.addEventListener('click', openAddChain);
 
   document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.querySelector('.feature-modal.on,.chain-add-modal.on,.ai-modal.on')) return;
     if (event.key === 'Escape' && modal.classList.contains('on')) {
       event.preventDefault();
       setChainModal(false);

@@ -61,7 +61,7 @@ blockflow/
 │   ├── ai.js              # AI 会话入口（ES Module）
 │   ├── ai/                # prompts / api / skill / context / actions
 │   ├── core/              # nbt / structure / trace / layout / model
-│   │                      #   broken-chain.js 是断链规则的唯一实现，改断链只改它
+│   │                      #   broken-chain.js 是编辑器侧实现；技能侧 chain.js 独立且已漂移
 │   ├── ui/                # dom / feedback / markdown / text-editor / theme
 │   ├── data/              # 预生成技能 ID / 技能数据
 │   └── skill-runtime/     # 浏览器内技能运行时
@@ -70,7 +70,9 @@ blockflow/
 └── vendor/
 ```
 
-本地的 `package.json` 只提供静态服务器脚本，不需要 `npm install`。
+本项目没有根目录 `package.json`；本地用任意静态服务器打开即可，不需要 `npm install`。
+
+修改断链逻辑后，可运行 `node tools/check-skill-chain.mjs` 验证技能侧坐标旋转、标记识别和分类没有被改坏；修改缓存版本后，运行 `node tools/check-release.mjs` 检查所有内部 import 与 meta 是否一致。
 
 
 ## 1. 断链头的详细规则
@@ -217,6 +219,6 @@ execute as @a run ...
 - 聊天输入框不再常驻命令按钮；输入 `/` 后才出现 `/检查语法`、`/检查逻辑`、`/生成测试`、`/评价系统`、`/讲解命令`、`/拓展系统`、`/查询id` 菜单，可用 Tab/方向键选择。
 - 页面会以浏览器兼容方式加载 skill 的 `scripts/lib/syntax.js` 与 `rules.js`；每次发送前实际执行 `check --only syntax`（syntax.js）、`check --only chain`、`inspect`、`verify`，把结果注入 AI 上下文，AI 不需要 shell，也不会再回答“未执行”。
 - 输入 `/check --only syntax`、`/check --only chain`、`/inspect`、`/verify` 可以直接让 AI 基于这些浏览器内工具结果回答；`/查询id` 会直接使用 skill 的 ID 数据查询。
-- 部署时必须同时上传 `blockflow/src/skill-runtime/lib/`（浏览器版 skill JS）和 `blockflow/src/data/skill-ids-data.js`；缺少这些文件时内置规则会接管基础检查，而不是静默假装已检查。
+- 部署到 GitHub Pages 时，仓库必须包含 `src/skill-runtime/lib/`（7 个转发层）、`skills/be-cmd/scripts/lib/`（真实实现）、`skills/be-cmd/SKILL.md`、`src/data/skill-ids-data.js` 与 `src/data/ai-skill-data.js`；缺少任一文件时 AI 技能运行时会退化为基础检查，并在控制台记录警告。
 - 不再截断结构上下文。超大结构会自动按段加载全部分析，再汇总为最终回答；不会静默丢弃命令。
 - 如果 API 服务商不允许浏览器跨域（CORS），请求会失败并显示提示；此时需要改用支持浏览器直连的服务商或自建代理。

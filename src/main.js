@@ -1,16 +1,16 @@
 'use strict';
 
-import { MAX_STRUCTURE_SIZE, MAX_IMPORT_BYTES } from './core/constants.js';
-import { isAirPlaceholderBlock } from './core/blocks.js';
-import { buildExportLayouts, ensureStructureSize, reflowChainsForSize } from './core/layout.js';
-import { serializeOutputForFormat } from './core/structure.js';
-import { cloneChains } from './core/model.js';
-import { app } from './state.js';
-import { storageGet } from './core/storage.js';
-import { rand6 } from './core/util.js';
-import { logInfo, logOk, logError, setCurrentAction, formatLogText } from './log.js';
-import { escapeHtml, isInputFocused } from './ui/dom.js';
-import { renderReadmeMarkdown } from './ui/markdown.js';
+import { MAX_STRUCTURE_SIZE, MAX_IMPORT_BYTES } from './core/constants.js?v=r42-font-cache-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r42-font-cache-20261129';
+import { buildExportLayouts, ensureStructureSize, reflowChainsForSize } from './core/layout.js?v=r42-font-cache-20261129';
+import { serializeOutputForFormat } from './core/structure.js?v=r42-font-cache-20261129';
+import { cloneChains } from './core/model.js?v=r42-font-cache-20261129';
+import { app } from './state.js?v=r42-font-cache-20261129';
+import { storageGet } from './core/storage.js?v=r42-font-cache-20261129';
+import { rand6 } from './core/util.js?v=r42-font-cache-20261129';
+import { logInfo, logOk, logError, setCurrentAction, formatLogText } from './log.js?v=r42-font-cache-20261129';
+import { escapeHtml, isInputFocused } from './ui/dom.js?v=r42-font-cache-20261129';
+import { renderReadmeMarkdown } from './ui/markdown.js?v=r42-font-cache-20261129';
 import {
   toast,
   download,
@@ -18,7 +18,7 @@ import {
   rememberModalFocus,
   showPromptModal,
   showInputPopover
-} from './ui/feedback.js';
+} from './ui/feedback.js?v=r42-font-cache-20261129';
 import {
   renderAllBlocks,
   selectBlock,
@@ -33,9 +33,9 @@ import {
   setViewPreset,
   getPickRecord,
   setSceneHandlers
-} from './scene.js';
-import { initTheme } from './ui/theme.js?v=r40-broken-chain-20261129';
-import { hideInfo } from './inspector.js?v=r40-broken-chain-20261129';
+} from './scene.js?v=r42-font-cache-20261129';
+import { initTheme } from './ui/theme.js?v=r42-font-cache-20261129';
+import { hideInfo } from './inspector.js?v=r42-font-cache-20261129';
 
 import {
   updateChainBar,
@@ -55,8 +55,8 @@ import {
   loadMcstructure,
   flushAutosave,
   duplicateChainAt
-} from './editor.js';
-import { highlightTextEditorLine, importChainFromTxt } from './ui/text-editor.js?v=r40-broken-chain-20261129';
+} from './editor.js?v=r42-font-cache-20261129';
+import { highlightTextEditorLine, importChainFromTxt } from './ui/text-editor.js?v=r42-font-cache-20261129';
 
 initTheme();
 
@@ -334,6 +334,11 @@ document.addEventListener('click', (e) => {
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
+dropzone?.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  fileInput?.click();
+});
 async function handleFile(file) {
   if (!file) {
     toast('没有选择文件', 'err');
@@ -742,6 +747,8 @@ document.addEventListener('keydown', (e) => {
         return;
       }
     }
+    // Higher-priority overlays own Escape; do not also leave the chain view.
+    if (document.querySelector('#wsChainModal.on,.ws-seek-overlay.on')) return;
     if (app.mode === 'chain' && !app.singleChain) exitChainMode();
     return;
   }

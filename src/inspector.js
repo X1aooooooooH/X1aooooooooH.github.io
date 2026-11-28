@@ -1,5 +1,5 @@
-import { TYPE_LABEL } from './core/constants.js';
-import { icon } from './ui/icons.js';
+import { TYPE_LABEL } from './core/constants.js?v=r42-font-cache-20261129';
+import { icon } from './ui/icons.js?v=r42-font-cache-20261129';
 
 const elements = new Map();
 function byId(id) {

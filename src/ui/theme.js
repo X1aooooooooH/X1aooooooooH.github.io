@@ -1,8 +1,8 @@
-import { app } from '../state.js';
-import { storageGet, storageSet } from '../core/storage.js';
-import { updateSceneTheme } from '../scene.js';
-import { logOk, setCurrentAction } from '../log.js';
-import { icon } from './icons.js';
+import { app } from '../state.js?v=r42-font-cache-20261129';
+import { storageGet, storageSet } from '../core/storage.js?v=r42-font-cache-20261129';
+import { updateSceneTheme } from '../scene.js?v=r42-font-cache-20261129';
+import { logOk, setCurrentAction } from '../log.js?v=r42-font-cache-20261129';
+import { icon } from './icons.js?v=r42-font-cache-20261129';
 
 export function setTheme(theme, animate = true) {
   const root = document.documentElement;

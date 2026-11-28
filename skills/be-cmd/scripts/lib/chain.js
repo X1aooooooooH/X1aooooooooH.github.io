@@ -11,8 +11,8 @@ const RELATIVE_TRIPLE_RE = /(?:^|[\s,])(?:~(?:-?\d+(?:\.\d+)?)?){3}(?=$|[\s,])/;
 const AT_BEFORE_RUN_RE = /(?:^|\s)at\s+@/i;
 const CHAIN_BLOCK_RE = /\bchain_command_block\b/i;
 const REL_TOKEN_RE = /^~(-?\d+(?:\.\d+)?)?$/;
-const SPACED_TRIPLE_RE = /((?:~(?:-?\d+(?:\.\d+)?)?)\s+){2}(~(?:-?\d+(?:\.\d+)?)?)/;
-const COMPACT_TRIPLE_RE = /(^|[\s,])((?:~(?:-?\d+(?:\.\d+)?)?){3})(?=$|[\s,])/;
+const SPACED_TRIPLE_RE = /((?:~(?:-?\d+(?:\.\d+)?)?)\s+){2}(~(?:-?\d+(?:\.\d+)?)?)/g;
+const COMPACT_TRIPLE_RE = /(^|[\s,])((?:~(?:-?\d+(?:\.\d+)?)?){3})(?=$|[\s,])/g;
 const DIRECT_OP_RE = /^\/?(setblock|fill|clone|structure)\b/i;
 const EXECUTE_RUN_OP_RE = /^\/?execute\b[\s\S]*?\brun\s+\/?(setblock|fill|clone|structure)\b/i;
 
@@ -60,7 +60,7 @@ export function isExecuteRunRelativeCommand(cmd) {
 export function isSetblockMarker(cmd, position) {
   const text = String(cmd ?? "").trim();
   if (!startsCommand(text, "setblock") || !CHAIN_BLOCK_RE.test(text)) return false;
-  const beforeBlock = text.replace(SETBLOCK_RE, "").split("chain_command_block")[0];
+  const beforeBlock = text.replace(SETBLOCK_RE, "").split(/\bchain_command_block\b/i)[0];
   return beforeBlock.replace(/\s+/g, "") === (position === "first" ? "~~~-1" : "~~~");
 }
 
@@ -76,7 +76,7 @@ export function isBrokenHeadMarkerBlock(block) {
 export function findBrokenSetblockIndexes(items) {
   const found = [];
   items.forEach((item, i) => {
-    const cmd = typeof item === "string" ? item : item.cmd ?? "";
+    const cmd = typeof item === "string" ? item : item?.cmd ?? "";
     if (isSetblockRelativeCommand(String(cmd).trim())) found.push(i);
   });
   return found.slice(0, 2);
@@ -220,7 +220,11 @@ export function normalizeBrokenChainBlocks(blocks, {
       block.is_broken_normalized = true;
       continue;
     }
-    const facing = facingMap.has(block.key) ? facingMap.get(block.key) : direction;
+    const facing = facingMap.has(block.key)
+      ? facingMap.get(block.key)
+      : Number.isInteger(block.facing)
+        ? block.facing
+        : direction;
     block.cmd = rotateRelativeCoordinateTriples(block.cmd, facing);
     block.is_broken_normalized = true;
   }
@@ -321,10 +325,10 @@ export function brokenKindFromBlocks(blocks) {
   if (!blocks || blocks.length < 2) return null;
   const indexes = findBrokenSetblockIndexes(blocks);
   const first = String(blocks[0].cmd ?? "").trim();
-  if (isExecuteRunRelativeCommand(first) && (!indexes.length || (indexes[0] === 0 && indexes.length >= 2))) {
+  if (isExecuteRunRelativeCommand(first) && indexes[0] === 0 && indexes.length >= 2) {
     return "execute";
   }
-  if (isTestforCommand(first) && (!indexes.length || (indexes[0] >= 1 && indexes.length >= 2))) {
+  if (isTestforCommand(first) && indexes[0] >= 1 && indexes.length >= 2) {
     return "testfor";
   }
   return null;
@@ -332,8 +336,9 @@ export function brokenKindFromBlocks(blocks) {
 
 export function isBrokenChainPlaceholder(blocks) {
   if (!blocks || blocks.length < 3) return false;
-  if (String(blocks[0].cmd ?? "").trim() !== "") return false;
-  return isSetblockRelativeCommand(blocks[1].cmd ?? "") && isSetblockRelativeCommand(blocks[2].cmd ?? "");
+  const cmdOf = block => (typeof block === "string" ? block : block?.cmd ?? "");
+  if (String(cmdOf(blocks[0])).trim() !== "") return false;
+  return isSetblockRelativeCommand(cmdOf(blocks[1])) && isSetblockRelativeCommand(cmdOf(blocks[2]));
 }
 
 export function detectChainType(blocks) {

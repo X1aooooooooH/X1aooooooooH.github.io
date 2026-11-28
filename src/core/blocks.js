@@ -1,4 +1,4 @@
-import { FACING_VEC } from './constants.js';
+import { FACING_VEC } from './constants.js?v=r42-font-cache-20261129';
 
 export function blockTypeFromName(name) {
   if (name === 'minecraft:command_block') return 'command';

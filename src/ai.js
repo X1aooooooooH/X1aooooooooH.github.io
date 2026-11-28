@@ -5,14 +5,14 @@
  * - Key stays in this browser; no BlockFlow server is involved.
  * - The bundled skills/be-cmd/SKILL.md is injected as the system prompt.
  */
-import { app } from './state.js';
-import { getTextEditChain } from './ui/text-editor.js?v=r40-broken-chain-20261129';
-import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js';
-import { refreshChainsUI, pushHistory } from './editor.js';
-import { logInfo, logWarn, logOk, logError } from './log.js';
-import { toast, showPromptModal, showInputPopover } from './ui/feedback.js';
-import { renderMarkdown } from './ui/markdown.js';
-import { icon } from './ui/icons.js';
+import { app } from './state.js?v=r42-font-cache-20261129';
+import { getTextEditChain } from './ui/text-editor.js?v=r42-font-cache-20261129';
+import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js?v=r42-font-cache-20261129';
+import { refreshChainsUI, pushHistory } from './editor.js?v=r42-font-cache-20261129';
+import { logInfo, logWarn, logOk, logError } from './log.js?v=r42-font-cache-20261129';
+import { toast, showPromptModal, showInputPopover } from './ui/feedback.js?v=r42-font-cache-20261129';
+import { renderMarkdown } from './ui/markdown.js?v=r42-font-cache-20261129';
+import { icon } from './ui/icons.js?v=r42-font-cache-20261129';
 import {
   CONFIG_KEY,
   DEFAULT_BASE,
@@ -26,7 +26,7 @@ import {
   MODEL_OPTIONS,
   BROWSER_ADDENDUM,
   BLOCKFLOW_TOOL_GUIDE
-} from './ai/prompts.js';
+} from './ai/prompts.js?v=r42-font-cache-20261129';
 import {
   callChatApi,
   endpointFor,
@@ -35,8 +35,8 @@ import {
   stripToolBlocks,
   stripDisplayBlocks,
   mergeUsage
-} from './ai/api.js';
-import { loadSkill, searchSkillIds, getSkillSource } from './ai/skill.js';
+} from './ai/api.js?v=r42-font-cache-20261129';
+import { loadSkill, searchSkillIds, getSkillSource } from './ai/skill.js?v=r42-font-cache-20261129';
 import {
   buildContext,
   runSkillPrecheck,
@@ -44,7 +44,7 @@ import {
   toolStatusSummary,
   splitContextText,
   blockTypeLabel
-} from './ai/context.js';
+} from './ai/context.js?v=r42-font-cache-20261129';
 
 const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
 let config = loadConfig();

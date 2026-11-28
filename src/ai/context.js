@@ -1,8 +1,8 @@
-import { app } from '../state.js';
-import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-chain.js';
-import { getTextEditChain } from '../ui/text-editor.js?v=r40-broken-chain-20261129';
-import { CONTEXT_LIMIT } from './prompts.js';
-import { loadSkillRuntime, searchSkillIds } from './skill.js';
+import { app } from '../state.js?v=r42-font-cache-20261129';
+import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-chain.js?v=r42-font-cache-20261129';
+import { getTextEditChain } from '../ui/text-editor.js?v=r42-font-cache-20261129';
+import { CONTEXT_LIMIT } from './prompts.js?v=r42-font-cache-20261129';
+import { loadSkillRuntime, searchSkillIds } from './skill.js?v=r42-font-cache-20261129';
 
 function typeLabel(type) {
   return type === 'snake' ? '断链' : type === 'repeat' ? '循环链' : '脉冲链';

@@ -1,12 +1,12 @@
-import { BLOCK_COLOR, FACING_VEC, FACE_NORMAL, FACE_RIGHT, FACE_UP } from './core/constants.js';
-import { isAirPlaceholderBlock } from './core/blocks.js';
-import { chainBounds } from './core/model.js';
-import { TEX_FILES } from './core/textures.js';
-import { isInputFocused } from './ui/dom.js';
-import { app } from './state.js';
-import { logInfo } from './log.js';
-import { dot3, easeInOutQuad } from './core/util.js';
-import { hideInfo, showInfo } from './inspector.js?v=r40-broken-chain-20261129';
+import { BLOCK_COLOR, FACING_VEC, FACE_NORMAL, FACE_RIGHT, FACE_UP } from './core/constants.js?v=r42-font-cache-20261129';
+import { isAirPlaceholderBlock } from './core/blocks.js?v=r42-font-cache-20261129';
+import { chainBounds } from './core/model.js?v=r42-font-cache-20261129';
+import { TEX_FILES } from './core/textures.js?v=r42-font-cache-20261129';
+import { isInputFocused } from './ui/dom.js?v=r42-font-cache-20261129';
+import { app } from './state.js?v=r42-font-cache-20261129';
+import { logInfo } from './log.js?v=r42-font-cache-20261129';
+import { dot3, easeInOutQuad } from './core/util.js?v=r42-font-cache-20261129';
+import { hideInfo, showInfo } from './inspector.js?v=r42-font-cache-20261129';
 
 const texCache = {};
 let texLoaded = false;
@@ -180,6 +180,9 @@ export function initScene() {
 export function setupKeyboardMovement() {
   document.addEventListener('keydown', (e) => {
     if (isInputFocused()) return;
+    const target = e.target instanceof Element ? e.target : null;
+    if (target?.closest('button,select,a,[role="button"],[contenteditable="true"]')) return;
+    if (document.querySelector('.feature-modal.on,.chain-add-modal.on,.ai-modal.on,.ws-chain-modal.on,.ws-seek-overlay.on')) return;
     if (e.code === 'Space') e.preventDefault();
     keysDown[e.code] = true;
   });

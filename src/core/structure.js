@@ -1,6 +1,6 @@
-import { MAX_IMPORT_BYTES, MAX_IMPORT_VOLUME } from './constants.js';
-import { TAG, Reader, T, Writer, cloneNBT } from './nbt.js';
-import { blockKey, blockTypeFromName, isAirPlaceholderBlock } from './blocks.js';
+import { MAX_IMPORT_BYTES, MAX_IMPORT_VOLUME } from './constants.js?v=r42-font-cache-20261129';
+import { TAG, Reader, T, Writer, cloneNBT } from './nbt.js?v=r42-font-cache-20261129';
+import { blockKey, blockTypeFromName, isAirPlaceholderBlock } from './blocks.js?v=r42-font-cache-20261129';
 
 export function extractBlockIndexLayers(node) {
   // mcstructure format_version=1 常见布局：List<List<Int>>。

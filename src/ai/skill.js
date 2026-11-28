@@ -1,4 +1,4 @@
-import { DEFAULT_SKILL, SKILL_PATHS } from './prompts.js';
+import { DEFAULT_SKILL, SKILL_PATHS } from './prompts.js?v=r42-font-cache-20261129';
 
 let skillCache = null;
 let skillSource = '';
@@ -13,8 +13,8 @@ async function loadFirstAvailable(paths) {
   for (const path of paths) {
     try {
       return await import(path);
-    } catch {
-      // 继续尝试下一个候选路径
+    } catch (error) {
+      console.warn('[BlockFlow] 技能模块加载失败，尝试下一路径：' + path, error);
     }
   }
   return null;

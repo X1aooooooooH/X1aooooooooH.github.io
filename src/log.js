@@ -1,4 +1,4 @@
-import { app } from './state.js';
+import { app } from './state.js?v=r42-font-cache-20261129';
 
 const MAX_LOGS = 300;
 

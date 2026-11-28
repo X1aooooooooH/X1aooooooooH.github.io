@@ -1,5 +1,5 @@
-import { FACING_VEC } from './constants.js';
-import { blockKey, getOffsetPosition } from './blocks.js';
+import { FACING_VEC } from './constants.js?v=r42-font-cache-20261129';
+import { blockKey, getOffsetPosition } from './blocks.js?v=r42-font-cache-20261129';
 
 /**
  * 断链（broken chain）识别与归一化的**唯一实现**。
