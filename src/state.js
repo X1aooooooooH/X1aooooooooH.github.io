@@ -2,8 +2,11 @@
 export const app = {
   mode: 'overview',
   chains: [],
-  history: [], historyIndex: -1, savedHistoryIndex: -1,
-  selectedChain: -1, selectedBlock: -1,
+  history: [],
+  historyIndex: -1,
+  savedHistoryIndex: -1,
+  selectedChain: -1,
+  selectedBlock: -1,
   fileName: 'structure',
   camera: null,
   theme: 'dark',

@@ -10,7 +10,7 @@ let inlineContentHeight = 0;
 let inlineLayoutToken = 0;
 
 function chainEmpty(chain) {
-  return (chain?.blocks || []).filter(block => !String(block.cmd ?? '').trim()).length;
+  return (chain?.blocks || []).filter((block) => !String(block.cmd ?? '').trim()).length;
 }
 
 function renderSidebar() {
@@ -19,7 +19,9 @@ function renderSidebar() {
   if (!app?.chains || !list) return;
   const count = app.chains.length;
   const current = app.chains[app.selectedChain];
-  const currentLabel = current ? '当前：' + (current.name || '链 ' + (app.selectedChain + 1)) : '当前：未选择';
+  const currentLabel = current
+    ? '当前：' + (current.name || '链 ' + (app.selectedChain + 1))
+    : '当前：未选择';
   const countNode = $('#wsChainCount');
   if (countNode) countNode.textContent = count + ' 条';
   const items = app.chains.map((chain, index) => ({ chain, index }));
@@ -57,10 +59,16 @@ function renderSidebar() {
     titleLine.className = 'ws-chain-title-line';
     const blocks = chain.blocks || [];
     const firstBlock = blocks[0] || {};
-    const isIndependentEmpty = !!chain.preservePhysicalType && !chain.selfClosed && blocks.length === 1 &&
-      (firstBlock.blockType === 'chain' || firstBlock.type === 'chain') && String(firstBlock.cmd ?? '').trim() === '';
+    const isIndependentEmpty =
+      !!chain.preservePhysicalType &&
+      !chain.selfClosed &&
+      blocks.length === 1 &&
+      (firstBlock.blockType === 'chain' || firstBlock.type === 'chain') &&
+      String(firstBlock.cmd ?? '').trim() === '';
     const title = document.createElement('b');
-    title.textContent = chain.name || (isIndependentEmpty ? '独立空命令方块' : (chain.selfClosed ? '自闭链' : '链 ' + (index + 1)));
+    title.textContent =
+      chain.name ||
+      (isIndependentEmpty ? '独立空命令方块' : chain.selfClosed ? '自闭链' : '链 ' + (index + 1));
     titleLine.appendChild(title);
     if (index === app.selectedChain) {
       const active = document.createElement('em');
@@ -75,7 +83,7 @@ function renderSidebar() {
       : blocks.length + ' 块' + (empty ? ' · ' + empty + ' 空' : '');
     const preview = document.createElement('em');
     preview.className = 'ws-chain-preview';
-    preview.textContent = isIndependentEmpty ? '（空命令 · 物理节点已保留）' : (firstBlock.cmd || '（无命令）');
+    preview.textContent = isIndependentEmpty ? '（空命令 · 物理节点已保留）' : firstBlock.cmd || '（无命令）';
     copy.append(titleLine, meta, preview);
     const duplicate = document.createElement('button');
     duplicate.type = 'button';
@@ -120,7 +128,9 @@ async function renameChainFromSidebar(index, anchor) {
     cancelText: '取消'
   });
   if (value === false) return;
-  chain.name = String(value || '').trim().slice(0, 40);
+  chain.name = String(value || '')
+    .trim()
+    .slice(0, 40);
   window.pushHistory?.();
   renderSidebar();
   window.logInfo?.(`链 ${index + 1} 重命名为「${chain.name || `链 ${index + 1}`}」`, '重命名链');
@@ -130,7 +140,7 @@ function bindSidebarEvents() {
   const list = $('#wsChainList');
   if (!list || list.dataset.eventsBound === '1') return;
   list.dataset.eventsBound = '1';
-  list.addEventListener('click', event => {
+  list.addEventListener('click', (event) => {
     const index = sidebarRowIndex(event.target);
     if (index < 0) return;
     if (event.target.closest('.ws-chain-rename')) {
@@ -155,7 +165,7 @@ function bindSidebarEvents() {
       modal.setAttribute('aria-hidden', 'true');
     }
   });
-  list.addEventListener('keydown', event => {
+  list.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
     const index = sidebarRowIndex(event.target);
     if (index < 0) return;
@@ -167,7 +177,7 @@ function bindSidebarEvents() {
       modal.setAttribute('aria-hidden', 'true');
     }
   });
-  list.addEventListener('dragstart', event => {
+  list.addEventListener('dragstart', (event) => {
     const handle = event.target.closest('.ws-chain-drag');
     if (!handle) return;
     const row = handle.closest('.ws-chain-row');
@@ -175,21 +185,21 @@ function bindSidebarEvents() {
     event.dataTransfer.setData('text/plain', row.dataset.index);
     row.classList.add('dragging');
   });
-  list.addEventListener('dragend', event => {
+  list.addEventListener('dragend', (event) => {
     event.target.closest('.ws-chain-row')?.classList.remove('dragging');
-    list.querySelectorAll('.drop-target').forEach(node => node.classList.remove('drop-target'));
+    list.querySelectorAll('.drop-target').forEach((node) => node.classList.remove('drop-target'));
   });
-  list.addEventListener('dragover', event => {
+  list.addEventListener('dragover', (event) => {
     const row = event.target.closest('.ws-chain-row');
     if (!row) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
     row.classList.add('drop-target');
   });
-  list.addEventListener('dragleave', event => {
+  list.addEventListener('dragleave', (event) => {
     event.target.closest('.ws-chain-row')?.classList.remove('drop-target');
   });
-  list.addEventListener('drop', event => {
+  list.addEventListener('drop', (event) => {
     const row = event.target.closest('.ws-chain-row');
     if (!row) return;
     event.preventDefault();
@@ -220,11 +230,10 @@ function selectChain(index) {
     window.updateChainBar?.();
   }
   const chain = window.app?.chains?.[index];
-  const first = (chain?.blocks || []).findIndex(block => String(block.cmd ?? '').trim() !== '');
+  const first = (chain?.blocks || []).findIndex((block) => String(block.cmd ?? '').trim() !== '');
   if (first >= 0) setTimeout(() => window.selectBlock?.({ chain: index, index: first }), 90);
   setTimeout(renderSidebar, 0);
 }
-
 
 let previewRaf = 0;
 let previewMinimized = false;
@@ -308,7 +317,7 @@ function drawSidePreview() {
 
   // True side view: horizontal Z, vertical Y, looking along X.
   // Each X depth layer is fanned out slightly so stacked blocks remain readable.
-  const xs = Array.from(new Set(blocks.map(block => Number(block.x) || 0))).sort((a, b) => a - b);
+  const xs = Array.from(new Set(blocks.map((block) => Number(block.x) || 0))).sort((a, b) => a - b);
   const xRank = new Map(xs.map((x, index) => [x, index]));
   const layerStep = xs.length > 1 ? Math.min(2.2, 16 / (xs.length - 1)) : 0;
   const layerCenter = (xs.length - 1) / 2;
@@ -322,7 +331,11 @@ function drawSidePreview() {
     const existing = cells.get(key);
     if (!existing || index === selected || (!existing.selected && index > existing.index)) {
       cells.set(key, {
-        block, index, x, y, z,
+        block,
+        index,
+        x,
+        y,
+        z,
         rank: xRank.get(x) || 0,
         selected: index === selected
       });
@@ -330,10 +343,10 @@ function drawSidePreview() {
   });
   const list = Array.from(cells.values());
   if (!list.length) return;
-  const minZ = Math.min(...list.map(cell => cell.z));
-  const maxZ = Math.max(...list.map(cell => cell.z));
-  const minY = Math.min(...list.map(cell => cell.y));
-  const maxY = Math.max(...list.map(cell => cell.y));
+  const minZ = Math.min(...list.map((cell) => cell.z));
+  const maxZ = Math.max(...list.map((cell) => cell.z));
+  const minY = Math.min(...list.map((cell) => cell.y));
+  const maxY = Math.max(...list.map((cell) => cell.y));
   const spanZ = Math.max(1, maxZ - minZ + 1);
   const spanY = Math.max(1, maxY - minY + 1);
   const padding = 5 + maxLayerOffset;
@@ -343,14 +356,16 @@ function drawSidePreview() {
   const originX = (width - gridW) / 2;
   const originY = (height - gridH) / 2;
   const colors = { command: '#f59e0b', chain: '#10b981', repeating: '#8b5cf6' };
-  const selectedCell = list.find(cell => cell.selected);
+  const selectedCell = list.find((cell) => cell.selected);
   const selectedRank = selectedCell?.rank ?? 0;
   const ordered = list
-    .filter(cell => !cell.selected && cell.rank !== selectedRank)
-    .sort((a, b) => (a.rank - b.rank) || (a.z + a.y) - (b.z + b.y))
-    .concat(list
-      .filter(cell => !cell.selected && cell.rank === selectedRank)
-      .sort((a, b) => (a.z + a.y) - (b.z + b.y)));
+    .filter((cell) => !cell.selected && cell.rank !== selectedRank)
+    .sort((a, b) => a.rank - b.rank || a.z + a.y - (b.z + b.y))
+    .concat(
+      list
+        .filter((cell) => !cell.selected && cell.rank === selectedRank)
+        .sort((a, b) => a.z + a.y - (b.z + b.y))
+    );
   if (selectedCell) ordered.push(selectedCell);
   ctx.imageSmoothingEnabled = false;
   for (const cell of ordered) {
@@ -397,9 +412,10 @@ function buildSidePreview(stage) {
   panel.setAttribute('role', 'status');
   panel.setAttribute('aria-hidden', 'true');
   panel.setAttribute('aria-label', '当前命令方块侧视预览');
-  panel.innerHTML = '<div class="ws-side-preview-canvas-wrap"><canvas id="wsSidePreviewCanvas" class="ws-side-preview-canvas" aria-hidden="true"></canvas><span id="wsSidePreviewFocus" class="ws-side-preview-focus" aria-hidden="true"></span></div><button id="wsSidePreviewToggle" class="ws-side-preview-toggle" type="button"></button>';
+  panel.innerHTML =
+    '<div class="ws-side-preview-canvas-wrap"><canvas id="wsSidePreviewCanvas" class="ws-side-preview-canvas" aria-hidden="true"></canvas><span id="wsSidePreviewFocus" class="ws-side-preview-focus" aria-hidden="true"></span></div><button id="wsSidePreviewToggle" class="ws-side-preview-toggle" type="button"></button>';
   const toggle = panel.querySelector('#wsSidePreviewToggle');
-  toggle.addEventListener('click', event => {
+  toggle.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     previewMinimized = !previewMinimized;
@@ -407,7 +423,7 @@ function buildSidePreview(stage) {
     if (!previewMinimized) scheduleSidePreview();
   });
   stage.append(panel);
-  window.addEventListener('blockflow:block-edit', event => updateSidePreview(event.detail));
+  window.addEventListener('blockflow:block-edit', (event) => updateSidePreview(event.detail));
   document.getElementById('infoCmd')?.addEventListener('input', () => {
     const app = window.app;
     if (app?.mode === 'chain' && app.selectedBlock >= 0) {
@@ -415,7 +431,10 @@ function buildSidePreview(stage) {
     }
   });
   window.addEventListener('resize', scheduleSidePreview);
-  new MutationObserver(scheduleSidePreview).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(scheduleSidePreview).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
   const inspector = document.getElementById('inspector');
   if (inspector) {
     new MutationObserver(() => {
@@ -488,18 +507,18 @@ function buildFrame() {
     exportMenu.className = 'ws-export-menu';
     exportMenu.innerHTML = `<button type="button" data-export-target="exportNewBtn">新版格式</button><button type="button" data-export-target="exportOldBtn">旧版格式</button><button type="button" data-export-target="exportNetEaseBtn">网易版格式</button><button type="button" data-export-target="exportBothBtn">全部格式</button>`;
     header.append(exportMenu);
-    save.onclick = event => {
+    save.onclick = (event) => {
       event.preventDefault();
       event.stopPropagation();
       exportMenu.classList.toggle('on');
     };
-    exportMenu.addEventListener('click', event => {
+    exportMenu.addEventListener('click', (event) => {
       const button = event.target.closest('[data-export-target]');
       if (!button) return;
       exportMenu.classList.remove('on');
       document.getElementById(button.dataset.exportTarget)?.click();
     });
-    document.addEventListener('click', event => {
+    document.addEventListener('click', (event) => {
       if (event.target === save || save.contains(event.target) || exportMenu.contains(event.target)) return;
       exportMenu.classList.remove('on');
     });
@@ -539,7 +558,7 @@ function buildFrame() {
     viewGrid.remove();
     const viewSymbols = { front: 'view-front', side: 'view-side', top: 'view-top' };
     const viewLabels = { front: '正视图', side: '侧视图', top: '俯视图' };
-    viewGrid.querySelectorAll('.view-btn').forEach(button => {
+    viewGrid.querySelectorAll('.view-btn').forEach((button) => {
       const preset = button.dataset.preset;
       if (!preset) return;
       button.innerHTML = icon(viewSymbols[preset] || 'view-side');
@@ -717,7 +736,18 @@ function buildFrame() {
     shell.append(footer);
   }
 
-  bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain });
+  bindFrame({
+    manageBtn,
+    aiAssist,
+    addTop,
+    modal,
+    seekBtn,
+    seekOverlay,
+    seekClose,
+    inlineText,
+    numbers,
+    codeMain
+  });
 }
 
 let inlineDirty = false;
@@ -733,10 +763,15 @@ function renderInlineVisuals() {
   const value = String(input.value ?? '').replace(/\r/g, '');
   const lines = value ? value.split('\n') : [''];
   const highlightFn = window.highlightTextEditorLine;
-  const renderLine = line => highlightFn ? highlightFn(line) : line.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const renderLine = (line) =>
+    highlightFn
+      ? highlightFn(line)
+      : line.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
   const lineCountChanged = lines.length !== inlineLayoutLines.length;
   if (lineCountChanged || highlight.children.length !== lines.length) {
-    highlight.innerHTML = lines.map(line => `<span class="text-highlight-line">${renderLine(line)}</span>`).join('');
+    highlight.innerHTML = lines
+      .map((line) => `<span class="text-highlight-line">${renderLine(line)}</span>`)
+      .join('');
   } else {
     for (let index = 0; index < lines.length; index++) {
       if (lines[index] !== inlineLayoutLines[index]) {
@@ -745,7 +780,12 @@ function renderInlineVisuals() {
     }
   }
   if (numbers.children.length !== lines.length) {
-    numbers.innerHTML = lines.map((_, index) => `<span class="text-line-number${inlineConditions[index] ? ' is-conditional' : ''}" data-line="${index}">${index + 1}</span>`).join('');
+    numbers.innerHTML = lines
+      .map(
+        (_, index) =>
+          `<span class="text-line-number${inlineConditions[index] ? ' is-conditional' : ''}" data-line="${index}">${index + 1}</span>`
+      )
+      .join('');
   } else {
     for (let index = 0; index < lines.length; index++) {
       numbers.children[index].classList.toggle('is-conditional', !!inlineConditions[index]);
@@ -761,7 +801,10 @@ function renderInlineVisuals() {
     let heightsChanged = heights.length !== inlineLayoutHeights.length;
     if (!heightsChanged) {
       for (let index = 0; index < heights.length; index++) {
-        if (heights[index] !== inlineLayoutHeights[index]) { heightsChanged = true; break; }
+        if (heights[index] !== inlineLayoutHeights[index]) {
+          heightsChanged = true;
+          break;
+        }
       }
     }
     if (heightsChanged) {
@@ -790,7 +833,7 @@ function renderInlineVisuals() {
 
 /** 把一条链的命令方块拼成编辑器文本：每行一条命令，顺序与物理方块一致。 */
 function chainToText(chain) {
-  return (chain?.blocks || []).map(block => String(block.cmd ?? '')).join('\n');
+  return (chain?.blocks || []).map((block) => String(block.cmd ?? '')).join('\n');
 }
 
 function renderInlineText(force = false) {
@@ -810,7 +853,7 @@ function renderInlineText(force = false) {
   const blocks = chain.blocks || [];
   const value = chainToText(chain);
   if (force || inlineChain !== app.selectedChain) {
-    inlineConditions = blocks.map(block => !!block.cond);
+    inlineConditions = blocks.map((block) => !!block.cond);
     if (document.activeElement !== input) {
       input.value = value;
       inlineDirty = false;
@@ -820,7 +863,7 @@ function renderInlineText(force = false) {
     renderInlineVisuals();
   } else if (!inlineDirty && document.activeElement !== input && input.value !== value) {
     input.value = value;
-    inlineConditions = blocks.map(block => !!block.cond);
+    inlineConditions = blocks.map((block) => !!block.cond);
     renderInlineVisuals();
   }
 }
@@ -867,12 +910,12 @@ function applyInlineText() {
     window.toast?.('文本内容中没有可表示的命令方块', 'err');
     return;
   }
-  const next = app.chains.map(item => ({
+  const next = app.chains.map((item) => ({
     ...item,
-    blocks: (item.blocks || []).map(block => ({ ...block }))
+    blocks: (item.blocks || []).map((block) => ({ ...block }))
   }));
   const target = next[ci];
-  const chainType = target.type === 'impulse' ? 'impulse' : (target.type === 'snake' ? 'snake' : 'repeat');
+  const chainType = target.type === 'impulse' ? 'impulse' : target.type === 'snake' ? 'snake' : 'repeat';
   const firstBlockType = chainType === 'impulse' ? 'command' : 'repeating';
   // 逐行复用原方块，只替换命令文本和条件。
   // 朝向、执行方式、标记、注释、辅助方块身份、断链归一化状态都属于物理方块本身，
@@ -926,8 +969,18 @@ function applyInlineText() {
   }
 }
 
-function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain }) {
-
+function bindFrame({
+  manageBtn,
+  aiAssist,
+  addTop,
+  modal,
+  seekBtn,
+  seekOverlay,
+  seekClose,
+  inlineText,
+  numbers,
+  codeMain
+}) {
   inlineText.addEventListener('input', () => {
     const currentChain = window.app?.chains?.[window.app?.selectedChain];
     if (inlineText.value !== chainToText(currentChain)) {
@@ -942,17 +995,17 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   inlineText.addEventListener('blur', () => {
     if (inlineDirty) applyInlineText();
   });
-  inlineText.addEventListener('keydown', event => {
+  inlineText.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
       event.preventDefault();
       inlineDirty = true;
       applyInlineText();
     }
   });
-  numbers.addEventListener('pointerdown', event => {
+  numbers.addEventListener('pointerdown', (event) => {
     if (event.target.closest('.text-line-number')) event.preventDefault();
   });
-  numbers.addEventListener('click', event => {
+  numbers.addEventListener('click', (event) => {
     const number = event.target.closest('.text-line-number');
     if (!number) return;
     const line = Number(number.dataset.line);
@@ -973,7 +1026,7 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   bindSidebarEvents();
   renderInlineText();
 
-  const setChainModal = show => {
+  const setChainModal = (show) => {
     modal.classList.toggle('on', !!show);
     modal.setAttribute('aria-hidden', String(!show));
     if (show) {
@@ -983,7 +1036,7 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   };
   manageBtn.addEventListener('click', () => setChainModal(!modal.classList.contains('on')));
   $('#wsChainModalClose')?.addEventListener('click', () => setChainModal(false));
-  modal.addEventListener('click', event => {
+  modal.addEventListener('click', (event) => {
     if (event.target === modal) setChainModal(false);
   });
 
@@ -1005,7 +1058,7 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
     }
     closeSeek();
   });
-  seekOverlay.addEventListener('keydown', event => {
+  seekOverlay.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeSeek();
   });
 
@@ -1017,7 +1070,7 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   const openAddChain = () => window.openChainAddModal?.();
   addTop?.addEventListener('click', openAddChain);
 
-  document.addEventListener('keydown', event => {
+  document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && modal.classList.contains('on')) {
       event.preventDefault();
       setChainModal(false);
@@ -1041,8 +1094,6 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   renderSidebar();
   window.renderWorkspaceSidebar?.();
 }
-
-
 
 window.addEventListener('resize', () => {
   if (!$('#wsCurrentChain')?.hidden) {
@@ -1077,7 +1128,7 @@ function bindUploadEyes() {
   let pointerEvent = null;
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  const move = event => {
+  const move = (event) => {
     pointerEvent = event;
     if (raf) return;
     raf = requestAnimationFrame(() => {
@@ -1131,7 +1182,9 @@ function bindUploadEyes() {
     if (raf) cancelAnimationFrame(raf);
     raf = 0;
     pointerEvent = null;
-    pupils.forEach(({ element }) => { element.style.transform = ''; });
+    pupils.forEach(({ element }) => {
+      element.style.transform = '';
+    });
   };
 
   new MutationObserver(() => {
@@ -1147,7 +1200,8 @@ function bindDesktopOnlyGate() {
   const ua = navigator.userAgent || '';
   const mobileUA = /Android|iPhone|iPad|iPod|Mobile|Tablet|Windows Phone/i.test(ua);
   const ipadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-  const touchOnly = window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(hover: none)').matches;
+  const touchOnly =
+    window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(hover: none)').matches;
   if (!mobileUA && !ipadOS && !touchOnly) return;
   // Keep the page loaded but inert behind a full-screen notice.
   document.body.classList.add('bf-pc-only');

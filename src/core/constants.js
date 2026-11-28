@@ -11,7 +11,35 @@ export const MAX_NBT_ARRAY_ITEMS = 1_000_000;
 
 export const BLOCK_COLOR = { command: 0xf59e0b, chain: 0x10b981, repeating: 0x8b5cf6 };
 export const TYPE_LABEL = { command: '脉冲命令方块', chain: '链式命令方块', repeating: '重复命令方块' };
-export const FACING_VEC = { 0: [0, -1, 0], 1: [0, 1, 0], 2: [0, 0, -1], 3: [0, 0, 1], 4: [-1, 0, 0], 5: [1, 0, 0] };
-export const FACE_NORMAL = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
-export const FACE_RIGHT = [[0, 0, -1], [0, 0, 1], [1, 0, 0], [1, 0, 0], [1, 0, 0], [-1, 0, 0]];
-export const FACE_UP = [[0, 1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [0, 1, 0], [0, 1, 0]];
+export const FACING_VEC = {
+  0: [0, -1, 0],
+  1: [0, 1, 0],
+  2: [0, 0, -1],
+  3: [0, 0, 1],
+  4: [-1, 0, 0],
+  5: [1, 0, 0]
+};
+export const FACE_NORMAL = [
+  [1, 0, 0],
+  [-1, 0, 0],
+  [0, 1, 0],
+  [0, -1, 0],
+  [0, 0, 1],
+  [0, 0, -1]
+];
+export const FACE_RIGHT = [
+  [0, 0, -1],
+  [0, 0, 1],
+  [1, 0, 0],
+  [1, 0, 0],
+  [1, 0, 0],
+  [-1, 0, 0]
+];
+export const FACE_UP = [
+  [0, 1, 0],
+  [0, 1, 0],
+  [0, 0, -1],
+  [0, 0, 1],
+  [0, 1, 0],
+  [0, 1, 0]
+];

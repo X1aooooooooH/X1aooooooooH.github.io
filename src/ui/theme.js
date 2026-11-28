@@ -43,10 +43,13 @@ export function initTheme() {
   // Re-apply it without the theme-switching transition.
   const bootTheme = document.documentElement.dataset.theme;
   const stored = storageGet('mcs-theme');
-  const initial = stored === 'dark' || stored === 'light'
-    ? stored
-    : bootTheme === 'dark' || bootTheme === 'light'
-      ? bootTheme
-      : (typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const initial =
+    stored === 'dark' || stored === 'light'
+      ? stored
+      : bootTheme === 'dark' || bootTheme === 'light'
+        ? bootTheme
+        : typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
   setTheme(initial, false);
 }

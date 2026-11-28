@@ -22,7 +22,9 @@ export function cloneChains(chains) {
 
 function snapshotBlock(block) {
   return {
-    x: block?.x, y: block?.y, z: block?.z,
+    x: block?.x,
+    y: block?.y,
+    z: block?.z,
     cmd: block?.cmd,
     cond: block?.cond ? 1 : 0,
     auto: block?.auto !== 0 && block?.auto !== undefined ? 1 : 0,
@@ -39,7 +41,7 @@ function snapshotBlock(block) {
 }
 
 export function snapshotChains(chains) {
-  return (Array.isArray(chains) ? chains : []).map(chain => ({
+  return (Array.isArray(chains) ? chains : []).map((chain) => ({
     uid: chain.uid || '',
     name: chain.name || '',
     type: chain.type,
@@ -51,9 +53,16 @@ export function snapshotChains(chains) {
 }
 
 export function chainBounds(chain, unit = false) {
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity,
+    minZ = Infinity,
+    maxZ = -Infinity;
   for (const block of chain?.blocks || []) {
-    const x = Number(block.x), y = Number(block.y), z = Number(block.z);
+    const x = Number(block.x),
+      y = Number(block.y),
+      z = Number(block.z);
     const extra = unit ? 1 : 0;
     if (x < minX) minX = x;
     if (x + extra > maxX) maxX = x + extra;
@@ -68,7 +77,7 @@ export function chainBounds(chain, unit = false) {
 
 export function countPhysicalBlocks(chains) {
   let total = 0;
-  for (const chain of chains || []) total += (chain.blocks || []).filter(block => !block.isAirPlaceholder).length;
+  for (const chain of chains || [])
+    total += (chain.blocks || []).filter((block) => !block.isAirPlaceholder).length;
   return total;
 }
-

@@ -9,7 +9,7 @@ function safeUrl(url) {
 
 export function inlineMarkdown(source) {
   const codes = [];
-  const stash = html => {
+  const stash = (html) => {
     const index = codes.length;
     codes.push(html);
     return `\u0000CODE${index}\u0000`;
@@ -31,13 +31,24 @@ export function inlineMarkdown(source) {
 }
 
 export function markdownSlug(text) {
-  return String(text).trim().toLowerCase().replace(/[`*_~]/g, '').replace(/[^\p{L}\p{N}\s-]/gu, '').trim().replace(/\s+/g, '-');
+  return String(text)
+    .trim()
+    .toLowerCase()
+    .replace(/[`*_~]/g, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .trim()
+    .replace(/\s+/g, '-');
 }
 
 const TABLE_SEPARATOR = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/;
 
 function tableCells(line) {
-  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(cell => cell.trim());
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
 }
 
 export function renderMarkdown(source, options = {}) {
@@ -55,36 +66,53 @@ export function renderMarkdown(source, options = {}) {
   let paragraph = [];
   const flushParagraph = () => {
     if (!paragraph.length) return;
-    out.push(`<p>${paragraph.map(line => inlineMarkdown(line)).join('<br>')}</p>`);
+    out.push(`<p>${paragraph.map((line) => inlineMarkdown(line)).join('<br>')}</p>`);
     paragraph = [];
   };
   for (let index = 0; index < lines.length; index++) {
     const line = lines[index];
     const trimmed = line.trim();
-    if (!trimmed) { flushParagraph(); continue; }
+    if (!trimmed) {
+      flushParagraph();
+      continue;
+    }
     const code = trimmed.match(/^\u0000BLOCK(\d+)\u0000$/);
-    if (code) { flushParagraph(); out.push(codeBlocks[Number(code[1])] || ''); continue; }
+    if (code) {
+      flushParagraph();
+      out.push(codeBlocks[Number(code[1])] || '');
+      continue;
+    }
     if (trimmed.includes('|') && index + 1 < lines.length && TABLE_SEPARATOR.test(lines[index + 1])) {
       flushParagraph();
       const header = tableCells(trimmed);
-      const aligns = tableCells(lines[index + 1]).map(cell => {
+      const aligns = tableCells(lines[index + 1]).map((cell) => {
         const left = cell.startsWith(':');
         const right = cell.endsWith(':');
         return left && right ? 'center' : right ? 'right' : 'left';
       });
       const rows = [];
       index += 2;
-      while (index < lines.length && lines[index].includes('|') && lines[index].trim()) rows.push(tableCells(lines[index++]));
+      while (index < lines.length && lines[index].includes('|') && lines[index].trim())
+        rows.push(tableCells(lines[index++]));
       index--;
       const cellHtml = (value, tag, column) =>
         `<${tag} style="text-align:${aligns[column] || 'left'}">${inlineMarkdown(value)}</${tag}>`;
-      const table = '<table><thead><tr>' + header.map((cell, i) => cellHtml(cell, 'th', i)).join('') + '</tr></thead><tbody>' +
-        rows.map(row => '<tr>' + header.map((_, i) => cellHtml(row[i] || '', 'td', i)).join('') + '</tr>').join('') +
+      const table =
+        '<table><thead><tr>' +
+        header.map((cell, i) => cellHtml(cell, 'th', i)).join('') +
+        '</tr></thead><tbody>' +
+        rows
+          .map((row) => '<tr>' + header.map((_, i) => cellHtml(row[i] || '', 'td', i)).join('') + '</tr>')
+          .join('') +
         '</tbody></table>';
       out.push(tableWrapper ? `<div class="readme-table-wrap">${table}</div>` : table);
       continue;
     }
-    if (/^(\*{3,}|-{3,}|_{3,})$/.test(trimmed)) { flushParagraph(); out.push('<hr>'); continue; }
+    if (/^(\*{3,}|-{3,}|_{3,})$/.test(trimmed)) {
+      flushParagraph();
+      out.push('<hr>');
+      continue;
+    }
     const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph();
@@ -103,7 +131,8 @@ export function renderMarkdown(source, options = {}) {
       flushParagraph();
       const items = [];
       let next = index;
-      while (next < lines.length && /^[-*+]\s+/.test(lines[next].trim())) items.push(`<li>${inlineMarkdown(lines[next++].trim().replace(/^[-*+]\s+/, ''))}</li>`);
+      while (next < lines.length && /^[-*+]\s+/.test(lines[next].trim()))
+        items.push(`<li>${inlineMarkdown(lines[next++].trim().replace(/^[-*+]\s+/, ''))}</li>`);
       index = next - 1;
       out.push(`<ul>${items.join('')}</ul>`);
       continue;
@@ -113,7 +142,8 @@ export function renderMarkdown(source, options = {}) {
       const items = [];
       const start = Number(trimmed.match(/^(\d+)\./)[1]);
       let next = index;
-      while (next < lines.length && /^\d+\.\s+/.test(lines[next].trim())) items.push(`<li>${inlineMarkdown(lines[next++].trim().replace(/^\d+\.\s+/, ''))}</li>`);
+      while (next < lines.length && /^\d+\.\s+/.test(lines[next].trim()))
+        items.push(`<li>${inlineMarkdown(lines[next++].trim().replace(/^\d+\.\s+/, ''))}</li>`);
       index = next - 1;
       out.push(`<ol${start !== 1 ? ` start="${start}"` : ''}>${items.join('')}</ol>`);
       continue;

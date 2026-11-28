@@ -1,4 +1,8 @@
-import { getBrokenHeadKind, isBrokenChainPlaceholder, normalizeBrokenChainBlocks } from '../core/broken-chain.js';
+import {
+  getBrokenHeadKind,
+  isBrokenChainPlaceholder,
+  normalizeBrokenChainBlocks
+} from '../core/broken-chain.js';
 import { escapeHtml } from './dom.js';
 import { appendImportedChains } from '../editor.js';
 
@@ -12,13 +16,15 @@ import { appendImportedChains } from '../editor.js';
  * 中间的空行则保留为真实的空命令方块。要让末尾多一个空方块，文件须以两个换行结尾。
  */
 function normalizeImportedCommands(text) {
-  const source = String(text ?? '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  const source = String(text ?? '')
+    .replace(/^\uFEFF/, '')
+    .replace(/\r\n?/g, '\n');
   if (source.length === 0) return [];
 
   const normalized = source.endsWith('\n') ? source.slice(0, -1) : source;
   if (normalized.length === 0) return [];
 
-  return normalized.split('\n').map(line => line.trim());
+  return normalized.split('\n').map((line) => line.trim());
 }
 
 /** 判断导入的命令链属于断链形式（snake）还是普通重复链。 */
@@ -53,8 +59,14 @@ function highlightCommandBody(source) {
       const quote = text[i];
       let j = i + 1;
       while (j < text.length) {
-        if (text[j] === '\\') { j += 2; continue; }
-        if (text[j] === quote) { j++; break; }
+        if (text[j] === '\\') {
+          j += 2;
+          continue;
+        }
+        if (text[j] === quote) {
+          j++;
+          break;
+        }
         j++;
       }
       append('tok-string', text.slice(i, j));
@@ -142,8 +154,8 @@ const highlightTextEditorLine = highlightCommandBody;
 
 /** 把 TXT 里的命令行包装成一条命令链；断链形式会自动归一化。 */
 function buildTxtChains(commands) {
-  const parsed = commands.map(cmd => ({ cmd: String(cmd ?? '').trim(), cond: 0 }));
-  const type = classifyTxtChain(parsed.map(item => item.cmd));
+  const parsed = commands.map((cmd) => ({ cmd: String(cmd ?? '').trim(), cond: 0 }));
+  const type = classifyTxtChain(parsed.map((item) => item.cmd));
   if (type === 'snake') normalizeBrokenChainBlocks(parsed, { applyCondition: true });
 
   const firstBlockType = type === 'impulse' ? 'command' : 'repeating';

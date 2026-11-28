@@ -29,7 +29,7 @@ export function createLineMetrics() {
       else dirty.push(index);
     }
     // Read all dirty heights before writing any style, avoiding one layout per line.
-    const measured = dirty.map(index => Math.max(1, lineNodes[index]?.getBoundingClientRect().height || 0));
+    const measured = dirty.map((index) => Math.max(1, lineNodes[index]?.getBoundingClientRect().height || 0));
     for (let index = 0; index < dirty.length; index++) {
       const lineIndex = dirty[index];
       const height = measured[index];
@@ -39,6 +39,9 @@ export function createLineMetrics() {
     if (cache.size > 4000) cache.clear();
     return heights;
   };
-  measure.invalidate = () => { cache.clear(); signature = ''; };
+  measure.invalidate = () => {
+    cache.clear();
+    signature = '';
+  };
   return measure;
 }

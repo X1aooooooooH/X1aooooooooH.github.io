@@ -13,17 +13,25 @@ export function extractBlockIndexLayers(node) {
   if (items.length < 1 || items.length > 2) return null;
 
   // v2: 两层（或单层）IntArray。
-  if (node.value.elementType === TAG.INT_ARRAY &&
-      items.every(item => item?.type === TAG.INT_ARRAY && Array.isArray(item.value))) {
-    return items.map(item => item.value);
+  if (
+    node.value.elementType === TAG.INT_ARRAY &&
+    items.every((item) => item?.type === TAG.INT_ARRAY && Array.isArray(item.value))
+  ) {
+    return items.map((item) => item.value);
   }
 
   // v1: 两层（或单层）List<Int>。NBT Reader 会把每个 Int 包装成 {type, value}。
-  if (node.value.elementType === TAG.LIST && items.every(item =>
-    item?.type === TAG.LIST && item.value?.elementType === TAG.INT &&
-    Array.isArray(item.value.items) && item.value.items.every(value => value?.type === TAG.INT)
-  )) {
-    return items.map(item => item.value.items.map(value => value.value));
+  if (
+    node.value.elementType === TAG.LIST &&
+    items.every(
+      (item) =>
+        item?.type === TAG.LIST &&
+        item.value?.elementType === TAG.INT &&
+        Array.isArray(item.value.items) &&
+        item.value.items.every((value) => value?.type === TAG.INT)
+    )
+  ) {
+    return items.map((item) => item.value.items.map((value) => value.value));
   }
 
   return null;
@@ -55,9 +63,17 @@ export function buildStructureBlockMap(X, Y, Z, blockIndices, paletteList) {
     // 这里先播种空命令和调色板里的条件状态，下面的 block_position_data
     // 一有数据就会覆盖这些默认值。
     map.set(blockKey(x, y, z), {
-      x, y, z, type, name, blockType: type, cmd: '',
-      cond: states.conditional_bit?.value ? 1 : 0, auto: 1,
-      facing: facingRaw === undefined ? 2 : facingRaw, paletteIndex: palIdx
+      x,
+      y,
+      z,
+      type,
+      name,
+      blockType: type,
+      cmd: '',
+      cond: states.conditional_bit?.value ? 1 : 0,
+      auto: 1,
+      facing: facingRaw === undefined ? 2 : facingRaw,
+      paletteIndex: palIdx
     });
   }
 
@@ -119,10 +135,15 @@ export async function parseMcstructure(buf) {
   if (structureNode?.type === TAG.BYTE_ARRAY) {
     const compression = rv.compression?.value;
     if (compression !== 1) {
-      throw new Error(`不支持的 mcstructure 压缩类型：${compression ?? '缺失'}（当前支持 Zlib，compression=1）`);
+      throw new Error(
+        `不支持的 mcstructure 压缩类型：${compression ?? '缺失'}（当前支持 Zlib，compression=1）`
+      );
     }
     const innerBytes = await inflateMcstructurePayload(structureNode.value);
-    const innerBuffer = innerBytes.buffer.slice(innerBytes.byteOffset, innerBytes.byteOffset + innerBytes.byteLength);
+    const innerBuffer = innerBytes.buffer.slice(
+      innerBytes.byteOffset,
+      innerBytes.byteOffset + innerBytes.byteLength
+    );
     const innerRoot = new Reader(innerBuffer).root();
     if (innerRoot.type !== TAG.COMPOUND) throw new Error('解压后的 structure 根标签不是 Compound');
     rv.structure = innerRoot;
@@ -156,7 +177,9 @@ export async function parseMcstructure(buf) {
   const blockIndices = blockIndexLayers[0];
   const volume = X * Y * Z;
   if (!Number.isSafeInteger(volume) || volume <= 0 || volume > MAX_IMPORT_VOLUME) {
-    throw new Error(`结构体积 ${X}×${Y}×${Z} 超出安全导入上限（最多 ${MAX_IMPORT_VOLUME.toLocaleString()} 个方块位置）`);
+    throw new Error(
+      `结构体积 ${X}×${Y}×${Z} 超出安全导入上限（最多 ${MAX_IMPORT_VOLUME.toLocaleString()} 个方块位置）`
+    );
   }
   if (blockIndices.length !== volume) {
     throw new Error(`block_indices 主层长度 ${blockIndices.length} 与结构体积 ${volume} 不一致`);
@@ -182,7 +205,9 @@ export async function parseMcstructure(buf) {
     for (let i = 0; i < indices.length; i++) {
       const value = indices[i];
       if (!Number.isInteger(value) || value < -1 || value >= paletteList.length) {
-        throw new Error(`block_indices ${label}第 ${i} 项的调色板索引 ${value} 无效（调色板长度 ${paletteList.length}）`);
+        throw new Error(
+          `block_indices ${label}第 ${i} 项的调色板索引 ${value} 无效（调色板长度 ${paletteList.length}）`
+        );
       }
     }
   };
@@ -235,7 +260,8 @@ export async function parseMcstructure(buf) {
 
       // 游戏导出的命令方块可能带拼错的旧键 LPCondionalMode、新键 conditionalMode，
       // 也可能两者都有。
-      const condRaw = bed.conditionalMode?.value ?? bed.LPCondionalMode?.value ?? states.conditional_bit?.value ?? 0;
+      const condRaw =
+        bed.conditionalMode?.value ?? bed.LPCondionalMode?.value ?? states.conditional_bit?.value ?? 0;
       const cond = condRaw ? 1 : 0;
       const auto = bed.auto?.value !== undefined ? (bed.auto.value ? 1 : 0) : 1;
 
@@ -269,8 +295,8 @@ export async function parseMcstructure(buf) {
   // 根节点取自主层里的每一个物理命令方块，而不是只取 Command 非空的那些；
   // 空的根方块同样是合法节点。
   const commands = [...blockMap.values()]
-    .filter(b => commandTypes.has(b.type || b.blockType))
-    .map(b => ({
+    .filter((b) => commandTypes.has(b.type || b.blockType))
+    .map((b) => ({
       ...b,
       // 已归一化过的结构不再重复旋转相对坐标
       ...(alreadyNormalized ? { isBrokenNormalized: true } : {}),
@@ -281,7 +307,19 @@ export async function parseMcstructure(buf) {
       blockType: b.blockType || b.type
     }));
 
-  return { root, X, Y, Z, origin, commands, blockMap, blockIndices, paletteList, parseWarnings, normalized: alreadyNormalized };
+  return {
+    root,
+    X,
+    Y,
+    Z,
+    origin,
+    commands,
+    blockMap,
+    blockIndices,
+    paletteList,
+    parseWarnings,
+    normalized: alreadyNormalized
+  };
 }
 
 export function buildBed(cmd, cond, wx, wy, wz, auto = 1) {
@@ -316,7 +354,7 @@ export function buildOutput(formatVersion = 2, layout, options = {}) {
   if (!layout) throw new Error('缺少导出布局');
 
   const allBlocks = layout.blocks;
-  if (!allBlocks.some(b => !isAirPlaceholderBlock(b))) throw new Error('没有命令方块');
+  if (!allBlocks.some((b) => !isAirPlaceholderBlock(b))) throw new Error('没有命令方块');
 
   // 只在导出时打包：app.chains 本身从不被改写，所以每条链在 3D 编辑器里
   // 始终停在同一 Y 层，并沿着 X 轴继续延伸。
@@ -325,16 +363,21 @@ export function buildOutput(formatVersion = 2, layout, options = {}) {
   const maxY = layout.sizeY;
   const maxZ = layout.sizeZ;
 
-  const mk = (name, cond, facing) => T.comp({
-    name: T.str(name),
-    states: T.comp({ conditional_bit: T.byte(cond), facing_direction: T.int(facing) }),
-    version: T.int(18168865)
-  });
+  const mk = (name, cond, facing) =>
+    T.comp({
+      name: T.str(name),
+      states: T.comp({ conditional_bit: T.byte(cond), facing_direction: T.int(facing) }),
+      version: T.int(18168865)
+    });
 
   const palette = [];
   // facing_direction 是六值枚举：0=下，1=上，2=北，3=南，4=西，5=东。
   // 自闭环需要保留全部取值。
-  for (const nm of ['minecraft:command_block', 'minecraft:chain_command_block', 'minecraft:repeating_command_block']) {
+  for (const nm of [
+    'minecraft:command_block',
+    'minecraft:chain_command_block',
+    'minecraft:repeating_command_block'
+  ]) {
     for (let c = 0; c <= 1; c++) {
       for (let facing = 0; facing <= 5; facing++) palette.push(mk(nm, c, facing));
     }
@@ -364,9 +407,10 @@ export function buildOutput(formatVersion = 2, layout, options = {}) {
     const cond = b.cond ? 1 : 0;
     const facing = Number(b.facing);
     const offset = offsets[b.blockType];
-    const paletteIndex = Number.isInteger(offset) && Number.isInteger(facing) && facing >= 0 && facing <= 5
-      ? offset + cond * 6 + facing
-      : -1;
+    const paletteIndex =
+      Number.isInteger(offset) && Number.isInteger(facing) && facing >= 0 && facing <= 5
+        ? offset + cond * 6 + facing
+        : -1;
     if (paletteIndex < 0 || paletteIndex >= airIndex) {
       throw new Error(`无法导出命令方块类型或朝向：${b.blockType}/${b.facing}`);
     }
@@ -388,9 +432,13 @@ export function buildOutput(formatVersion = 2, layout, options = {}) {
   rootValue.size = T.list(TAG.INT, [T.int(spanX), T.int(maxY), T.int(maxZ)]);
 
   const originalStructure = rootValue.structure?.value ? cloneNBT(rootValue.structure.value) : {};
-  originalStructure.block_indices = formatVersion === 1
-    ? T.list(TAG.LIST, [T.list(TAG.INT, mainIndices.map(T.int)), T.list(TAG.INT, secondaryIndices.map(T.int))])
-    : T.list(TAG.INT_ARRAY, [T.ia(mainIndices), T.ia(secondaryIndices)]);
+  originalStructure.block_indices =
+    formatVersion === 1
+      ? T.list(TAG.LIST, [
+          T.list(TAG.INT, mainIndices.map(T.int)),
+          T.list(TAG.INT, secondaryIndices.map(T.int))
+        ])
+      : T.list(TAG.INT_ARRAY, [T.ia(mainIndices), T.ia(secondaryIndices)]);
 
   // 本编辑器只重排命令链；保留源实体的话，它们的位置会和重建后的结构脱节，
   // 所以导出一个空列表。
@@ -403,11 +451,14 @@ export function buildOutput(formatVersion = 2, layout, options = {}) {
   });
   rootValue.structure = T.comp(originalStructure);
 
-  const origin = Array.isArray(options.sourceOrigin) && options.sourceOrigin.length >= 3
-    ? options.sourceOrigin
-    : [0, 0, 0];
+  const origin =
+    Array.isArray(options.sourceOrigin) && options.sourceOrigin.length >= 3
+      ? options.sourceOrigin
+      : [0, 0, 0];
   rootValue.structure_world_origin = T.list(TAG.INT, [
-    T.int(origin[0] || 0), T.int(origin[1] || 0), T.int(origin[2] || 0)
+    T.int(origin[0] || 0),
+    T.int(origin[1] || 0),
+    T.int(origin[2] || 0)
   ]);
   // 记录「本结构的相对坐标已归一化」。Bedrock 会忽略这个未知的根字段，
   // 而 BlockFlow 再次导入时据此跳过归一化，让导入导出的 round-trip 保持幂等。
@@ -420,8 +471,15 @@ export function setNBTValueLike(comp, key, value, fallbackTag) {
   const old = comp[key];
   // 已有同类型的标量标签就地改值，保留它原本的标签类型；否则用 fallbackTag 新建。
   if (old && typeof old === 'object' && 'type' in old) {
-    if (old.type === TAG.BYTE || old.type === TAG.SHORT || old.type === TAG.INT || old.type === TAG.LONG ||
-        old.type === TAG.FLOAT || old.type === TAG.DOUBLE || old.type === TAG.STRING) {
+    if (
+      old.type === TAG.BYTE ||
+      old.type === TAG.SHORT ||
+      old.type === TAG.INT ||
+      old.type === TAG.LONG ||
+      old.type === TAG.FLOAT ||
+      old.type === TAG.DOUBLE ||
+      old.type === TAG.STRING
+    ) {
       old.value = value;
       return;
     }
@@ -439,7 +497,7 @@ export function buildNetEaseBed(cmd, cond, wx, wy, wz, auto, template, blockType
 
   put('Command', command, () => T.str(command));
   put('CustomName', '', () => T.str(''));
-  const commandMode = blockType === 'command' ? 0 : (blockType === 'repeating' ? 1 : 2);
+  const commandMode = blockType === 'command' ? 0 : blockType === 'repeating' ? 1 : 2;
   put('LPCommandMode', commandMode, () => T.int(commandMode));
   put('LPCondionalMode', cond ? 1 : 0, () => T.byte(cond ? 1 : 0));
   put('LPRedstoneMode', 0, () => T.byte(0));
@@ -492,9 +550,9 @@ export function buildNetEaseOutput(layout, options = {}) {
     };
 
     const byKey = new Map(palette.map((entry, i) => [keyOf(entry), i]));
-    const templateByName = new Map(palette.map(entry => [entry.value?.name?.value, entry]));
+    const templateByName = new Map(palette.map((entry) => [entry.value?.name?.value, entry]));
 
-    let airIdx = palette.findIndex(entry => entry.value?.name?.value === 'minecraft:air');
+    let airIdx = palette.findIndex((entry) => entry.value?.name?.value === 'minecraft:air');
     if (airIdx < 0) {
       airIdx = palette.length;
       palette.push(T.comp({ name: T.str('minecraft:air'), states: T.comp({}), version: T.int(18168865) }));
@@ -505,7 +563,8 @@ export function buildNetEaseOutput(layout, options = {}) {
       const key = `${name}|${cond}|${face}`;
       if (byKey.has(key)) return byKey.get(key);
 
-      const template = templateByName.get(name) || templateByName.get('minecraft:command_block') || palette[0];
+      const template =
+        templateByName.get(name) || templateByName.get('minecraft:command_block') || palette[0];
       const entry = cloneNBT(template);
       entry.value.name = T.str(name);
       if (!entry.value.states || entry.value.states.type !== TAG.COMPOUND) entry.value.states = T.comp({});
@@ -528,12 +587,15 @@ export function buildNetEaseOutput(layout, options = {}) {
     const sz = rv.size.value.items[2].value;
 
     const bpd = {};
-    const origin = Array.isArray(options.sourceOrigin) && options.sourceOrigin.length >= 3
-      ? options.sourceOrigin
-      : [0, 0, 0];
+    const origin =
+      Array.isArray(options.sourceOrigin) && options.sourceOrigin.length >= 3
+        ? options.sourceOrigin
+        : [0, 0, 0];
 
     const sourceBpd = srcStructure?.palette?.value?.default?.value?.block_position_data?.value || {};
-    const sourceEntities = Object.values(sourceBpd).map(item => item?.value?.block_entity_data).filter(Boolean);
+    const sourceEntities = Object.values(sourceBpd)
+      .map((item) => item?.value?.block_entity_data)
+      .filter(Boolean);
     const entityTemplate = sourceEntities[0] || null;
 
     const typeNames = {
@@ -547,7 +609,8 @@ export function buildNetEaseOutput(layout, options = {}) {
 
       const lx = b.x - minX;
       const lin = lx * (sy * sz) + b.y * sz + b.z;
-      if (lx < 0 || lx >= sx || b.y < 0 || b.y >= sy || b.z < 0 || b.z >= sz || lin < 0 || lin >= newVolume) continue;
+      if (lx < 0 || lx >= sx || b.y < 0 || b.y >= sy || b.z < 0 || b.z >= sz || lin < 0 || lin >= newVolume)
+        continue;
 
       const name = typeNames[b.blockType] || typeNames.chain;
       main[lin] = addState(name, b.cond ? 1 : 0, Number.isInteger(Number(b.facing)) ? Number(b.facing) : 2);
@@ -555,9 +618,13 @@ export function buildNetEaseOutput(layout, options = {}) {
       const template = sourceBpd[String(lin)]?.value?.block_entity_data || entityTemplate;
       bpd[String(lin)] = T.comp({
         block_entity_data: buildNetEaseBed(
-          b.cmd, b.cond ? 1 : 0,
-          (origin[0] || 0) + lx, (origin[1] || 0) + b.y, (origin[2] || 0) + b.z,
-          b.auto, template
+          b.cmd,
+          b.cond ? 1 : 0,
+          (origin[0] || 0) + lx,
+          (origin[1] || 0) + b.y,
+          (origin[2] || 0) + b.z,
+          b.auto,
+          template
         )
       });
     }
@@ -582,12 +649,14 @@ export function buildNetEaseOutput(layout, options = {}) {
 }
 
 export async function serializeOutputForFormat(formatVersion, layout, options = {}) {
-  const root = formatVersion === 3 ? buildNetEaseOutput(layout, options) : buildOutput(formatVersion, layout, options);
+  const root =
+    formatVersion === 3 ? buildNetEaseOutput(layout, options) : buildOutput(formatVersion, layout, options);
   // v1 和网易版的外层结构不压缩，直接序列化。
   if (formatVersion === 1 || formatVersion === 3) return new Writer().serialize(root);
 
   const innerStructure = root.value.structure;
-  if (!innerStructure || innerStructure.type !== TAG.COMPOUND) throw new Error('导出结构缺少有效的内部 Compound');
+  if (!innerStructure || innerStructure.type !== TAG.COMPOUND)
+    throw new Error('导出结构缺少有效的内部 Compound');
 
   const innerBytes = new Writer().serialize(innerStructure);
   if (typeof CompressionStream !== 'function') {
