@@ -8,8 +8,6 @@ import { cloneChains, countPhysicalBlocks, snapshotChains } from './core/model.j
 import { app } from './state.js';
 import { storageGet, storageSet, storageRemove } from './core/storage.js';
 import { toast, undoToast, rememberModalFocus, restoreModalFocus, showPromptModal } from './ui/feedback.js';
-import { escapeHtml } from './ui/dom.js';
-import { icon } from './ui/icons.js';
 import {
   logInfo, logOk, logWarn, logError, setCurrentAction
 } from './log.js';
@@ -18,15 +16,15 @@ import {
   resizeRenderer, isPreviewReady, hasTextures,
   captureOverviewCamera, setBlockVisibility, applyChainCamera, setViewPreset, deselect
 } from './scene.js';
-import { hideInfo } from './inspector.js?v=r32-cleanup-20261128';
-import { setTheme } from './ui/theme.js?v=r32-cleanup-20261128';
+import { hideInfo } from './inspector.js?v=r39-layout-20261129';
+import { setTheme } from './ui/theme.js?v=r39-layout-20261129';
 
 const AUTOSAVE_NBT_TYPE = '__blockflow_autosave_nbt_type__';
 
 export function refreshChainsUI() {
   renderAllBlocks();
   updateStats();
-  renderChainManager();
+  window.renderWorkspaceSidebar?.();
 }
 
 function reflowAllChains(){
@@ -34,33 +32,13 @@ function reflowAllChains(){
 }
 
 function updateChainBar(){
-  const bar=document.getElementById('chainBar');
-  if(!bar)return;
   const inChain=app.mode==='chain';
-  bar.classList.toggle('chain-view',inChain);
-  const help=document.getElementById('viewportHelp');
-  if(help){
-    help.innerHTML=inChain
-      ? '<b>WASD</b> 移动<br><b>空格/Shift</b> 升降<br><b>左键</b> 旋转视角<br><b>Ctrl+鼠标滚轮</b> 缩放'
-      : '<b>WASD</b> 移动<br><b>空格/Shift</b> 升降<br><b>左键</b> 旋转视角<br><b>鼠标滚轮</b> 缩放';
-  }
-    const commandBar=document.querySelector('.command-bar');
-  if(commandBar)commandBar.classList.toggle('chain-mode',inChain);
   const exitBtn=document.getElementById('exitChainBtn');
   if(exitBtn)exitBtn.style.display=(inChain&&!app.singleChain)?'flex':'none';
-  const manager=document.getElementById('chainManager');
-  if(inChain&&manager)manager.classList.remove('on');
   if(window.BlockFlowAI)window.BlockFlowAI.refresh();
   window.syncWorkspaceMode?.();
   window.renderWorkspaceSidebar?.();
   window.renderInlineText?.();
-}
-
-function toggleChainManager(show){
-  const panel=document.getElementById('chainManager');
-  if(!panel)return;
-  panel.classList.toggle('on',!!show);
-  if(show)renderChainManager();
 }
 
 function openChainAddModal(){
@@ -162,26 +140,6 @@ function addChainOfType(type){
   }
 }
 
-function renderChainManager() {
-  const list = document.getElementById('chainManagerList');
-  if (!list) return;
-  list.innerHTML = app.chains.map((c, i) => {
-    const active = i === app.selectedChain ? ' active' : '';
-    const firstBlock = c.blocks?.[0] || {};
-    const firstCmd = escapeHtml(String(firstBlock.cmd ?? ''));
-    const isIndependentEmpty = !!c.preservePhysicalType && !c.selfClosed && c.blocks?.length === 1 &&
-      (firstBlock.blockType === 'chain' || firstBlock.type === 'chain') && String(firstBlock.cmd ?? '').trim() === '';
-    const title = c.name || (isIndependentEmpty ? '独立空命令方块' : (c.selfClosed ? '自闭链' : `链 ${i + 1}`));
-    const commandCount = (c.blocks || []).filter(b => !isAirPlaceholderBlock(b)).length;
-    const subtitle = isIndependentEmpty
-      ? `1 个空命令方块 · 朝向 ${Number.isInteger(firstBlock.facing) ? firstBlock.facing : '未知'}`
-      : `${commandCount} 个命令方块${c.selfClosed ? ' · 保留闭环位置与朝向' : ''}`;
-    const preview = isIndependentEmpty ? '（空命令 · 物理节点已保留）' : (firstCmd || '（无命令）');
-    return `<div class="chain-item${active}" draggable="true" data-chain-index="${i}"><span class="chain-drag" title="拖动排序">${icon('grip', 'icon icon-sm')}</span><span class="chain-order">${i + 1}</span><div class="chain-item-main"><div class="chain-item-title">${title}</div><div class="chain-item-sub">${subtitle}</div><div class="chain-item-command">${preview}</div></div><button type="button" class="chain-item-copy" data-copy-chain="${i}" title="复制这条链" aria-label="复制这条链">${icon('copy')}</button><button type="button" class="chain-item-delete" data-delete-chain="${i}" title="删除这条链" aria-label="删除这条链">${icon('trash')}</button></div>`;
-  }).join('');
-  bindChainManagerEvents(list);
-}
-
 function selectChainFromManager(ci) {
   if (!Number.isInteger(ci) || ci < 0 || ci >= app.chains.length) return;
   app.selectedChain = ci;
@@ -194,61 +152,7 @@ function selectChainFromManager(ci) {
     document.getElementById('exitChainBtn').style.display = 'flex';
   }
   updateChainBar();
-  renderChainManager();
   logInfo(app.singleChain ? `选中唯一链 ${ci + 1}` : `选中链 ${ci + 1}`, '选择命令链');
-}
-
-function bindChainManagerEvents(list) {
-  if (list.dataset.eventsBound === '1') return;
-  list.dataset.eventsBound = '1';
-  list.addEventListener('click', event => {
-    const copy = event.target.closest('[data-copy-chain]');
-    if (copy) {
-      event.preventDefault();
-      event.stopPropagation();
-      duplicateChainAt(Number(copy.dataset.copyChain));
-      return;
-    }
-    const del = event.target.closest('[data-delete-chain]');
-    if (del) {
-      event.preventDefault();
-      event.stopPropagation();
-      deleteChainAt(Number(del.dataset.deleteChain));
-      return;
-    }
-    const item = event.target.closest('.chain-item');
-    if (item) selectChainFromManager(Number(item.dataset.chainIndex));
-  });
-  list.addEventListener('dragstart', event => {
-    const item = event.target.closest('.chain-item');
-    if (!item) return;
-    item.classList.add('dragging');
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', item.dataset.chainIndex);
-  });
-  list.addEventListener('dragend', event => {
-    event.target.closest('.chain-item')?.classList.remove('dragging');
-    list.querySelectorAll('.drop-target').forEach(node => node.classList.remove('drop-target'));
-  });
-  list.addEventListener('dragover', event => {
-    const item = event.target.closest('.chain-item');
-    if (!item) return;
-    event.preventDefault();
-    item.classList.add('drop-target');
-    event.dataTransfer.dropEffect = 'move';
-  });
-  list.addEventListener('dragleave', event => {
-    event.target.closest('.chain-item')?.classList.remove('drop-target');
-  });
-  list.addEventListener('drop', event => {
-    const item = event.target.closest('.chain-item');
-    if (!item) return;
-    event.preventDefault();
-    item.classList.remove('drop-target');
-    const from = Number(event.dataTransfer.getData('text/plain'));
-    const to = Number(item.dataset.chainIndex);
-    if (Number.isInteger(from) && Number.isInteger(to) && from !== to) reorderChains(from, to);
-  });
 }
 
 function reorderChains(from,to){
@@ -279,13 +183,12 @@ async function deleteChainAt(ci){
   app.selectedChain=app.singleChain?0:-1;
   app.camera=null;
   app.overviewCamera=null;
-  toggleChainManager(false);
   if(app.chains.length===0){
     if(isPreviewReady())renderAllBlocks();
     pushHistory();
     updateStats();
     updateChainBar();
-    renderChainManager();
+    window.renderWorkspaceSidebar?.();
     document.getElementById('exitChainBtn').style.display='none';
     // Keep the empty editor visible so Ctrl+Z can restore the deleted final chain.
     toast('已删除最后一条链（可使用 Ctrl+Z 撤销）','ok');
@@ -629,7 +532,7 @@ function undo(){
   syncSavedState();
   syncHistoryScreen();
   updateHistoryBtns();
-  renderAllBlocks();updateStats();deselect();renderChainManager();scheduleAutosave();
+  renderAllBlocks();updateStats();deselect();window.renderWorkspaceSidebar?.();scheduleAutosave();
   const after = app.chains.length;
   const detail = before > after ? `恢复 ${before - after} 条链` : before < after ? `移除 ${after - before} 条链` : '链内容修改';
   logInfo(`撤销一步（${before} → ${after} 条链）`,'撤销');
@@ -654,7 +557,7 @@ function redo(){
   syncSavedState();
   syncHistoryScreen();
   updateHistoryBtns();
-  renderAllBlocks();updateStats();deselect();renderChainManager();scheduleAutosave();
+  renderAllBlocks();updateStats();deselect();window.renderWorkspaceSidebar?.();scheduleAutosave();
   logInfo(`重做一步（当前 ${app.chains.length} 条链）`,'重做');
 }
 
@@ -876,9 +779,12 @@ document.getElementById('infoClose').onclick=()=>deselect();
   }
 })();
 
+window.focusChain = selectChainFromManager;
+window.openChainAddModal = openChainAddModal;
+
 export {
-  updateChainBar, toggleChainManager, openChainAddModal, closeChainAddModal,
-  appendImportedChains, importChainFromMcstructure, addChainOfType, renderChainManager,
+  updateChainBar, openChainAddModal, closeChainAddModal,
+  appendImportedChains, importChainFromMcstructure, addChainOfType,
   reorderChains, deleteChainAt, updateStats,
   scheduleAutosave, flushAutosave, clearAutosave, syncSavedState,
   restoreAutosave, pushHistory, updateHistoryBtns, syncHistoryScreen, undo, redo,

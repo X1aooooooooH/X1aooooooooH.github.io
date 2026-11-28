@@ -1,6 +1,5 @@
 /* ============================================================
-   10. 功能弹窗（日志 / 批量替换）
-   ============================================================ */
+   10. 閸旂喕鍏樺鍦崶閿涘牊妫╄箛?/ 閹靛綊鍣洪弴鎸庡床閿?   ============================================================ */
 .feature-modal{position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(5,8,12,.48);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .feature-modal.on{display:flex}
 .feature-card{width:min(720px,calc(100vw - 32px));max-height:min(82vh,760px);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(116,131,151,.40);border-radius:17px;background:linear-gradient(145deg,rgba(18,23,31,.97),rgba(9,13,19,.985))}
@@ -42,7 +41,7 @@
 [data-theme="light"] .feature-btn{background:#edf2f7;color:#2b3745;border-color:#c4ceda}
 [data-theme="light"] .feature-btn.primary{background:#4257a9;color:#fff;border-color:#4257a9}
 [data-theme="light"] .feature-btn:hover{background:#e1e8ef}
-/* 日志列表 */
+/* 閺冦儱绻旈崚妤勩€?*/
 .log-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(105,118,138,.20)}
 .log-toolbar span{font-size:12px;color:#8f9caf}
 .log-clear{height:32px;padding:0 10px;border:1px solid rgba(105,118,138,.34);border-radius:8px;background:rgba(255,255,255,.05);color:#dbe3ee;font-size:12px}
@@ -74,7 +73,7 @@
 [data-theme="light"] .log-message{color:#263241}
 [data-theme="light"] .log-empty{color:#778498}
 /* ============================================================
-   11. 恢复条 / Toast / Loading
+   11. 閹垹顦查弶?/ Toast / Loading
    ============================================================ */
 .resume-bar{position:fixed;z-index:40;left:50%;top:14px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;padding:9px 11px 9px 14px;border:1px solid rgba(116,131,151,.34);border-radius:11px;background:rgba(20,26,35,.92);color:#cbd4e1;font-size:13.2px;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .resume-bar[hidden]{display:none}
@@ -112,8 +111,7 @@ button:hover:not(:disabled) .icon,
 .icon-btn:hover:not(:disabled) .icon,
 .export-btn:hover:not(:disabled) .icon,
 .view-btn:hover:not(:disabled) .icon,
-.top-home-btn:hover:not(:disabled) .icon,
-.camera-pad-btn:hover:not(:disabled) .icon{
+.top-home-btn:hover:not(:disabled) .icon{
   transform:scale(1.07);
 }
 button:active:not(:disabled) .icon,
@@ -124,3 +122,72 @@ button:active:not(:disabled) .icon,
 .view-btn.active .icon{
   stroke-width:2.1;
 }
+/* README usage modal: fixed card, independently scrolling read column. */
+.usage-card{
+  width:min(920px,calc(100vw - 28px));
+  height:min(90vh,900px);
+  max-height:90vh;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.usage-card>.feature-head{flex:0 0 auto}
+.usage-readme-body{
+  display:block;
+  flex:1 1 0;
+  min-height:0;
+  width:100%;
+  max-width:840px;
+  margin:0 auto;
+  padding:24px clamp(20px,4vw,42px) 40px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  box-sizing:border-box;
+  text-align:left;
+}
+.usage-readme-body>*{max-width:100%}
+.usage-readme-body pre,.usage-readme-body .readme-table-wrap{max-width:100%;overflow:auto}
+
+
+/* Opening motion for the usage/README modal. */
+.usage-modal.on{animation:usageOverlayIn .22s ease-out both}
+.usage-modal.on .usage-card{
+  transform-origin:50% 42%;
+  animation:usageCardIn .36s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes usageOverlayIn{from{opacity:0}to{opacity:1}}
+@keyframes usageCardIn{
+  from{opacity:0;transform:translateY(18px) scale(.965)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  .usage-modal.on,.usage-modal.on .usage-card{animation:none!important}
+}
+
+
+/* Author footer, contact links and the support modal. */
+#uploadView.on{display:flex;flex-direction:column}
+#uploadView .upload-shell{height:auto;flex:1 1 auto;min-height:0;flex-direction:column;justify-content:center;align-items:center;gap:0}
+.upload-support{display:flex;justify-content:center;width:100%}
+.upload-footer{width:min(620px,calc(100vw - 40px));margin:0 auto;padding:6px 0 0;flex:0 0 auto}
+.site-footer{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:10px 20px 16px;font-size:12px;color:#8d99ab}
+.contact-links{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.contact-links a{display:inline-flex;align-items:center;padding:5px 11px;border:1px solid rgba(127,140,160,.22);border-radius:999px;color:inherit;text-decoration:none;line-height:1;transition:color .16s,border-color .16s,background-color .16s}
+.contact-links a:hover{color:var(--text);border-color:rgba(127,140,160,.45);background:rgba(127,140,160,.1)}
+.support-pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:1px solid rgba(201,161,74,.42);border-radius:999px;background:linear-gradient(135deg,rgba(201,161,74,.16),rgba(201,161,74,.07));color:#e4c27a;font:600 12px/1 var(--font-ui);cursor:pointer;transition:background .16s,border-color .16s,transform .16s}
+.support-pill:hover{background:linear-gradient(135deg,rgba(201,161,74,.26),rgba(201,161,74,.12));border-color:rgba(201,161,74,.64);transform:translateY(-1px)}
+.support-pill:active{transform:scale(.96)}
+.support-pill .icon{width:13px;height:13px;stroke-width:1.9}
+[data-theme="light"] .site-footer{color:#64748b}
+[data-theme="light"] .contact-links a{border-color:rgba(78,94,118,.22)}
+[data-theme="light"] .contact-links a:hover{color:#1b2430;border-color:rgba(78,94,118,.42);background:rgba(78,94,118,.07)}
+[data-theme="light"] .support-pill{color:#9a6b12;border-color:rgba(176,132,36,.38)}
+#editorView .editor-footer{width:66.6667%;margin:0 auto;padding:8px 0 14px;border-top:0}
+.support-card{width:min(460px,calc(100vw - 32px))}
+.support-body{padding:18px 18px 22px;display:flex;justify-content:center}
+.support-body img{display:block;width:min(100%,380px);height:auto;border:1px solid var(--glass-border);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.28)}
+[data-theme="light"] .support-body img{border-color:#cbd5e1;box-shadow:0 14px 34px rgba(40,58,82,.16)}
+@media(prefers-reduced-motion:reduce){.support-pill,.contact-links a{transition:none!important}}

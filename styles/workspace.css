@@ -54,8 +54,6 @@
 #editorView .top-view-sep{width:1px;height:16px;background:var(--glass-border);margin:0 2px}
 #editorView .ws-back-btn{display:none;align-items:center;gap:3px;height:29px;padding:0 8px;border:1px solid var(--glass-border);border-radius:6px;background:var(--glass-bg);color:var(--text);font:10px/1 var(--font-ui);backdrop-filter:var(--glass-blur)}
 #editorView .ws-back-btn:hover{background:rgba(127,140,160,.14)}
-#editorView .ws-camera{position:absolute;right:12px;bottom:12px;z-index:12;margin:0;padding:2px;border:1px solid var(--glass-border);border-radius:6px;background:var(--glass-bg);backdrop-filter:var(--glass-blur)}
-#editorView #cameraPad .camera-pad-btn{width:25px;height:25px;border-radius:3px;font-size:8px}
 
 /* block editor popup, over the top of the 3D frame */
 #editorView .inspector.ws-block-popup{
@@ -130,37 +128,6 @@
 #editorView .chain-text-mode-btn:hover:not(:disabled){background:rgba(127,140,160,.13)}
 #editorView .chain-text-mode-btn.on{border-color:var(--accent);color:var(--accent)}
 
-/* old utility bits that should not show anywhere */
-#editorView .ws-mobile-btn,#editorView #wsMobileInspector,#editorView #wsInspectorToggle,#editorView .ws-more-menu{display:none!important}
-
-/* mobile */
-@media(max-width:900px){
-  #editorView .editor-shell{grid-template-rows:52px minmax(220px,42svh) minmax(0,1fr);gap:6px;padding:6px}
-  #editorView .command-bar,#editorView .ws-stage,#editorView .ws-deck{max-width:none}
-  #editorView .command-bar{padding:0 7px;gap:6px}
-  #editorView .bar-file-stats{display:none}
-  #editorView .bar-file-name b{max-width:120px}
-  #editorView .bar-file{margin-left:0;padding-left:7px}
-  #editorView .ws-exit-btn span:last-child{display:none}
-  #editorView .ws-stage-tools{left:6px;top:6px;gap:4px}
-  #editorView .view-btn{height:24px;min-width:25px;padding:0 6px;font-size:9px}
-  #editorView .ws-back-btn{height:26px;padding:0 6px;font-size:9px}
-  #editorView .ws-back-btn span:last-child{display:none}
-  #editorView .inspector.ws-block-popup{left:6px;right:6px;top:auto;bottom:6px;width:auto;max-height:56%;border-radius:9px}
-  #editorView .ws-lower-tools{padding:6px;gap:4px;flex-wrap:wrap}
-  #editorView .ws-lower-btn{flex:1 1 0;height:29px;padding:0 5px;font-size:9px}
-  
-  
-  
-  #editorView .chain-text-mode-btn{width:100%;height:28px}
-  
-}
-@media(max-width:520px){
-  #editorView .bar-actions .icon-btn{min-width:26px;padding:0 5px}
-  #editorView .bar-file-name .bar-label{display:none}
-  #editorView .bar-file-name b{max-width:96px}
-  #editorView .ws-lower-btn:nth-of-type(2){flex:0 0 auto}
-}
 
 /* Unified type scale, readable controls, no scrollbars. */
 *{scrollbar-width:none!important;-ms-overflow-style:none!important}
@@ -189,8 +156,7 @@
 #editorView .ws-side-head b,#editorView .ws-side-filter button{font-size:14px!important}
 
 #editorView .export-btn,#editorView .edit-grid button,#editorView .inspector-close{font-size:14px!important}
-#editorView .camera-pad-btn,#editorView .search-empty{font-size:12px!important}
-#editorView .camera-pad-btn{font-size:12px!important}
+#editorView .search-empty{font-size:12px!important}
 #editorView .ws-empty{font-size:12px!important}
 .ws-seek-overlay .search-result-meta,.ws-seek-overlay .search-result-text{font-size:14px!important}
 
@@ -347,7 +313,6 @@
 #blockSearch:focus,#blockSearch:focus-visible{outline:none!important;border-color:transparent!important}
 #blockSearch::-webkit-search-cancel-button{display:none}
 .chain-add-modal{z-index:200!important}
-@media(max-width:900px){.ws-seek-overlay{width:calc(100vw - 12px);top:6px}}
 
 /* gooey export menu */
 .ws-export-menu{position:absolute;z-index:90;left:calc(100% + 6px);right:auto;top:9px;width:36px;height:34px;display:flex;flex-direction:column;gap:4px;padding:2px;overflow:hidden;border:1px solid transparent;border-radius:17px;background:transparent;opacity:0;pointer-events:none;transform:scale(.9);transform-origin:top left;transition:width .34s cubic-bezier(.22,1,.36,1),height .34s cubic-bezier(.22,1,.36,1),opacity .2s ease,transform .34s cubic-bezier(.22,1,.36,1),background-color .2s,border-color .2s,box-shadow .2s;backdrop-filter:blur(18px)}
@@ -507,19 +472,6 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 .ws-chain-modal .ws-chain-del:hover{background:rgba(190,80,80,.16)!important;color:#d66!important}
 .ws-chain-modal .ws-symbol-btn{border:1px solid var(--glass-border)!important;background:rgba(127,140,160,.06)!important}
 
-@media(max-width:900px){
-  #editorView .command-bar,#editorView .ws-stage,#editorView .ws-deck{width:100%}
-  .ws-export-menu{left:auto;right:0;transform-origin:top right}
-  #editorView .ws-stage{height:44vh;min-height:260px;max-height:430px}
-  #editorView .ws-block-popup{left:6px;right:6px;top:6px;width:auto;transform:none!important;max-height:70%;overflow:auto}
-  #editorView .ws-block-popup .info{grid-template-columns:1fr}
-  #editorView .ws-block-popup .object-summary,
-  #editorView .ws-block-popup .inspector-select-row,
-  #editorView .ws-block-popup .edit-grid{grid-column:auto}
-  #editorView .ws-current-chain{width:100%}
-  #editorView .ws-inline-editor{flex-basis:500px;height:500px;max-height:500px}
-}
-
 /* Upload/file-selection screen: remove every decorative shadow. */
 
 
@@ -529,7 +481,6 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 #editorView .icon-btn,
 #editorView .export-btn,
 #editorView .view-btn,
-#editorView .camera-pad-btn,
 #editorView .feature-close,
 #editorView .inspector-close,
 #editorView .text-editor-close,
@@ -555,8 +506,6 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 #editorView .ws-chain-close-btn .icon,
 #editorView .ws-lower-btn .icon{width:16px;height:16px}
 #editorView .top-home-btn .icon{width:17px;height:17px;margin:auto}
-#editorView .camera-pad-btn .icon{width:12px;height:12px;margin:auto}
-#editorView .camera-pad-center .icon{width:12px;height:12px}
 #editorView .search-clear .icon{width:12px;height:12px;margin:auto}
 #editorView .ws-side-head button .icon{width:14px;height:14px}
 #editorView .usage-help-icon .icon{width:14px;height:14px;margin:auto}
@@ -682,11 +631,6 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 @keyframes wsSidePreviewIn{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:none}}
 #editorView .ws-side-preview-canvas{display:block;width:100%;height:82px;image-rendering:pixelated}
 #editorView .ws-stage.preview-on .ws-block-popup{max-height:calc(100% - 190px)}
-@media(max-width:600px){
-  #editorView .ws-side-preview{right:8px;bottom:8px;width:190px;padding:4px;border-radius:8px}
-  #editorView .ws-side-preview-canvas{height:62px}
-  #editorView .ws-stage.preview-on .ws-block-popup{max-height:calc(100% - 150px)}
-}
 
 /* Search overlay clear button: show it and center the SVG rather than nudging the text glyph. */
 .ws-seek-top .search-clear.on{display:none!important}
@@ -695,25 +639,6 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 .ws-seek-top #wsSeekClose .icon{position:static;left:auto;top:auto;transform:none;width:14px;height:14px;margin:auto}
 .ws-seek-top .search-clear{right:8px}
 
-@media(max-width:600px){
-  .ws-chain-modal{padding:8px}
-  .ws-chain-modal-card{width:calc(100vw - 16px)!important;max-height:calc(100vh - 16px)!important;border-radius:13px!important}
-  .ws-chain-modal-head{padding:14px 14px 12px;gap:10px}
-  .ws-chain-modal-actions{gap:5px}
-  .ws-chain-add-btn{width:32px;padding:0}
-  .ws-chain-add-btn span{display:none}
-  .ws-chain-title-line b{font-size:18px!important}
-  .ws-chain-modal-body{padding:8px!important}
-  .ws-chain-modal .ws-chain-row{grid-template-columns:20px 24px minmax(0,1fr) auto!important;gap:6px!important;padding:9px 7px!important}
-  .ws-chain-modal .ws-chain-copy b{font-size:13px!important}
-  .ws-chain-modal .ws-chain-preview{font-size:10px!important}
-  .ws-chain-modal-foot{padding:8px 14px;font-size:9px}
-}
-
-/* Remove legacy pseudo-glyph close marks now that every close button owns an SVG. */
-.chain-add-close::before,.chain-manager-close::before,.chain-add-btn::before{content:none!important;display:none!important}
-
-/* Compact chain-manager header actions and single footer line. */
 .ws-chain-add-btn{width:32px!important;min-width:32px;padding:0!important;gap:0!important}
 .ws-chain-add-btn .icon{width:16px!important;height:16px!important}
 .ws-chain-modal-head{padding:16px 20px!important}
@@ -760,3 +685,47 @@ html.theme-switching .chain-dock{transition:background-color .42s ease,color .32
 #editorView .ws-side-preview-focus{position:absolute;z-index:1;display:none;border:2px solid var(--accent);border-radius:3px;box-sizing:border-box;pointer-events:none;animation:wsSidePreviewFocus 1.65s ease-in-out infinite}
 @keyframes wsSidePreviewFocus{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
 #editorView .ws-side-preview.is-minimized .ws-side-preview-canvas-wrap{display:none}
+
+/* ---- Added after V2.1: copy-chain action and the PC-only access gate ---- */
+.ws-chain-modal .ws-chain-duplicate{
+  width:28px!important;height:28px!important;display:inline-flex;align-items:center;justify-content:center;
+  padding:0;border:1px solid transparent!important;border-radius:7px;background:transparent!important;
+  color:var(--text);opacity:.55!important;cursor:pointer;
+}
+.ws-chain-modal .ws-chain-duplicate:hover{background:rgba(127,140,160,.13);border-color:var(--glass-border);opacity:1}
+.ws-chain-modal .ws-chain-duplicate .icon{width:13px;height:13px}
+
+.pc-only-gate{
+  position:fixed;inset:0;z-index:60000;display:none;place-items:center;
+  padding:24px;overscroll-behavior:contain;text-align:center;color:var(--text);
+  background:radial-gradient(circle at 50% 40%,rgba(19,26,38,.96),rgba(5,8,12,.995) 72%);
+  -webkit-backdrop-filter:blur(20px) saturate(125%);
+  backdrop-filter:blur(20px) saturate(125%);
+}
+.pc-only-gate[hidden]{display:none!important}
+body.bf-pc-only .pc-only-gate{display:grid}
+.pc-only-gate-card{
+  width:min(350px,100%);display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:26px 24px 22px;border:1px solid var(--glass-border);border-radius:22px;
+  background:var(--glass-bg);box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+.pc-only-gate-icon{
+  width:124px;height:124px;display:grid;place-items:center;margin-bottom:2px;
+  color:var(--text);filter:drop-shadow(0 10px 24px rgba(0,0,0,.35));
+}
+.pc-only-gate-icon svg{display:block;width:100%;height:100%}
+.pc-only-gate-card b{font-size:20px;line-height:1.3;letter-spacing:.02em}
+.pc-only-gate-card p{margin:0;max-width:300px;color:#9aa8bc;font-size:14px;line-height:1.7}
+.pc-only-gate-hint{
+  display:inline-flex;align-items:center;gap:6px;margin-top:4px;padding:5px 12px;
+  border:1px solid rgba(127,140,160,.3);border-radius:999px;font-size:12px;color:#c3cfdf;
+}
+[data-theme="light"] .pc-only-gate{
+  background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.97),rgba(226,233,242,.99) 72%);
+}
+[data-theme="light"] .pc-only-gate-card{
+  background:rgba(255,255,255,.9);border-color:#cbd6e2;
+  box-shadow:0 24px 70px rgba(40,58,82,.18);
+}
+[data-theme="light"] .pc-only-gate-card p{color:#5d6d82}
+[data-theme="light"] .pc-only-gate-hint{color:#4d5f76;border-color:#c8d4e2}

@@ -9,10 +9,6 @@ let inlineLayoutHeights = [];
 let inlineContentHeight = 0;
 let inlineLayoutToken = 0;
 
-function chainTotal(chain) {
-  return (chain?.blocks || []).length;
-}
-
 function chainEmpty(chain) {
   return (chain?.blocks || []).filter(block => !String(block.cmd ?? '').trim()).length;
 }
@@ -59,8 +55,12 @@ function renderSidebar() {
     copy.className = 'ws-chain-copy';
     const titleLine = document.createElement('span');
     titleLine.className = 'ws-chain-title-line';
+    const blocks = chain.blocks || [];
+    const firstBlock = blocks[0] || {};
+    const isIndependentEmpty = !!chain.preservePhysicalType && !chain.selfClosed && blocks.length === 1 &&
+      (firstBlock.blockType === 'chain' || firstBlock.type === 'chain') && String(firstBlock.cmd ?? '').trim() === '';
     const title = document.createElement('b');
-    title.textContent = chain.name || '链 ' + (index + 1);
+    title.textContent = chain.name || (isIndependentEmpty ? '独立空命令方块' : (chain.selfClosed ? '自闭链' : '链 ' + (index + 1)));
     titleLine.appendChild(title);
     if (index === app.selectedChain) {
       const active = document.createElement('em');
@@ -70,11 +70,19 @@ function renderSidebar() {
     }
     const meta = document.createElement('small');
     const empty = chainEmpty(chain);
-    meta.textContent = chainTotal(chain) + ' 块' + (empty ? ' · ' + empty + ' 空' : '');
+    meta.textContent = isIndependentEmpty
+      ? '1 个空命令方块 · 朝向 ' + (Number.isInteger(firstBlock.facing) ? firstBlock.facing : '未知')
+      : blocks.length + ' 块' + (empty ? ' · ' + empty + ' 空' : '');
     const preview = document.createElement('em');
     preview.className = 'ws-chain-preview';
-    preview.textContent = chain.blocks?.[0]?.cmd || '（无命令）';
+    preview.textContent = isIndependentEmpty ? '（空命令 · 物理节点已保留）' : (firstBlock.cmd || '（无命令）');
     copy.append(titleLine, meta, preview);
+    const duplicate = document.createElement('button');
+    duplicate.type = 'button';
+    duplicate.className = 'ws-chain-duplicate';
+    duplicate.title = '复制链';
+    duplicate.setAttribute('aria-label', '复制链 ' + (index + 1));
+    duplicate.innerHTML = icon('copy');
     const rename = document.createElement('button');
     rename.type = 'button';
     rename.className = 'ws-chain-rename';
@@ -89,7 +97,7 @@ function renderSidebar() {
     del.innerHTML = icon('close');
     const actions = document.createElement('div');
     actions.className = 'ws-chain-actions';
-    actions.append(rename, del);
+    actions.append(duplicate, rename, del);
     row.append(dragHandle, indexBadge, copy, actions);
     list.appendChild(row);
   }
@@ -114,7 +122,6 @@ async function renameChainFromSidebar(index, anchor) {
   if (value === false) return;
   chain.name = String(value || '').trim().slice(0, 40);
   window.pushHistory?.();
-  window.renderChainManager?.();
   renderSidebar();
   window.logInfo?.(`链 ${index + 1} 重命名为「${chain.name || `链 ${index + 1}`}」`, '重命名链');
 }
@@ -129,6 +136,11 @@ function bindSidebarEvents() {
     if (event.target.closest('.ws-chain-rename')) {
       event.stopPropagation();
       renameChainFromSidebar(index, event.target.closest('.ws-chain-rename'));
+      return;
+    }
+    if (event.target.closest('.ws-chain-duplicate')) {
+      event.stopPropagation();
+      window.duplicateChainAt?.(index);
       return;
     }
     if (event.target.closest('.ws-chain-del')) {
@@ -198,24 +210,18 @@ function scheduleSidebarRender() {
 }
 
 function selectChain(index) {
-  if (window.renderChainManager) window.renderChainManager();
-  const item = $(`#chainManagerList .chain-item[data-chain-index="${index}"]`);
-  if (item) item.click();
+  if (!Number.isInteger(index) || index < 0) return;
+  // Single source of truth for entering a chain lives in editor.js; the
+  // sidebar only asks it to focus the chain and then reveals the first block.
+  if (typeof window.focusChain === 'function') window.focusChain(index);
   else if (window.app) {
     window.app.selectedChain = index;
     window.app.selectedBlock = -1;
     window.updateChainBar?.();
   }
-  const shell = $('#editorView .editor-shell');
-  shell?.classList.remove('ws-left-open');
   const chain = window.app?.chains?.[index];
   const first = (chain?.blocks || []).findIndex(block => String(block.cmd ?? '').trim() !== '');
-  if (first >= 0) {
-    setTimeout(() => {
-      window.selectBlock?.({ chain: index, index: first });
-      if (window.innerWidth <= 900) shell?.classList.add('ws-inspector-open');
-    }, 90);
-  }
+  if (first >= 0) setTimeout(() => window.selectBlock?.({ chain: index, index: first }), 90);
   setTimeout(renderSidebar, 0);
 }
 
@@ -436,14 +442,13 @@ function buildFrame() {
   const canvas = $('#canvasWrap');
   const sidebar = $('#wsSidebar');
   const inspector = $('#inspector');
-  const chainBar = $('#chainBar');
   const searchResults = $('#searchResults');
   const searchDock = $('.search-dock');
   const viewGrid = $('.top-view-grid');
   const exitBtn = $('#exitChainBtn');
   const replaceBtn = $('#replaceBtn');
   const usageBtn = $('#usageHelpBtn');
-  if (!header || !canvas || !sidebar || !inspector || !chainBar) return;
+  if (!header || !canvas || !sidebar || !inspector) return;
 
   // Top bar: exit file, file identity, counts; theme/log/help/export on the right.
   const back = $('#backBtn');
@@ -460,8 +465,8 @@ function buildFrame() {
     usageBtn.innerHTML = icon('help');
     usageBtn.title = '使用说明';
     usageBtn.setAttribute('aria-label', '使用说明');
-    const save = $('#saveBtn');
-    if (save) actions.insertBefore(usageBtn, save);
+    const saveBtn = $('#saveBtn');
+    if (saveBtn) actions.insertBefore(usageBtn, saveBtn);
     else actions.append(usageBtn);
   }
   // The theme module owns the sun/moon glyph so workspace setup won't reset it.
@@ -499,13 +504,6 @@ function buildFrame() {
       exportMenu.classList.remove('on');
     });
   }
-  ['aiWholeBtn', 'aiChainBtn', 'wsMobileSearch', 'wsInspectorToggle', 'wsMoreBtn', 'wsMobileLeft', 'wsMobileInspector'].forEach(id => {
-    document.getElementById(id)?.classList.add('ws-hidden');
-  });
-  $('.ws-more')?.classList.add('ws-hidden');
-  ['diagnoseBtn', 'themeBtn', 'replaceBtn', 'saveBtn'].forEach(id => document.getElementById(id)?.classList.remove('ws-legacy-control'));
-  $('.bar-control-row')?.classList.add('ws-hidden');
-
   // 3D stage, its view controls, back button and the block popup.
   const stage = document.createElement('div');
   stage.className = 'ws-stage';
@@ -526,14 +524,12 @@ function buildFrame() {
   const undoBtn = $('#undoBtn');
   const redoBtn = $('#redoBtn');
   if (undoBtn) {
-    undoBtn.classList.remove('ws-hidden');
     undoBtn.innerHTML = icon('undo');
     undoBtn.title = '上一步';
     undoBtn.setAttribute('aria-label', '上一步');
     actions.prepend(undoBtn);
   }
   if (redoBtn) {
-    redoBtn.classList.remove('ws-hidden');
     redoBtn.innerHTML = icon('redo');
     redoBtn.title = '下一步';
     redoBtn.setAttribute('aria-label', '下一步');
@@ -593,21 +589,8 @@ function buildFrame() {
   });
   inspectorActions.append(aiBlockBtn);
   if (inspectorHead) {
-    const title = inspectorHead.querySelector('b');
-    if (title) {
-      title.id = 'inspectorTitle';
-      title.textContent = '—';
-    }
     const close = $('#infoClose');
     inspectorHead.insertBefore(inspectorActions, close || null);
-  }
-  $('#infoMarkBadge')?.remove();
-  $('.object-summary')?.classList.add('ws-hidden');
-  $('.edit-grid')?.classList.add('ws-hidden');
-  const camera = $('#cameraPad');
-  if (camera) {
-    camera.classList.add('ws-camera');
-    stage.append(camera);
   }
 
   // Lower control frame: search/replace/AI + collapsible chain manager.
@@ -644,7 +627,7 @@ function buildFrame() {
   document.body.append(seekOverlay);
   if (replaceBtn) {
     replaceBtn.remove();
-    replaceBtn.classList.add('ws-lower-btn');
+    replaceBtn.classList.add('ws-lower-btn', 'ws-icon-only');
     replaceBtn.innerHTML = icon('replace');
     replaceBtn.title = '批量替换';
     lower.append(replaceBtn);
@@ -721,8 +704,18 @@ function buildFrame() {
   work.append(numbers, codeMain);
   currentChain.append(currentHead, work);
 
-  chainBar.classList.add('ws-hidden');
   shell.append(header, stage, deck, currentChain);
+
+  // Reuse the upload footer in the editor, minus the support button.
+  const uploadFooter = $('#uploadFooter');
+  if (uploadFooter && !$('#editorFooter')) {
+    const footer = uploadFooter.cloneNode(true);
+    footer.id = 'editorFooter';
+    footer.classList.remove('upload-footer');
+    footer.classList.add('editor-footer');
+    footer.querySelector('.support-pill')?.remove();
+    shell.append(footer);
+  }
 
   bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain });
 }
@@ -828,6 +821,15 @@ function renderInlineText(force = false) {
 }
 
 window.renderInlineText = renderInlineText;
+window.getInlineEditState = () => {
+  const input = $('#wsInlineText');
+  return {
+    chain: inlineChain,
+    text: input ? input.value : '',
+    conditions: (inlineConditions || []).slice(),
+    dirty: inlineDirty
+  };
+};
 window.renderWorkspaceSidebar = scheduleSidebarRender;
 window.syncWorkspaceMode = () => {
   const shell = document.querySelector('#editorView .editor-shell');
@@ -853,27 +855,35 @@ function applyInlineText() {
   if (!chain) return;
   const raw = input.value.replace(/\r/g, '');
   const lines = raw.split('\n');
-  if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop();
-  if (!lines.length) lines.push('');
+  // Only trailing empty commands are auto-removed. Empty rows in the middle
+  // remain physical command blocks.
+  while (lines.length && !String(lines[lines.length - 1] ?? '').trim()) lines.pop();
+  if (!lines.length) {
+    window.toast?.('文本内容中没有可表示的命令方块', 'err');
+    return;
+  }
   const next = app.chains.map(item => ({
     ...item,
     blocks: (item.blocks || []).map(block => ({ ...block }))
   }));
   const target = next[ci];
-  const old = target.blocks || [];
-  const count = Math.max(old.length, lines.length);
-  const blocks = [];
-  for (let i = 0; i < count; i++) {
-    const cond = inlineConditions[i] ? 1 : 0;
-    if (i < old.length) {
-      blocks.push({ ...old[i], cmd: lines[i] ?? '', cond });
-    } else {
-      const first = i === 0;
-      const type = first ? (target.type === 'repeat' ? 'repeating' : 'command') : 'chain';
-      blocks.push({ cmd: lines[i] ?? '', cond, auto: 1, facing: 2, blockType: type, marked: false, note: '' });
-    }
-  }
-  if (!blocks.length) blocks.push({ cmd: '', cond: 0, auto: 1, facing: 2, blockType: 'command', marked: false, note: '' });
+  const chainType = target.type === 'impulse' ? 'impulse' : (target.type === 'snake' ? 'snake' : 'repeat');
+  const firstBlockType = chainType === 'impulse' ? 'command' : 'repeating';
+  // Reset from the current text: do not keep old coordinates, facings, marks,
+  // notes, air placeholders or cycle topology.
+  const blocks = lines.map((line, index) => ({
+    cmd: String(line ?? '').trim(),
+    cond: inlineConditions[index] ? 1 : 0,
+    auto: 1,
+    facing: 2,
+    blockType: index === 0 ? firstBlockType : 'chain',
+    marked: false,
+    note: ''
+  }));
+  target.type = chainType;
+  target.selfClosed = false;
+  target.selfClosedCycleKeys = [];
+  target.preservePhysicalType = false;
   target.blocks = blocks;
   try {
     window.reflowChainsForSize?.(next);
@@ -887,7 +897,6 @@ function applyInlineText() {
     window.renderAllBlocks?.();
     window.updateStats?.();
     window.updateChainBar?.();
-    window.renderChainManager?.();
     window.logInfo?.(`直接编辑链 ${ci + 1}：${lines.length} 行命令`, '文本模式');
     window.toast?.(`已确认修改链 ${ci + 1} 的文本内容`, 'ok');
     inlineDirty = false;
@@ -903,19 +912,6 @@ function applyInlineText() {
 }
 
 function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, seekClose, inlineText, numbers, codeMain }) {
-  const menu = $('#wsMoreMenu');
-  if (menu) menu.hidden = true;
-
-  // hide legacy chain dock controls and its empty areas
-  $('#chainManage')?.classList.add('ws-hidden');
-  $('#chainDeleteBtn')?.classList.add('ws-hidden');
-  $('.chain-action-label')?.classList.add('ws-hidden');
-  $('.usage-help-area')?.classList.add('ws-hidden');
-  $('.ws-side-foot')?.classList.add('ws-hidden');
-  $('#wsMobileLeft')?.classList.add('ws-hidden');
-  $('#wsMobileInspector')?.classList.add('ws-hidden');
-  $('#wsInspectorToggle')?.classList.add('ws-hidden');
-  $('#chainAddBtn')?.setAttribute('data-ws-add', '1');
 
   inlineText.addEventListener('input', () => {
     if (inlineText.value !== (window.app?.chains?.[window.app.selectedChain]?.blocks || []).map(block => String(block.cmd ?? '')).join('\n')) {
@@ -992,22 +988,11 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
 
   aiAssist.addEventListener('click', () => {
     const scope = window.app?.mode === 'chain' ? 'chain' : 'all';
-    if (window.BlockFlowAI?.open) window.BlockFlowAI.open(scope);
-    else document.getElementById('aiWholeBtn')?.click();
+    window.BlockFlowAI?.open?.(scope);
   });
 
-  const openAddChain = () => {
-    $('#chainAddBtn')?.click();
-  };
-  $('#wsAddChain')?.addEventListener('click', openAddChain);
+  const openAddChain = () => window.openChainAddModal?.();
   addTop?.addEventListener('click', openAddChain);
-  $('.ws-side-head')?.classList.add('ws-hidden');
-  $('.ws-side-filter')?.classList.add('ws-hidden');
-  $('.ws-side-foot')?.classList.add('ws-hidden');
-
-  // The legacy manager renders canonical rows; mirror its updates.
-  const manager = $('#chainManagerList');
-  if (manager) new MutationObserver(scheduleSidebarRender).observe(manager, { childList: true });
 
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && modal.classList.contains('on')) {
@@ -1031,10 +1016,6 @@ function bindFrame({ manageBtn, aiAssist, addTop, modal, seekBtn, seekOverlay, s
   });
 
   renderSidebar();
-  setTimeout(() => {
-    if (window.renderChainManager) window.renderChainManager();
-    renderSidebar();
-  }, 100);
   window.renderWorkspaceSidebar?.();
 }
 
@@ -1137,10 +1118,26 @@ function bindUploadEyes() {
   start();
 }
 
+function bindDesktopOnlyGate() {
+  const gate = $('#pcOnlyGate');
+  if (!gate) return;
+  const ua = navigator.userAgent || '';
+  const mobileUA = /Android|iPhone|iPad|iPod|Mobile|Tablet|Windows Phone/i.test(ua);
+  const ipadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  const touchOnly = window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(hover: none)').matches;
+  if (!mobileUA && !ipadOS && !touchOnly) return;
+  // Keep the page loaded but inert behind a full-screen notice.
+  document.body.classList.add('bf-pc-only');
+  gate.hidden = false;
+  $('#editorView')?.setAttribute('aria-hidden', 'true');
+  $('#uploadView')?.setAttribute('aria-hidden', 'true');
+}
+
 function bind() {
   if (!$('#editorView')) return;
   buildFrame();
   bindUploadEyes();
+  bindDesktopOnlyGate();
   const shell = $('#editorView .editor-shell');
   if (!shell) return;
   // closing the 3D popup when clicking outside is handled by the app's deselect;

@@ -38,7 +38,7 @@
 #uploadView .upload-copy{text-align:center}
 #uploadView .upload-copy h1{font-size:clamp(23px,3.2vw,30px)}
 #uploadView .upload-eyes{
-  position:fixed;z-index:1000;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));
+  position:fixed;z-index:1000;top:16px;right:16px;
   display:flex;flex-direction:column;align-items:flex-end;gap:8px;
   margin:0;padding:0;border:0;background:transparent;color:inherit;
   cursor:pointer;pointer-events:auto;appearance:none;-webkit-appearance:none;
@@ -49,14 +49,6 @@
 #uploadView .upload-eye{display:grid;place-items:center;width:16px;height:16px;overflow:visible}
 #uploadView .upload-eye i{display:block;width:10px;height:10px;border-radius:50%;background:#000;transform-origin:center;will-change:transform;transition:transform .1s ease-out}
 [data-theme="light"] #uploadView .upload-eye i{background:#273447}
-@media(max-width:600px){
-  #uploadView .upload-shell{padding:16px}
-  #uploadView .upload-card{width:min(100%,calc(100vw - 32px));padding:22px;gap:14px;border-radius:20px}
-  #uploadView .brand-mark{width:52px;height:52px}
-  #uploadView .upload-copy h1{margin-bottom:5px}
-  #uploadView .upload-eyes{top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right))}
-  #uploadView .upload-eyes-pill{width:58px;height:38px}
-}
 
 /* ---- upload box: reference layout, scoped to the existing card ---- */
 #uploadView .upload-zone{
@@ -153,17 +145,6 @@
 #uploadView .upload-btn:hover{border-color:var(--accent)}
 #uploadView .upload-btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
 #uploadView .upload-btn-primary:hover{background:var(--accent);border-color:var(--accent);filter:brightness(.92)}
-#uploadView .upload-btn:disabled{opacity:.55;cursor:wait}
-
-@media(max-width:600px){
-  #uploadView .upload-zone{padding:20px 14px;border-radius:12px}
-  #uploadView .upload-zone-icon{width:46px;height:46px;margin-bottom:10px;border-radius:13px}
-  #uploadView .upload-zone-icon svg{width:21px;height:21px}
-  #uploadView .upload-zone-title{font-size:14px}
-  #uploadView .upload-zone-desc{font-size:11px;line-height:1.5}
-  #uploadView .upload-selected{padding:11px;gap:10px}
-  #uploadView .upload-btn{height:32px;font-size:11px}
-}
 
 /* Refined SVG icon rendering in upload view */
 #uploadView .upload-zone-icon svg,

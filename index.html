@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="textures/favicon.ico" type="image/x-icon">
 <title>BlockFlow</title>
-<meta name="blockflow-build" content="cleanup-2026-11-28">
+<meta name="blockflow-build" content="layout-2026-11-29-r39">
 <script>
 /* Apply the stored/system theme before the first paint to avoid a dark-to-light flash. */
 (() => {
@@ -18,21 +18,17 @@
   }
 })();
 </script>
-<link rel="stylesheet" href="./styles/tokens.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/upload.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/editor.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/components.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/responsive.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/ai.css?v=r32-cleanup-20261128">
-<link rel="stylesheet" href="./styles/workspace.css?v=r32-cleanup-20261128">
+<link rel="stylesheet" href="./styles/tokens.css?v=r39-layout-20261129">
+<link rel="stylesheet" href="./styles/upload.css?v=r39-layout-20261129">
+<link rel="stylesheet" href="./styles/editor.css?v=r39-layout-20261129">
+<link rel="stylesheet" href="./styles/components.css?v=r39-layout-20261129">
+<link rel="stylesheet" href="./styles/ai.css?v=r39-layout-20261129">
+<link rel="stylesheet" href="./styles/workspace.css?v=r39-layout-20261129">
 </head>
 <body>
 <svg class="icon-sprite" aria-hidden="true" focusable="false"><defs>
 <symbol id="icon-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V21"/></symbol>
 <symbol id="icon-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></symbol>
-<symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
-<symbol id="icon-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m6 11 6-6 6 6"/></symbol>
-<symbol id="icon-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></symbol>
 <symbol id="icon-theme" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"/></symbol>
 <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.28 5.28l1.56 1.56m10.32 10.32 1.56 1.56m0-13.44-1.56 1.56M6.84 17.16l-1.56 1.56"/></symbol>
 <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M20.4 15.1A8.7 8.7 0 0 1 8.9 3.6 8.8 8.8 0 1 0 20.4 15.1Z"/><path d="M16.8 3.2v2.2M18 4.3h-2.2"/></symbol>
@@ -42,6 +38,7 @@
 <symbol id="icon-block-ai" viewBox="0 0 24 24"><path d="m12 2.8 1.9 6.1 6.1 1.9-6.1 1.9-1.9 6.1-1.9-6.1L4 10.8l6.1-1.9L12 2.8Z"/><path d="m19 16 .8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></symbol>
 <symbol id="icon-log" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
 <symbol id="icon-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.5 2.5 0 1 1 4.1 1.9c-.8.6-1.6 1.1-1.6 2.2"/><circle cx="12" cy="17" r=".6" fill="currentColor" stroke="none"/></symbol>
+<symbol id="icon-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 7 3.5C19 15.6 12 20 12 20Z"/></symbol>
 <symbol id="icon-export" viewBox="0 0 24 24"><path d="M12 15V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4.5 15v3.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V15"/></symbol>
 <symbol id="icon-view-front" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16M9.5 5v14"/></symbol>
 <symbol id="icon-view-side" viewBox="0 0 24 24"><path d="M4 6.5h9v12H4z"/><path d="M13 6.5 20 3.5v12l-7 3"/></symbol>
@@ -56,14 +53,10 @@
 <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></symbol>
 <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol>
 <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4.5 7h15M4.5 12h15M4.5 17h15"/></symbol>
-<symbol id="icon-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.4" fill="currentColor" stroke="none"/></symbol>
 <symbol id="icon-grip" viewBox="0 0 24 24"><circle cx="9" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="9" cy="17.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="17.5" r="1.2" fill="currentColor" stroke="none"/></symbol>
 <symbol id="icon-pencil" viewBox="0 0 24 24"><path d="m4.5 19.5 4.2-.9L19 8.3a2 2 0 0 0-2.8-2.8L5.9 15.8l-1.4 3.7Z"/><path d="m14 6.5 3.5 3.5"/></symbol>
-<symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9 7V4.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5V7M6.5 7l.9 12.5a1.5 1.5 0 0 0 1.5 1.5h6.2a1.5 1.5 0 0 0 1.5-1.5L17.5 7"/><path d="M10 11v5.5M14 11v5.5"/></symbol>
 <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></symbol>
-<symbol id="icon-flag" viewBox="0 0 24 24"><path d="M5.5 20.5V4.5"/><path d="M5.5 4.5c4-1.8 8 1.8 13.5 0v8c-5.5 1.8-9.5-1.8-13.5 0"/></symbol>
 <symbol id="icon-inspector" viewBox="0 0 24 24"><path d="M2.5 12S6 6.2 12 6.2 21.5 12 21.5 12 18 17.8 12 17.8 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.6"/></symbol>
-<symbol id="icon-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></symbol>
 <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.1" fill="var(--surface, #10151d)"/><circle cx="15" cy="12" r="2.1" fill="var(--surface, #10151d)"/><circle cx="8" cy="17" r="2.1" fill="var(--surface, #10151d)"/></symbol>
 <symbol id="icon-sparkle" viewBox="0 0 24 24"><path d="M12 3.2 13.7 8.3 18.8 10l-5.1 1.7L12 16.8l-1.7-5.1L5.2 10l5.1-1.7L12 3.2Z"/><path d="M18.5 15.5l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z"/></symbol>
 <symbol id="icon-cube" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
@@ -75,6 +68,12 @@
 <div id="uploadView" class="screen on">
   <div class="upload-shell">
     <div class="upload-card">
+      <div class="upload-support">
+        <button id="supportOpen" class="support-pill" type="button">
+          <svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-heart"></use></svg>
+          赞赏支持
+        </button>
+      </div>
       <div class="upload-top">
         <div class="brand">
           <img class="brand-mark" src="textures/favicon.ico" alt="">
@@ -123,6 +122,14 @@
         </div>
       </div>
     </div>
+    <footer id="uploadFooter" class="site-footer upload-footer">
+      <nav class="contact-links" aria-label="作者联系方式">
+        <a href="https://github.com/X1aooooooooH" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://qm.qq.com/q/Lj8iBXVCWk" target="_blank" rel="noopener noreferrer">QQ</a>
+        <a href="https://b23.tv/n8170Kj" target="_blank" rel="noopener noreferrer">Bilibili</a>
+        <a href="mailto:X1aooooooooH@gmail.com" title="X1aooooooooH@gmail.com">邮箱</a>
+      </nav>
+    </footer>
   </div>
 </div>
 
@@ -132,107 +139,52 @@
   <div class="editor-shell">
     <header class="command-bar">
       <div class="bar-main-row">
-        <button id="wsMobileLeft" class="ws-mobile-btn" type="button" aria-label="打开链列表" title="链列表"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-menu"></use></svg></button>
         <button id="backBtn" class="icon-btn bar-brand" type="button" aria-label="返回文件导入" title="返回文件导入">
-        <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-arrow-left"></use></svg>
-        <span class="brand-copy"><b>BlockFlow</b></span>
-      </button>
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-arrow-left"></use></svg>
+          <span class="brand-copy"><b>BlockFlow</b></span>
+        </button>
         <div class="bar-file">
-        <div class="bar-file-name"><span class="bar-label">当前文件</span><b id="tbarFile">未加载结构</b></div>
-        <div class="bar-file-stats">
-          <span><i>命令</i><b id="tbarCommands">0</b></span>
-          <span><i>链</i><b id="tbarChains">0</b></span>
+          <div class="bar-file-name"><span class="bar-label">当前文件</span><b id="tbarFile">未加载结构</b></div>
+          <div class="bar-file-stats">
+            <span><i>命令</i><b id="tbarCommands">0</b></span>
+            <span><i>链</i><b id="tbarChains">0</b></span>
+          </div>
         </div>
-      </div>
       </div>
       <div class="bar-control-row">
         <nav class="top-view-grid" aria-label="视图">
-        <button id="exitChainBtn" class="top-home-btn" title="返回结构总览" aria-label="返回结构总览" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-home"></use></svg></button>
-        <span class="top-view-sep" aria-hidden="true"></span>
-        <button class="view-btn" data-preset="front" title="正视图" aria-label="正视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-front"></use></svg></button>
-        <button class="view-btn active" data-preset="side" title="侧视图" aria-label="侧视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-side"></use></svg></button>
-        <button class="view-btn" data-preset="top" title="俯视图" aria-label="俯视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-top"></use></svg></button>
-      </nav>
+          <button id="exitChainBtn" class="top-home-btn" title="返回结构总览" aria-label="返回结构总览" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-home"></use></svg></button>
+          <span class="top-view-sep" aria-hidden="true"></span>
+          <button class="view-btn" data-preset="front" title="正视图" aria-label="正视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-front"></use></svg></button>
+          <button class="view-btn active" data-preset="side" title="侧视图" aria-label="侧视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-side"></use></svg></button>
+          <button class="view-btn" data-preset="top" title="俯视图" aria-label="俯视图" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-view-top"></use></svg></button>
+        </nav>
         <div class="search-dock">
-        <div class="search-wrap">
-          <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-search"></use></svg>
-          <input id="blockSearch" class="search-input" type="text" placeholder="搜索命令或注释" autocomplete="off">
-          <button id="searchClear" class="search-clear" type="button" aria-label="清除"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
-          
+          <div class="search-wrap">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-search"></use></svg>
+            <input id="blockSearch" class="search-input" type="text" placeholder="搜索命令或注释" autocomplete="off">
+            <button id="searchClear" class="search-clear" type="button" aria-label="清除"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
+          </div>
         </div>
-      </div>
-      </div>
+              </div>
       <div class="bar-actions">
-        <button id="aiWholeBtn" class="ai-top-btn" type="button" title="让 AI 阅读整个结构" hidden>AI阅读全文</button>
-        <button id="aiChainBtn" class="ai-top-btn" type="button" title="让 AI 阅读当前命令链" hidden>AI阅读分链</button>
+        <button id="usageHelpBtn" class="icon-btn ws-top-utility" type="button" title="使用说明" aria-label="使用说明"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-help"></use></svg></button>
         <button id="undoBtn" class="icon-btn" title="撤销" aria-label="撤销" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-undo"></use></svg></button>
         <button id="redoBtn" class="icon-btn" title="重做" aria-label="重做" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-redo"></use></svg></button>
         <button id="diagnoseBtn" class="icon-btn bar-utility-btn" title="运行日志" aria-label="运行日志" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-log"></use></svg></button>
         <button id="replaceBtn" class="icon-btn bar-utility-btn" title="批量替换" aria-label="批量替换" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-replace"></use></svg></button>
         <button id="themeBtn" class="icon-btn" title="主题" aria-label="切换主题" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-theme"></use></svg></button>
-        <button id="wsMobileSearch" class="icon-btn ws-mobile-btn" type="button" title="搜索" aria-label="搜索"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-search"></use></svg></button>
-        <button id="wsInspectorToggle" class="icon-btn ws-inspector-btn" type="button" title="收起/展开检查器" aria-label="收起或展开检查器"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-inspector"></use></svg></button>
-        <div class="ws-more">
-          <button id="wsMoreBtn" class="icon-btn" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="更多"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-more"></use></svg></button>
-          <div id="wsMoreMenu" class="ws-more-menu" role="menu" hidden>
-            <button type="button" role="menuitem" data-ws-ai>AI 检查</button>
-            <button type="button" role="menuitem" data-ws-click="saveBtn">导出结构</button>
-            <button type="button" role="menuitem" data-ws-click="diagnoseBtn">运行日志</button>
-            <button type="button" role="menuitem" data-ws-click="replaceBtn">批量替换</button>
-            <button type="button" role="menuitem" data-ws-click="themeBtn">切换主题</button>
-            <button type="button" role="menuitem" data-ws-click="usageHelpBtn">使用说明</button>
-          </div>
-        </div>
         <button id="saveBtn" class="export-btn" type="button" title="导出当前命令链结构" aria-label="导出当前命令链结构"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-export"></use></svg></button>
       </div>
     </header>
 
     <aside id="wsSidebar" class="ws-sidebar">
-      <div class="ws-side-head"><div><b>结构 / 链</b><span id="wsChainCount">0 条</span></div><button id="wsAddChain" type="button" title="新增链" aria-label="新增链"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg></button></div>
-      <div class="ws-side-filter"><button class="on" type="button" data-ws-filter="all">全部</button><button type="button" data-ws-filter="empty">有空尾</button></div>
       <div id="wsChainList" class="ws-chain-list"></div>
-      <div class="ws-side-foot"><button id="wsManage" type="button">管理链</button><button id="wsHelp" type="button">说明</button><button id="wsCollapse" type="button" title="收起侧栏" aria-label="收起侧栏"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-chevron-left"></use></svg></button></div>
     </aside>
-    <button id="wsMobileInspector" class="ws-mobile-btn" type="button" aria-label="打开检查器" title="检查器"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-inspector"></use></svg></button>
 
     <div id="searchResults" class="search-results"></div>
 
     <div id="canvasWrap" class="canvas-wrap"></div>
-
-    <div id="chainBar" class="chain-dock">
-      <div class="chain-action-area">
-        <span class="chain-action-label">链操作</span>
-        <div class="chain-action-buttons">
-          <button id="chainManage" class="chain-manage-btn" title="管理命令链" type="button">管理链</button>
-          <button id="chainTextModeBtn" class="chain-text-mode-btn" title="当前链文本模式" type="button">文本模式</button>
-          <button id="chainDeleteBtn" class="chain-delete-btn" title="删除当前命令链" type="button">删除本链</button>
-        </div>
-      </div>
-      <div id="cameraPad" class="camera-pad" role="group" aria-label="摄像机平移方向键">
-        <button class="camera-pad-btn camera-pad-up" data-camera-move="up" type="button" aria-label="摄像机向上平移" title="向上平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-up"></use></svg></button>
-        <button class="camera-pad-btn camera-pad-left" data-camera-move="left" type="button" aria-label="摄像机向左平移" title="向左平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-left"></use></svg></button>
-        <span class="camera-pad-center" aria-hidden="true"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-crosshair"></use></svg></span>
-        <button class="camera-pad-btn camera-pad-right" data-camera-move="right" type="button" aria-label="摄像机向右平移" title="向右平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-right"></use></svg></button>
-        <button class="camera-pad-btn camera-pad-down" data-camera-move="down" type="button" aria-label="摄像机向下平移" title="向下平移"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-arrow-down"></use></svg></button>
-      </div>
-      <div class="usage-help-area">
-        <button id="usageHelpBtn" class="usage-help-btn" type="button" title="打开完整 README 使用说明" aria-label="打开完整 README 使用说明">
-          <span class="usage-help-icon" aria-hidden="true"><svg class="icon icon-xs" aria-hidden="true" focusable="false"><use href="#icon-help"></use></svg></span><span>使用说明</span>
-        </button>
-      </div>
-    </div>
-
-    <div id="chainManager" class="chain-manager">
-      <div class="chain-manager-head">
-        <div><b>链位置</b><span>拖动链条调整顺序</span></div>
-        <div class="chain-manager-head-actions">
-          <button id="chainAddBtn" class="chain-add-btn" type="button"><svg class="icon icon-sm" aria-hidden="true" focusable="false"><use href="#icon-plus"></use></svg><span>新增链</span></button>
-          <button id="chainManagerClose" class="chain-manager-close" title="关闭" aria-label="关闭" type="button"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
-        </div>
-      </div>
-      <div id="chainManagerList" class="chain-manager-list"></div>
-      <div class="chain-sort-hint">拖动项目后会立即重新排列结构中的 X 位置。</div>
-    </div>
 
     <div id="chainAddModal" class="chain-add-modal" role="dialog" aria-modal="true" aria-labelledby="chainAddTitle" aria-hidden="true">
       <div class="chain-add-card">
@@ -252,33 +204,10 @@
       </div>
     </div>
 
-    <div id="textEditorOverlay" class="text-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="textEditorTitle" aria-hidden="true">
-      <div class="text-editor-card">
-        <div class="text-editor-head">
-          <div><b id="textEditorTitle">文本模式</b><span id="textEditorSub">每行一条命令 · 点击行号切换有无条件</span></div>
-          <button id="textEditorClose" type="button" class="text-editor-close" title="关闭" aria-label="关闭文本模式"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
-        </div>
-        <div id="textEditorWork" class="text-editor-work">
-          <div id="textEditorLineNumbers" class="text-line-numbers" aria-hidden="true"></div>
-          <div id="textEditorCodeMain" class="text-code-main">
-            <pre id="textEditorHighlight" class="text-editor-highlight" aria-hidden="true" data-placeholder="输入命令，每行一条；点击左侧行号切换有无条件"></pre>
-            <textarea id="textEditorInput" class="text-editor-input" spellcheck="false" wrap="soft" autocomplete="off" autocorrect="off" autocapitalize="off" aria-label="命令文本编辑区"></textarea>
-          </div>
-        </div>
-        <div class="text-editor-foot">
-          <span id="textEditorHint">每行一条命令 · 自动换行 · 支持 Minecraft 命令语法高亮</span>
-          <div><button id="textEditorCancel" type="button" class="text-editor-btn">取消</button><button id="textEditorApply" type="button" class="text-editor-btn primary text-editor-confirm" title="确认修改" aria-label="确认修改"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12.5 4.5 4.5L19.5 6.5"/></svg></button></div>
-        </div>
-      </div>
-    </div>
-
-    
-
     <aside id="inspector" class="inspector">
-      <div class="inspector-head"><b>对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
+      <div class="inspector-head"><b id="inspectorTitle">对象</b><button id="infoClose" class="inspector-close" type="button" title="关闭" aria-label="关闭"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button></div>
       <div id="emptyState" class="empty-state"><div class="empty-icon"><svg class="icon icon-lg" aria-hidden="true" focusable="false"><use href="#icon-cube"></use></svg></div><b>尚未选择对象</b><p>选择场景中的命令方块后，在这里查看坐标、条件与标记。</p></div>
       <div id="infoPanel" class="info">
-        <div class="object-summary"><span id="infoIdx" class="idx">#—</span><b id="infoType">命令方块</b><span id="infoAuxBadge">辅助方块</span><span id="infoMarkBadge">已标记</span></div>
         <div class="inspector-select-row">
           <label class="inspector-select-card"><select id="infoBlockType" aria-label="方块类型"><option value="command">脉冲</option><option value="chain">链式</option><option value="repeating">循环</option></select></label>
           <label class="inspector-select-card"><select id="infoCond" aria-label="条件"><option value="0">无条件</option><option value="1">有条件</option></select></label>
@@ -286,12 +215,38 @@
         </div>
         <div class="inspector-field is-note"><div class="inspector-field-head">注释</div><textarea id="infoNote" spellcheck="false" wrap="soft" placeholder="输入注释……"></textarea></div>
         <div class="inspector-field"><div class="inspector-field-head">命令</div><textarea id="infoCmd" spellcheck="false" wrap="soft" placeholder="输入命令……"></textarea></div>
-        <div class="edit-grid"><button id="infoMark" type="button">标记</button><button id="infoInsAfter" type="button">后插</button><button id="infoDel" class="danger" type="button">删除</button></div>
+        <button id="infoMark" type="button">标记</button><button id="infoInsAfter" type="button">后插</button><button id="infoDel" class="danger" type="button">删除</button>
       </div>
     </aside>
   </div>
 </div>
 
+
+<div id="pcOnlyGate" class="pc-only-gate" role="alertdialog" aria-modal="true" aria-labelledby="pcOnlyGateTitle" aria-describedby="pcOnlyGateDesc" hidden>
+  <div class="pc-only-gate-card">
+    <div class="pc-only-gate-icon" aria-hidden="true">
+      <svg viewBox="0 0 120 120" fill="none" focusable="false">
+        <defs>
+          <linearGradient id="pcOnlyAccent" x1="24" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+            <stop stop-color="var(--accent)"/>
+            <stop offset="1" stop-color="#67d8b0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="58" r="47" stroke="currentColor" stroke-opacity=".12" stroke-width="1.5" stroke-dasharray="3 7"/>
+        <rect x="20" y="20" width="80" height="50" rx="7" stroke="url(#pcOnlyAccent)" stroke-width="2.6"/>
+        <rect x="27" y="27" width="66" height="36" rx="4" fill="url(#pcOnlyAccent)" fill-opacity=".12"/>
+        <rect x="52" y="39" width="16" height="12" rx="2" stroke="url(#pcOnlyAccent)" stroke-width="2"/>
+        <path d="M55.5 39v-3.5a4.5 4.5 0 0 1 9 0V39" stroke="url(#pcOnlyAccent)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M56 70h8v7h-8zM44 77h32" stroke="currentColor" stroke-opacity=".4" stroke-width="2.4" stroke-linecap="round"/>
+        <rect x="84" y="84" width="18" height="24" rx="9" stroke="currentColor" stroke-opacity=".4" stroke-width="2"/>
+        <path d="M93 86v6" stroke="currentColor" stroke-opacity=".4" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <b id="pcOnlyGateTitle">仅支持 PC 访问</b>
+    <p id="pcOnlyGateDesc">检测到你正在使用移动设备。BlockFlow 的 3D 编辑器仅支持电脑端，请改用 PC 打开本页面。</p>
+    <span class="pc-only-gate-hint">移动端已禁用编辑功能</span>
+  </div>
+</div>
 
 <div id="diagnosticModal" class="feature-modal" role="dialog" aria-modal="true" aria-labelledby="diagnosticTitle" aria-hidden="true">
   <div class="feature-card diagnostic-card">
@@ -335,7 +290,19 @@
       <div><b id="usageHelpTitle">使用说明</b><span>完整 README 文档 · 与发行包内 README.md 内容同步</span></div>
       <button id="usageHelpClose" class="feature-close" type="button" aria-label="关闭使用说明"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
     </div>
-    <article id="usageReadmeBody" class="usage-readme-body" aria-live="polite">正在从同目录读取 README.md……</article>
+    <article id="usageReadmeBody" class="usage-readme-body" aria-live="polite">正在读取使用文档</article>
+  </div>
+</div>
+
+<div id="supportModal" class="feature-modal support-modal" role="dialog" aria-modal="true" aria-labelledby="supportTitle" aria-hidden="true">
+  <div class="feature-card support-card">
+    <div class="feature-head">
+      <div><b id="supportTitle">赞赏支持</b><span>感谢你的支持</span></div>
+      <button id="supportClose" class="feature-close" type="button" aria-label="关闭赞赏支持"><svg class="icon" aria-hidden="true" focusable="false"><use href="#icon-close"></use></svg></button>
+    </div>
+    <div class="support-body">
+      <img src="textures/appr.png" alt="岁月静好的赞赏码" width="380" height="380" decoding="async">
+    </div>
   </div>
 </div>
 
@@ -356,8 +323,8 @@
 </script>
 <script src="./src/data/skill-ids-data.js"></script>
 <script src="./src/data/ai-skill-data.js"></script>
-<script type="module" src="./src/main.js?v=r32-cleanup-20261128"></script>
-<script type="module" src="./src/ai.js?v=r32-cleanup-20261128"></script>
-<script type="module" src="./src/workspace.js?v=r32-cleanup-20261128"></script>
+<script type="module" src="./src/main.js?v=r39-layout-20261129"></script>
+<script type="module" src="./src/ai.js?v=r39-layout-20261129"></script>
+<script type="module" src="./src/workspace.js?v=r39-layout-20261129"></script>
 </body>
 </html>

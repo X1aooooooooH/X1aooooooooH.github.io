@@ -6,7 +6,7 @@ import {
 } from './broken-head.js';
 import { relayoutBlocks } from './trace.js';
 
-export function getStructureDimensions(chains){
+function getStructureDimensions(chains){
   if(!Array.isArray(chains)||chains.length===0)return{X:0,Y:0,Z:0};
   let minX=Infinity,maxX=-Infinity,maxY=-Infinity,maxZ=-Infinity;
   for(const chain of chains){
@@ -121,7 +121,7 @@ export function buildExportLayouts(chains){
 // Keep whole chains' internal geometry intact while preventing exact 3D
 // coordinate collisions after reflow. Shifting X does not change a closed
 // cycle's relative coordinates or its facing directions.
-export function resolveChainCoordinateOverlaps(chains){
+function resolveChainCoordinateOverlaps(chains){
   const occupied=new Set();
   for(let i=0;i<(Array.isArray(chains)?chains.length:0);i++){
     const blocks=chains[i]?.blocks||[];

@@ -6,7 +6,7 @@
  * - The bundled skills/be-cmd/SKILL.md is injected as the system prompt.
  */
 import { app } from './state.js';
-import { getTextEditChain } from './ui/text-editor.js';
+import { getTextEditChain } from './ui/text-editor.js?v=r39-layout-20261129';
 import { parseActionBlock, executeActionOps, captureActionState } from './ai/actions.js';
 import { refreshChainsUI, pushHistory } from './editor.js';
 import { logInfo, logWarn, logOk, logError } from './log.js';
@@ -785,11 +785,6 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
 
   function refresh() {
     ensureAiFileContext();
-    const whole = document.getElementById('aiWholeBtn');
-    const chain = document.getElementById('aiChainBtn');
-    const mode = (typeof app !== 'undefined' && app && app.mode) ? app.mode : 'overview';
-    if (whole) whole.hidden = !hasKey() || mode === 'chain';
-    if (chain) chain.hidden = !hasKey() || mode !== 'chain';
   }
 
   
@@ -1110,7 +1105,6 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
       let userScrolled = false;
       const markUserScroll = () => { userScrolled = true; };
       thinkBody.addEventListener('wheel', markUserScroll, { passive: true });
-      thinkBody.addEventListener('touchstart', markUserScroll, { passive: true });
       thinkBody.addEventListener('pointerdown', markUserScroll);
       thinkBody.addEventListener('keydown', markUserScroll);
       thinkBody.addEventListener('scroll', () => {
@@ -1781,10 +1775,6 @@ const roleLabel = { user: '你', assistant: 'AI', error: '错误' };
 
   function bindGlobal() {
     ensureUi();
-    const whole = document.getElementById('aiWholeBtn');
-    const chain = document.getElementById('aiChainBtn');
-    if (whole) whole.addEventListener('click', () => openChat('all'));
-    if (chain) chain.addEventListener('click', () => openChat('chain'));
     const initialKey = currentAiFileKey();
     if (initialKey) {
       aiFileKey = initialKey;

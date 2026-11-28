@@ -10,10 +10,6 @@ function byId(id) {
 export function showInfo(ci, bi, block) {
   const title = byId('inspectorTitle');
   if (title) title.textContent = '#' + bi + ' ' + (TYPE_LABEL[block.blockType] || '命令方块');
-  byId('infoIdx').textContent = '#' + bi;
-  byId('infoAuxBadge')?.classList.toggle('on', !!block.isAuxiliary);
-  byId('infoMarkBadge')?.classList.toggle('on', !!block.marked);
-  byId('infoType').textContent = block.cond ? `${TYPE_LABEL[block.blockType]} · 有条件` : TYPE_LABEL[block.blockType];
   const typeSelect = byId('infoBlockType');
   if (typeSelect) typeSelect.value = block.blockType;
   const markButton = byId('infoMark');

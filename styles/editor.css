@@ -373,10 +373,3 @@
 .chain-add-close:hover{background:rgba(220,85,99,.14);border-color:rgba(220,105,117,.42);color:#ff9ca6}
 [data-theme="light"] .chain-add-close{background:#f1f4f8;border-color:#d5dde7;color:#718096}
 [data-theme="light"] .chain-add-close:hover{background:#fff0f1;border-color:#edc1c5;color:#c44e5b}
-@media(max-width:520px){
-  .chain-manager-head{padding:12px}
-  .chain-add-btn{min-width:84px;height:35px;padding:0 11px}
-  .chain-manager-close{width:35px;height:35px;flex-basis:35px}
-  .chain-add-modal{padding:12px}
-  .chain-add-card{max-height:calc(100dvh - 24px)}
-}

@@ -1,10 +1,10 @@
 // Canonical in-memory shape for chains and blocks.
 // Every edit pipeline clones through these helpers so fields cannot drift apart.
-export function cloneBlock(block) {
+function cloneBlock(block) {
   return { ...block };
 }
 
-export function cloneChain(chain) {
+function cloneChain(chain) {
   return {
     uid: chain?.uid || '',
     name: chain?.name || '',
@@ -20,7 +20,7 @@ export function cloneChains(chains) {
   return (Array.isArray(chains) ? chains : []).map(cloneChain);
 }
 
-export function snapshotBlock(block) {
+function snapshotBlock(block) {
   return {
     x: block?.x, y: block?.y, z: block?.z,
     cmd: block?.cmd,

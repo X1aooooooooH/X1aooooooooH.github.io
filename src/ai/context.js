@@ -1,10 +1,10 @@
 import { app } from '../state.js';
 import { getBrokenHeadKind, isBrokenChainPlaceholder } from '../core/broken-head.js';
-import { getTextEditChain, getTextEditDraft } from '../ui/text-editor.js';
+import { getTextEditChain } from '../ui/text-editor.js?v=r39-layout-20261129';
 import { CONTEXT_LIMIT } from './prompts.js';
 import { loadSkillRuntime, searchSkillIds } from './skill.js';
 
-export function typeLabel(type) {
+function typeLabel(type) {
     return type === 'snake' ? '断链' : type === 'repeat' ? '循环链' : '脉冲链';
   }
 
@@ -72,13 +72,12 @@ export function buildContext(scope) {
       commandCount = app.chains[ci] && Array.isArray(app.chains[ci].blocks) ? app.chains[ci].blocks.length : 0;
       appendLimited(lines, `范围：链 ${ci + 1}；该链命令方块数：${commandCount}`, budget);
       if (scope === 'text') {
-        const editor = document.getElementById('textEditorOverlay');
-        const input = document.getElementById('textEditorInput');
-        const isOpen = editor && editor.classList.contains('on');
-        if (isOpen && input) {
-          appendLimited(lines, `\n## 文本模式当前内容（每行一条命令，可能包含未应用的修改）`, budget);
-          const values = String(input.value || '').replace(/\r/g, '').split('\n');
-          const conditions = (getTextEditDraft() && Array.isArray(getTextEditDraft().conditionLines)) ? getTextEditDraft()?.conditionLines : [];
+        const inline = typeof window !== 'undefined' ? window.getInlineEditState?.() : null;
+        const isOpen = inline && Number.isInteger(inline.chain) && inline.chain === ci;
+        if (isOpen) {
+          appendLimited(lines, `\n## 内联编辑器当前内容（每行一条命令，可能包含未应用的修改）`, budget);
+          const values = String(inline.text || '').replace(/\r/g, '').split('\n');
+          const conditions = Array.isArray(inline.conditions) ? inline.conditions : [];
           for (let i = 0; i < values.length; i++) {
             const cond = conditions[i] ? ' [有条件]' : '';
             if (!appendLimited(lines, `第 ${i + 1} 行${cond} | ${values[i] || '（空命令）'}`, budget)) break;
@@ -123,7 +122,7 @@ export function splitContextText(text, limit = 45000) {
     return chunks.length ? chunks : [''];
   }
 
-export function searchBrowserCommands(args) {
+function searchBrowserCommands(args) {
     const query = String(args.query ?? '').trim();
     if (!query) return '错误：search_commands 缺少 query。';
     const scope = ['all', 'chain', 'text'].includes(args.scope) ? args.scope : 'all';
@@ -156,7 +155,7 @@ export function searchBrowserCommands(args) {
     return `匹配 ${total} 次：\n${rows.join('\n')}${more}`;
   }
 
-export async function sectionFromPrecheck(name, scope) {
+async function sectionFromPrecheck(name, scope) {
     const full = await runSkillPrecheck(scope);
     const header = '## ' + name;
     const start = full.indexOf(header);
@@ -197,10 +196,9 @@ export function collectSkillCommands(scope) {
       if (ci < 0 && typeof app.selectedChain === 'number' && app.selectedChain >= 0) ci = app.selectedChain;
       if (ci < 0 && app.chains.length === 1) ci = 0;
       if (scope === 'text') {
-        const editor = document.getElementById('textEditorOverlay');
-        const input = document.getElementById('textEditorInput');
-        if (editor && editor.classList.contains('on') && input) {
-          String(input.value || '').replace(/\r/g, '').split('\n').forEach((line, i) => {
+        const inline = typeof window !== 'undefined' ? window.getInlineEditState?.() : null;
+        if (inline && Number.isInteger(inline.chain) && inline.chain === ci) {
+          String(inline.text || '').replace(/\r/g, '').split('\n').forEach((line, i) => {
             const cmd = String(line || '').trim();
             if (cmd) out.push({ cmd, chain: ci + 1, block: null, label: `文本第${i + 1}行` });
           });
@@ -212,7 +210,7 @@ export function collectSkillCommands(scope) {
     return out;
   }
 
-export function scopedChainIndexes(scope) {
+function scopedChainIndexes(scope) {
     if (typeof app === 'undefined' || !app || !Array.isArray(app.chains) || !app.chains.length) return [];
     if (scope === 'all') return app.chains.map((_, i) => i);
     let ci = -1;
@@ -222,7 +220,7 @@ export function scopedChainIndexes(scope) {
     return ci >= 0 && ci < app.chains.length ? [ci] : [];
   }
 
-export function skillStructureFor(indexes) {
+function skillStructureFor(indexes) {
     const structure = { blocks: new Map() };
     for (const ci of indexes) {
       const chain = app.chains[ci];
@@ -258,7 +256,7 @@ export function toolStatusSummary(precheck) {
     return `工具状态（最高优先级）：已执行 check --only syntax、check --only chain、inspect、verify。${syntax ? '语法：' + syntax[1] + '；' : ''}${chain ? '链：' + chain[1] + '；' : ''}${verify ? verify[1] : ''} 不要声称“没有 shell/未执行”。`;
   }
 
-export function fallbackSyntaxIssues(items) {
+function fallbackSyntaxIssues(items) {
     const issues = [];
     for (const item of items) {
       const cmd = String(item.cmd || '').trim();

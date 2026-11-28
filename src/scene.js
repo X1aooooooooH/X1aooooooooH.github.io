@@ -6,7 +6,7 @@ import { isInputFocused } from './ui/dom.js';
 import { app } from './state.js';
 import { logInfo } from './log.js';
 import { dot3, easeInOutQuad } from './core/util.js';
-import { hideInfo, showInfo } from './inspector.js?v=r32-cleanup-20261128';
+import { hideInfo, showInfo } from './inspector.js?v=r39-layout-20261129';
 
 const texCache = {};
 let texLoaded = false;
@@ -128,7 +128,6 @@ export function initScene(){
   setupPicking();
   setupWheelNavigation();
   setupKeyboardMovement();
-  setupCameraPad();
 
   let lastTime=performance.now();
   (function anim(now){
@@ -187,69 +186,6 @@ export function updateKeyboardMovement(dt){
   controls.target.add(move);
   markRenderDirty();
 }
-let cameraPadHoldTimer=null;
-let cameraPadRepeatTimer=null;
-let cameraPadMoveScratch=null;
-export function stopCameraPadHold(){
-  if(cameraPadHoldTimer!==null){clearTimeout(cameraPadHoldTimer);cameraPadHoldTimer=null;}
-  if(cameraPadRepeatTimer!==null){clearInterval(cameraPadRepeatTimer);cameraPadRepeatTimer=null;}
-  document.querySelectorAll('.camera-pad-btn.is-pressed').forEach(btn=>btn.classList.remove('is-pressed'));
-}
-export function translateCameraFromPad(direction,distance=0.62){
-  if(!camera||!controls||!three||cameraAnim)return;
-  const {THREE}=three;
-  if(!cameraPadMoveScratch){
-    cameraPadMoveScratch={right:new THREE.Vector3(),up:new THREE.Vector3(),move:new THREE.Vector3()};
-  }
-  const {right,up,move}=cameraPadMoveScratch;
-  // Pan in the camera's screen plane: translate both camera and orbit target together.
-  // This preserves the viewing angle and distance; it never changes yaw or pitch.
-  camera.updateMatrixWorld();
-  right.setFromMatrixColumn(camera.matrixWorld,0).normalize();
-  up.setFromMatrixColumn(camera.matrixWorld,1).normalize();
-  move.set(0,0,0);
-  if(direction==='left')move.sub(right);
-  else if(direction==='right')move.add(right);
-  else if(direction==='up')move.add(up);
-  else if(direction==='down')move.sub(up);
-  else return;
-  move.multiplyScalar(distance);
-  camera.position.add(move);
-  controls.target.add(move);
-  controls.update();
-  saveCamera();
-  markRenderDirty();
-}
-export function setupCameraPad(){
-  const pad=document.getElementById('cameraPad');
-  if(!pad||pad.dataset.ready==='1')return;
-  pad.dataset.ready='1';
-  pad.querySelectorAll('[data-camera-move]').forEach(button=>{
-    const direction=button.dataset.cameraMove;
-    button.addEventListener('pointerdown',event=>{
-      if(event.pointerType==='mouse'&&event.button!==0)return;
-      event.preventDefault();
-      stopCameraPadHold();
-      button.classList.add('is-pressed');
-      try{button.setPointerCapture(event.pointerId);}catch{}
-      translateCameraFromPad(direction,0.62);
-      cameraPadHoldTimer=setTimeout(()=>{
-        cameraPadRepeatTimer=setInterval(()=>translateCameraFromPad(direction,0.28),32);
-      },260);
-    });
-    const release=()=>stopCameraPadHold();
-    button.addEventListener('pointerup',release);
-    button.addEventListener('pointercancel',release);
-    button.addEventListener('lostpointercapture',release);
-    button.addEventListener('click',event=>{
-      // Keyboard activation has detail=0; pointer activation was handled on pointerdown.
-      if(event.detail===0)translateCameraFromPad(direction,0.62);
-    });
-  });
-  window.addEventListener('blur',stopCameraPadHold);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCameraPadHold();});
-}
-
 export function renderFrames(force=false){
   if(!renderer||!scene||!camera||!blockGroup)return;
   if(!force&&!renderDirty)return;
@@ -680,7 +616,7 @@ export function applyChainCamera(){
   if(!bounds)return;
   const cx=(bounds.minX+bounds.maxX)/2,cy=(bounds.minY+bounds.maxY)/2,cz=(bounds.minZ+bounds.maxZ)/2;
   const X=Math.max(1,bounds.X),Y=Math.max(1,bounds.Y),Z=Math.max(1,bounds.Z);
-  const d=getMobileFitDistance('side',X,Y,Z)??Math.max(X,Y,Z,8)*1.4;
+  const d=Math.max(X,Y,Z,8)*1.4;
   animateCameraTo([cx+d,cy,cz],[cx,cy,cz],600);
 }
 
@@ -783,45 +719,6 @@ export function cycleBlock(dir){
   }
 }
 
-export function getMobileFitDistance(p,X,Y,Z){
-  if(!window.matchMedia('(max-width: 900px)').matches)return null;
-  const wrap=document.getElementById('canvasWrap');
-  const viewport=wrap?.getBoundingClientRect();
-  const width=Math.max(1,viewport?.width||wrap?.clientWidth||window.innerWidth);
-  const height=Math.max(1,viewport?.height||wrap?.clientHeight||window.innerHeight);
-  const topBar=document.querySelector('.command-bar');
-  const dock=document.querySelector('.chain-dock');
-  let topInset=10,bottomInset=10;
-  if(topBar&&getComputedStyle(topBar).display!=='none'){
-    const r=topBar.getBoundingClientRect();
-    topInset=Math.max(topInset,r.bottom-(viewport?.top||0)+12);
-  }
-  if(dock&&getComputedStyle(dock).display!=='none'){
-    const r=dock.getBoundingClientRect();
-    bottomInset=Math.max(bottomInset,(viewport?.bottom||height)-r.top+12);
-  }
-  const safeWidth=Math.max(120,width-24);
-  const safeHeight=Math.max(height*.38,height-topInset-bottomInset);
-  const tanV=Math.tan((camera.fov||45)*Math.PI/360);
-  // Convert the actually unobstructed pixel area into horizontal/vertical
-  // half-frustum tangents. This accounts for the tall mobile toolbar and dock.
-  const tanX=Math.max(.001,tanV*safeWidth/height);
-  const tanY=Math.max(.001,tanV*safeHeight/height);
-  const hx=Math.max(1,X)/2,hy=Math.max(1,Y)/2,hz=Math.max(1,Z)/2;
-  const margin=1.16;
-  let distance;
-  if(p==='front')distance=hz+Math.max(hx/tanX,hy/tanY)*margin;
-  else if(p==='side')distance=hx+Math.max(hz/tanX,hy/tanY)*margin;
-  else if(p==='top')distance=hy+Math.max(hx/tanX,hz/tanY)*margin;
-  else{
-    // The oblique overview is fitted with a bounding sphere so all corners
-    // remain inside the narrower of the two usable viewport dimensions.
-    const radius=Math.sqrt(hx*hx+hy*hy+hz*hz);
-    const halfAngle=Math.atan(Math.min(tanX,tanY));
-    distance=radius/Math.max(.001,Math.sin(halfAngle))*1.08;
-  }
-  return Math.max(8,distance);
-}
 export function setViewPreset(p){
   if(!camera||!controls||!currentBounds)return;
   cameraAnim=null;
@@ -841,9 +738,7 @@ export function setViewPreset(p){
   }else{
     ({cx,cy,cz,X,Y,Z}=currentBounds);
   }
-  // Desktop keeps its established framing; mobile fits the complete block
-  // bounds inside the unobstructed screen area for each standard view.
-  const d=getMobileFitDistance(p,X,Y,Z)??Math.max(X,Y,Z,8)*1.4;
+  const d=Math.max(X,Y,Z,8)*1.4;
   let px,py,pz;
   switch(p){
     case'front':px=cx;py=cy;pz=cz+d;break;

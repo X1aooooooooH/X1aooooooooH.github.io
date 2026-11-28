@@ -20,27 +20,22 @@ import {
   applyChainCamera, animateCameraTo, captureOverviewCamera, cycleBlock, setViewPreset,
   getPickRecord, setSceneHandlers
 } from './scene.js';
-import { initTheme } from './ui/theme.js?v=r32-cleanup-20261128';
-import { hideInfo } from './inspector.js?v=r32-cleanup-20261128';
+import { initTheme } from './ui/theme.js?v=r39-layout-20261129';
+import { hideInfo } from './inspector.js?v=r39-layout-20261129';
 
 import {
-  updateChainBar, toggleChainManager, openChainAddModal, closeChainAddModal, addChainOfType,
-  importChainFromMcstructure, renderChainManager, reorderChains, deleteChainAt,
+  updateChainBar, closeChainAddModal, addChainOfType,
+  importChainFromMcstructure, reorderChains, deleteChainAt,
   updateStats, refreshChainsUI, pushHistory, clearAutosave, syncSavedState, undo, redo,
-  restoreAutosave, loadMcstructure, flushAutosave
+  restoreAutosave, loadMcstructure, flushAutosave, duplicateChainAt
 } from './editor.js';
 import {
-  openTextEditorForChain, closeTextEditor, highlightTextEditorLine, importChainFromTxt
-} from './ui/text-editor.js?v=r32-cleanup-20261128';
+  highlightTextEditorLine, importChainFromTxt
+} from './ui/text-editor.js?v=r39-layout-20261129';
 
 initTheme();
 
-function setupChainBar(){
-  document.getElementById('chainManage').onclick=()=>{if(app.mode==='overview')toggleChainManager(true);};
-  document.getElementById('chainTextModeBtn').onclick=()=>{if(app.mode==='chain'&&app.selectedChain>=0)openTextEditorForChain(app.selectedChain);};
-  document.getElementById('chainDeleteBtn').onclick=()=>{if(app.mode==='chain'&&app.selectedChain>=0&&app.selectedChain<app.chains.length)deleteChainAt(app.selectedChain);};
-  document.getElementById('chainManagerClose').onclick=()=>toggleChainManager(false);
-  document.getElementById('chainAddBtn').onclick=openChainAddModal;
+function setupChainAddDialog(){
   document.getElementById('chainAddClose').onclick=closeChainAddModal;
   document.getElementById('chainAddModal').addEventListener('click',e=>{if(e.target.id==='chainAddModal')closeChainAddModal();});
   document.querySelectorAll('[data-add-chain-type]').forEach(btn=>btn.addEventListener('click',()=>addChainOfType(btn.dataset.addChainType)));
@@ -125,7 +120,6 @@ function enterChainMode(ci){
   });
 }
 function exitChainMode(){
-  toggleChainManager(false);
   if(app.mode==='overview'&&!app.singleChain)return;
   withViewTransition(()=>{
     app.mode='overview';
@@ -186,7 +180,7 @@ async function copyLogs(){
 }
 async function loadReadmeFromSibling(){
   const body=document.getElementById('usageReadmeBody');if(!body)return;
-  body.textContent='正在读取同目录下的 README.md……';
+  body.textContent='正在读取操作文档';
   try{
     const readmeUrl=new URL('./README.md',document.baseURI);
     const response=await fetch(readmeUrl.href,{cache:'no-store'});
@@ -526,6 +520,16 @@ document.getElementById('infoClose').onclick=()=>deselect();
 (function setupFeatureBindings(){
   document.getElementById('usageHelpBtn').onclick=openUsageHelp;
   document.getElementById('usageHelpClose').onclick=()=>closeFeatureModal('usageHelpModal');
+  const supportModal=document.getElementById('supportModal');
+  document.getElementById('supportOpen')?.addEventListener('click',()=>{
+    if(!supportModal)return;
+    rememberModalFocus('supportModal');
+    supportModal.classList.add('on');
+    supportModal.setAttribute('aria-hidden','false');
+    setTimeout(()=>document.getElementById('supportClose')?.focus(),0);
+  });
+  document.getElementById('supportClose')?.addEventListener('click',()=>closeFeatureModal('supportModal'));
+  supportModal?.addEventListener('click',e=>{if(e.target===supportModal)closeFeatureModal('supportModal');});
   document.getElementById('usageHelpModal').addEventListener('click',e=>{if(e.target.id==='usageHelpModal')closeFeatureModal('usageHelpModal');});
   document.getElementById('diagnoseBtn').onclick=openLogs;
   document.getElementById('logCopy').onclick=copyLogs;
@@ -548,11 +552,9 @@ document.getElementById('infoClose').onclick=()=>deselect();
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    const textEditor=document.getElementById('textEditorOverlay');
-    if(textEditor&&textEditor.classList.contains('on')){closeTextEditor();return;}
     const addModal=document.getElementById('chainAddModal');
     if(addModal&&addModal.classList.contains('on')){closeChainAddModal();return;}
-    for(const id of ['usageHelpModal','diagnosticModal','replaceModal','exportFormatModal','promptModal']){const m=document.getElementById(id);if(m&&m.classList.contains('on')){if(id==='promptModal')document.getElementById('promptModalCancel').click();else closeFeatureModal(id);return;}}
+    for(const id of ['usageHelpModal','diagnosticModal','replaceModal','exportFormatModal','supportModal','promptModal']){const m=document.getElementById(id);if(m&&m.classList.contains('on')){if(id==='promptModal')document.getElementById('promptModalCancel').click();else closeFeatureModal(id);return;}}
     if(app.mode==='chain'&&!app.singleChain)exitChainMode();
     return;
   }
@@ -563,7 +565,7 @@ document.addEventListener('keydown',e=>{
   // mutate a hidden editor while dialogs or the upload screen are active.
   if(isInputFocused())return;
   if(!document.getElementById('editorView')?.classList.contains('on'))return;
-  if(document.querySelector('.feature-modal.on,.chain-add-modal.on,.text-editor-overlay.on'))return;
+  if(document.querySelector('.feature-modal.on,.chain-add-modal.on'))return;
   const mod=e.ctrlKey||e.metaKey;
   if(!mod)return;
   if(e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}
@@ -584,7 +586,7 @@ window.addEventListener('load',()=>{
 
 
 
-setupChainBar();
+setupChainAddDialog();
 setSceneHandlers({ enterChainMode, afterRender: updateChainBar });
 
 /* Optional globals retained for the workspace shell and console debugging. */
@@ -598,9 +600,9 @@ window.ensureStructureSize = ensureStructureSize;
 window.renderAllBlocks = renderAllBlocks;
 window.updateStats = updateStats;
 window.updateChainBar = updateChainBar;
-window.renderChainManager = renderChainManager;
 window.selectBlock = selectBlock;
 window.pushHistory = pushHistory;
 window.deleteChainAt = deleteChainAt;
+window.duplicateChainAt = duplicateChainAt;
 window.reorderChains = reorderChains;
 window.highlightTextEditorLine = highlightTextEditorLine;
